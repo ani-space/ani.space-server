@@ -1,16 +1,16 @@
-import { join } from 'path';
-import { UserResolver } from '~/graphql/resolvers/user.resolver';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { envSchema } from '~/configs/env.schema';
-import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { MediaModule } from './modules';
 import { YogaDriver, YogaDriverConfig } from '@graphql-yoga/nestjs';
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { GraphQLModule } from '@nestjs/graphql';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { join } from 'path';
+import { envSchema } from '~/configs/env.schema';
+import { UserResolver } from '~/graphql/resolvers/user.resolver';
+import { LoggerModule, MediaModule } from './modules';
 
 @Module({
   imports: [
+    LoggerModule,
     MediaModule,
 
     ConfigModule.forRoot({
@@ -25,11 +25,8 @@ import { YogaDriver, YogaDriverConfig } from '@graphql-yoga/nestjs';
           playground: true,
           autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
           catch: (error) => {
-            console.log('error: ', error)
-            // return {
-            //   message: error.message,
-            //   code: error.extensions?.code,
-            // };
+            console.log('error: ', error);
+            // TODO: format Error here
           },
         };
       },
