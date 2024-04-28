@@ -39,8 +39,8 @@ import { MediaExternalLink } from './media-external-link.model';
 @Entity({ name: 'anime' })
 export class Anime extends BaseAnilistEntity {
   @Index({ unique: true })
-  @Column()
-  @Field((type) => Int)
+  @Column({ nullable: true })
+  @Field((type) => Int, { nullable: true })
   idMal: number;
 
   @Field((type) => FuzzyDateInt, { nullable: true })
@@ -85,7 +85,7 @@ export class Anime extends BaseAnilistEntity {
     enum: AnimeSeason,
     nullable: true,
   })
-  season: AnimeSeason;
+  season?: AnimeSeason;
 
   @Field((type) => Int, { nullable: true })
   @Column({ type: 'int', nullable: true })
@@ -142,12 +142,14 @@ export class Anime extends BaseAnilistEntity {
   bannerImage?: string;
 
   @Field((type) => [AnimeGenres], { nullable: true })
-  @ManyToMany(() => AnimeGenres)
+  @ManyToMany(() => AnimeGenres, { nullable: true })
   @JoinTable()
   genres?: AnimeGenres[];
 
   @Field((type) => [AnimeSynonyms], { nullable: true })
-  @OneToMany(() => AnimeSynonyms, (synonyms) => synonyms.anime)
+  @OneToMany(() => AnimeSynonyms, (synonyms) => synonyms.anime, {
+    nullable: true,
+  })
   synonyms?: AnimeSynonyms[];
 
   @Field((type) => Int, { nullable: true })
@@ -163,7 +165,8 @@ export class Anime extends BaseAnilistEntity {
   popularity?: number;
 
   @Field((type) => [AnimeTag], { nullable: true })
-  @OneToMany(() => AnimeTag, (tags) => tags.anime)
+  @ManyToMany(() => AnimeTag, { nullable: true })
+  @JoinTable()
   tags?: AnimeTag[];
 
   @Field((type) => AnimeConnection, { nullable: true })
@@ -191,9 +194,9 @@ export class Anime extends BaseAnilistEntity {
   @JoinColumn()
   studios?: StudioConnection;
 
-  @Field()
-  @Column()
-  isAdult: boolean;
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  isAdult?: boolean;
 
   @Field((type) => AiringSchedule, {
     nullable: true,
@@ -226,6 +229,7 @@ export class Anime extends BaseAnilistEntity {
   @OneToMany(
     () => MediaExternalLink,
     (mediaExternalLink) => mediaExternalLink.anime,
+    { nullable: true },
   )
   mediaExternalLink?: MediaExternalLink[];
 
@@ -233,7 +237,7 @@ export class Anime extends BaseAnilistEntity {
     nullable: true,
     description: `The ranking of the media in a particular time span and format compared to other media`,
   })
-  @OneToMany(() => AnimeRank, (rankings) => rankings.anime)
+  @OneToMany(() => AnimeRank, (rankings) => rankings.anime, { nullable: true })
   rankings: AnimeRank[];
 
   // reviews: TODO after implement auth

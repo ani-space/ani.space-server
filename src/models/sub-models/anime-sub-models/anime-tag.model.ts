@@ -13,10 +13,6 @@ export class AnimeTag {
   @Column()
   name: string;
 
-  @Field(() => Anime)
-  @ManyToOne(() => Anime, (anime) => anime.tags)
-  anime: Anime;
-
   @Field({ nullable: true })
   @Column({ nullable: true })
   description?: string;
