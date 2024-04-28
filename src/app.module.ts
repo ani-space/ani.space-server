@@ -6,13 +6,14 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
 import { envSchema } from '~/configs/env.schema';
 import { UserResolver } from '~/graphql/resolvers/user.resolver';
-import { LoggerModule, MediaModule } from './modules';
+import { LoggerModule, MediaModule, TriggerModule } from './modules';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     LoggerModule,
     MediaModule,
+    TriggerModule,
 
     EventEmitterModule.forRoot({
       ignoreErrors: true,
@@ -29,6 +30,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
         return {
           playground: true,
           autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+          maskedErrors: true,
           catch: (error) => {
             console.log('error: ', error);
             // TODO: format Error here
@@ -57,6 +59,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     }),
   ],
   controllers: [],
-  providers: [UserResolver],
+  providers: [],
 })
 export class AppModule {}

@@ -2,11 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type User {
-  id: Int!
-  userName: String!
-}
-
 type AiringScheduleEdge {
   node: AiringSchedule
 }
@@ -616,6 +611,9 @@ enum AnimeSource {
 }
 
 type Query {
-  User: User!
-  Anime: Anime!
+  trigger(animeSynchronization: SynchronizedAnimeEnum, page: Int! = 1): String!
+}
+
+enum SynchronizedAnimeEnum {
+  ANIME_SCALAR_TYPE
 }

@@ -7,4 +7,7 @@ export const envSchema = Joi.object({
   PG_HOST: Joi.string().required(),
   PG_DB: Joi.string().required(),
   PG_PORT: Joi.number().required(),
+
+  //trigger key
+  TRIGGER_SECRET_KEY: Joi.string().optional().default(''),
 });
