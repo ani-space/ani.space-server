@@ -101,7 +101,6 @@ type AnimeSynonyms {
 }
 
 type AnimeTag {
-  id: Int!
   name: String!
   description: String
   category: String
