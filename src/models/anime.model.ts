@@ -44,17 +44,17 @@ export class Anime extends BaseAnilistEntity {
   idMal: number;
 
   @Field((type) => FuzzyDateInt, { nullable: true })
-  @OneToOne(() => FuzzyDateInt, { nullable: true })
+  @OneToOne(() => FuzzyDateInt, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn()
   startDate?: FuzzyDateInt;
 
   @Field((type) => FuzzyDateInt, { nullable: true })
-  @OneToOne(() => FuzzyDateInt, { nullable: true })
+  @OneToOne(() => FuzzyDateInt, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn()
   endDate?: FuzzyDateInt;
 
   @Field((type) => AnimeTitle, { nullable: true })
-  @OneToOne(() => AnimeTitle, { nullable: true })
+  @OneToOne(() => AnimeTitle, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn()
   title?: AnimeTitle;
 
@@ -75,7 +75,7 @@ export class Anime extends BaseAnilistEntity {
   status?: AnimeStatus;
 
   @Field((type) => AnimeDescription, { nullable: true })
-  @OneToOne(() => AnimeDescription, { nullable: true })
+  @OneToOne(() => AnimeDescription, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn()
   description?: AnimeDescription;
 
@@ -124,7 +124,7 @@ export class Anime extends BaseAnilistEntity {
   hashtag?: string;
 
   @Field((type) => AnimeTrailer, { nullable: true })
-  @OneToOne(() => AnimeTrailer, { nullable: true })
+  @OneToOne(() => AnimeTrailer, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn()
   trailer?: AnimeTrailer;
 
@@ -133,7 +133,7 @@ export class Anime extends BaseAnilistEntity {
   updateAt?: number;
 
   @Field((type) => AnimeCoverImage, { nullable: true })
-  @OneToOne(() => AnimeCoverImage, { nullable: true })
+  @OneToOne(() => AnimeCoverImage, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn()
   coverImage?: AnimeCoverImage;
 
@@ -149,6 +149,7 @@ export class Anime extends BaseAnilistEntity {
   @Field((type) => [AnimeSynonyms], { nullable: true })
   @OneToMany(() => AnimeSynonyms, (synonyms) => synonyms.anime, {
     nullable: true,
+    onDelete: 'CASCADE',
   })
   synonyms?: AnimeSynonyms[];
 
@@ -202,7 +203,7 @@ export class Anime extends BaseAnilistEntity {
     nullable: true,
     description: `The media's next episode airing schedule`,
   })
-  @OneToOne(() => AiringSchedule, { nullable: true })
+  @OneToOne(() => AiringSchedule, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn()
   nextAiringEpisode?: AiringSchedule;
 
@@ -229,7 +230,7 @@ export class Anime extends BaseAnilistEntity {
   @OneToMany(
     () => MediaExternalLink,
     (mediaExternalLink) => mediaExternalLink.anime,
-    { nullable: true },
+    { nullable: true, onDelete: 'CASCADE' },
   )
   mediaExternalLink?: MediaExternalLink[];
 
@@ -237,7 +238,10 @@ export class Anime extends BaseAnilistEntity {
     nullable: true,
     description: `The ranking of the media in a particular time span and format compared to other media`,
   })
-  @OneToMany(() => AnimeRank, (rankings) => rankings.anime, { nullable: true })
+  @OneToMany(() => AnimeRank, (rankings) => rankings.anime, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   rankings: AnimeRank[];
 
   // reviews: TODO after implement auth
