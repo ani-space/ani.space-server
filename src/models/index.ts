@@ -8,3 +8,5 @@ export * from './staff.model';
 export * from './staff-edge.model';
 
 export * from './base-models/base.model';
+
+export * from './ani-space-log.model';
