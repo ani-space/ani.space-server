@@ -7,11 +7,16 @@ import { join } from 'path';
 import { envSchema } from '~/configs/env.schema';
 import { UserResolver } from '~/graphql/resolvers/user.resolver';
 import { LoggerModule, MediaModule } from './modules';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     LoggerModule,
     MediaModule,
+
+    EventEmitterModule.forRoot({
+      ignoreErrors: true,
+    }),
 
     ConfigModule.forRoot({
       cache: true,
