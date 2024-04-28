@@ -6,13 +6,18 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
 import { envSchema } from '~/configs/env.schema';
-import { LoggerModule, MediaModule, TriggerModule } from './modules';
-import { GraphQLRequestModule } from '@golevelup/nestjs-graphql-request';
+import {
+  AnilistModule,
+  LoggerModule,
+  MediaModule,
+  TriggerModule,
+} from './modules';
 @Module({
   imports: [
     LoggerModule,
     MediaModule,
     TriggerModule,
+    AnilistModule,
 
     EventEmitterModule.forRoot({
       ignoreErrors: true,
@@ -54,22 +59,6 @@ import { GraphQLRequestModule } from '@golevelup/nestjs-graphql-request';
           autoLoadEntities: true,
         };
         return dbOptions;
-      },
-    }),
-
-    GraphQLRequestModule.forRootAsync(GraphQLRequestModule, {
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => {
-        return {
-          endpoint: config.get<string>('ANILIST_GRAPHQL_ENDPOINT') as string,
-          options: {
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-            },
-          },
-        };
       },
     }),
   ],
