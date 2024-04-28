@@ -8,9 +8,9 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
+    "start": "nest start -b swc --type-check",
     "start:dev": "nest start --watch",
-    "start:debug": "nest start -b swc --debug --watch --type-check",
+    "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@apollo/server": "^4.10.4",
+    "@graphql-yoga/nestjs": "^3.3.0",
     "@nestjs/apollo": "^12.1.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
@@ -29,6 +30,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/typeorm": "^10.0.2",
     "graphql": "^16.8.1",
+    "graphql-yoga": "^5.3.0",
     "joi": "^17.13.0",
     "pg": "^8.11.5",
     "reflect-metadata": "^0.2.0",
