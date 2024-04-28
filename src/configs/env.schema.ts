@@ -10,4 +10,7 @@ export const envSchema = Joi.object({
 
   //trigger key
   TRIGGER_SECRET_KEY: Joi.string().optional().default(''),
+
+  //anilist graphql endpoint
+  ANILIST_GRAPHQL_ENDPOINT: Joi.string().default('https://graphql.anilist.co'),
 });

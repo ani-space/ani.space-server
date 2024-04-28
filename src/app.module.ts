@@ -1,14 +1,13 @@
 import { YogaDriver, YogaDriverConfig } from '@graphql-yoga/nestjs';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
 import { envSchema } from '~/configs/env.schema';
-import { UserResolver } from '~/graphql/resolvers/user.resolver';
 import { LoggerModule, MediaModule, TriggerModule } from './modules';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-
+import { GraphQLRequestModule } from '@golevelup/nestjs-graphql-request';
 @Module({
   imports: [
     LoggerModule,
@@ -55,6 +54,22 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
           autoLoadEntities: true,
         };
         return dbOptions;
+      },
+    }),
+
+    GraphQLRequestModule.forRootAsync(GraphQLRequestModule, {
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => {
+        return {
+          endpoint: config.get<string>('ANILIST_GRAPHQL_ENDPOINT') as string,
+          options: {
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+          },
+        };
       },
     }),
   ],
