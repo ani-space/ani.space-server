@@ -3,9 +3,11 @@ import { IAnilistService } from '~/contracts/services';
 import { AnilistService } from '~/services';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLRequestModule } from '@golevelup/nestjs-graphql-request';
+import { MediaModule } from './media.module';
 
 @Module({
   imports: [
+    MediaModule,
     GraphQLRequestModule.forRootAsync(GraphQLRequestModule, {
       imports: [ConfigModule],
       inject: [ConfigService],
