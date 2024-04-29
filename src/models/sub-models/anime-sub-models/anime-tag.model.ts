@@ -12,7 +12,11 @@ export class AnimeTag extends BaseAnilistEntity {
 
   @Field({ nullable: true })
   @Column({ nullable: true })
-  description?: string;
+  descriptionEn?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  descriptionVi?: string;
 
   @Field({ nullable: true })
   @Column({ nullable: true })

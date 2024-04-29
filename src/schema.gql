@@ -53,6 +53,7 @@ type AnimeTitle {
   english: String
   vietnamese: String
   native: String
+  userPreferred: String
 }
 
 type AnimeDescription {
@@ -102,7 +103,8 @@ type AnimeSynonyms {
 
 type AnimeTag {
   name: String!
-  description: String
+  descriptionEn: String
+  descriptionVi: String
   category: String
   rank: Int
   isGeneralSpoiler: Boolean
@@ -300,7 +302,6 @@ type StaffRoleType {
 }
 
 type AnimeEdge {
-  idAnilist: Int!
   node: Anime
 
   """The type of relation to the parent model"""

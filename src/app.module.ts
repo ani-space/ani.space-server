@@ -6,6 +6,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
 import { envSchema } from '~/configs/env.schema';
+import { DatabaseConfig } from './configs/index';
 import {
   AnilistModule,
   LoggerModule,
@@ -26,6 +27,7 @@ import {
     ConfigModule.forRoot({
       cache: true,
       validationSchema: envSchema,
+      load: [DatabaseConfig],
     }),
 
     GraphQLModule.forRootAsync<YogaDriverConfig>({
@@ -54,9 +56,11 @@ import {
           username: config.get<string>('PG_USERNAME'),
           password: config.get<string>('PG_PASSWORD'),
           database: config.get<string>('PG_DB'),
-          synchronize: true,
           entities: ['dist/**/*.+(model|enum).js'],
           autoLoadEntities: true,
+          migrations: ['dist/db/migrations/*.js'],
+          migrationsRun: true,
+          synchronize: false,
         };
         return dbOptions;
       },

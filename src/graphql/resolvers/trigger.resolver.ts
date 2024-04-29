@@ -17,11 +17,13 @@ export class TriggerResolver {
   @UseGuards(TriggerGuard)
   @Query(() => String, { name: TriggerResolverActionName.TRIGGER })
   handleTrigger(@Args() triggerArgs: TriggerArgs) {
+    const { page } = triggerArgs;
+
     if (
       triggerArgs.animeSynchronization ===
       SynchronizedAnimeEnum.ANIME_SCALAR_TYPE
     ) {
-      this.eventEmitter.emit(GET_ANIME_SCALARS_TYPE);
+      this.eventEmitter.emit(GET_ANIME_SCALARS_TYPE, page);
     }
 
     return 'ok';
