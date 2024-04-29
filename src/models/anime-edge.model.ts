@@ -25,11 +25,6 @@ export class AnimeEdge extends BaseAnilistEntity {
   @ManyToOne(() => AnimeConnection, (animeConnection) => animeConnection.edges)
   animeConnection: AnimeConnection;
 
-  @Index({ unique: true })
-  @Column()
-  @Field((type) => Int)
-  idAnilist: number;
-
   @Field((type) => Anime, { nullable: true })
   @OneToOne((type) => Anime, { nullable: true })
   @JoinColumn()
