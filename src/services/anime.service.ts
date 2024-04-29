@@ -15,7 +15,7 @@ export class AnimeService implements IAnimeService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  public async createNewAnime(anime: Partial<Anime>): Promise<Anime | null> {
+  public async saveAnime(anime: Partial<Anime>): Promise<Anime | null> {
     try {
       return await this.animeRepo.save(anime);
     } catch (error) {
@@ -47,5 +47,26 @@ export class AnimeService implements IAnimeService {
 
       return null;
     }
+  }
+
+  public async findAnimeByIdAnilist(
+    idAnilist: number,
+    saveNotFoundLog?: boolean,
+  ): Promise<Anime | null> {
+    const anime = await this.animeRepo.findByCondition({
+      where: {
+        idAnilist,
+      },
+    });
+
+    if (!anime && saveNotFoundLog) {
+      this.eventEmitter.emit(LOGGER_CREATED, {
+        requestObject: JSON.stringify(idAnilist),
+        notes: `Anime not found with anilistId: ${idAnilist}`,
+        tracePath: `AnimeService.findAnimeByIdAnilist`,
+      } as CreateLoggerDto);
+    }
+
+    return anime;
   }
 }

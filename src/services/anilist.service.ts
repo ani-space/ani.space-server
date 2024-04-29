@@ -1,8 +1,10 @@
 import { InjectGraphQLClient } from '@golevelup/nestjs-graphql-request';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { InjectRepository } from '@nestjs/typeorm';
 import { GraphQLError } from 'graphql';
 import { GraphQLClient, gql } from 'graphql-request';
+import { Repository } from 'typeorm';
 import {
   IAnilistService,
   IAnimeGenreService,
@@ -11,10 +13,12 @@ import {
 } from '~/contracts/services';
 import { Anime } from '~/models';
 import {
-  GET_ANIME_SCALARS_TYPE
+  GET_ANIME_SCALARS_TYPE,
+  SAVE_ANIME_OBJECT_TYPE,
 } from '../common/constants/index';
-import { AnimeTag } from '../models/sub-models/anime-sub-models';
+import {AnimeTag, AnimeTitle, AnimeDescription, AnimeTrailer, AnimeCoverImage, AnimeSynonyms} from '../models/sub-models/anime-sub-models';
 import { AnimeGenres } from '../models/sub-models/anime-sub-models/anime-genres.model';
+import { FuzzyDateInt } from '~/models/sub-models/common-sub-models';
 
 @Injectable()
 export class AnilistService implements IAnilistService {
@@ -25,11 +29,17 @@ export class AnilistService implements IAnilistService {
     @Inject(IAnimeGenreService) private readonly animeGenreService: IAnimeGenreService,
     @Inject(IAnimeTagService) private readonly animeTagService: IAnimeTagService,
     @Inject(IAnimeService) private readonly animeService: IAnimeService,
+    @InjectRepository(AnimeTitle) private readonly animeTitleRepo: Repository<AnimeTitle>, 
+    @InjectRepository(AnimeSynonyms) private readonly animeSynonymsRepo: Repository<AnimeSynonyms>, 
+    @InjectRepository(AnimeCoverImage) private readonly animeCoverImage: Repository<AnimeCoverImage>, 
+    @InjectRepository(AnimeTrailer) private readonly animeTrailerRepo: Repository<AnimeTrailer>,
+    @InjectRepository(AnimeDescription) private readonly animeDescRepo: Repository<AnimeDescription>,
+    @InjectRepository(FuzzyDateInt) private readonly fuzzDateRepo: Repository<FuzzyDateInt>,
     @InjectGraphQLClient() private readonly gqlClient: GraphQLClient,
   ) {}
 
   @OnEvent(GET_ANIME_SCALARS_TYPE)
-  public async handleGetAnimeScalarsType(page: number = 1) {
+  public async handleSaveAnimeBasicInfo(page: number = 1) {
     const document = gql`
       {
         Page(page: ${page}, perPage: 15) {
@@ -42,6 +52,7 @@ export class AnilistService implements IAnilistService {
             title {
               romaji
               english
+              native
               userPreferred
             }
             tags {
@@ -93,6 +104,7 @@ export class AnilistService implements IAnilistService {
             averageScore
             meanScore
             popularity
+            isAdult
           }
         }
       }
@@ -110,6 +122,7 @@ export class AnilistService implements IAnilistService {
           return {
             idAnilist: a.id,
             idMal: a.idMal,
+            isAdult: a.isAdult,
             title: {
               romaji: a.title?.romaji,
               english: a.title?.english,
@@ -135,6 +148,13 @@ export class AnilistService implements IAnilistService {
                     isMediaSpoiler: t.isMediaSpoiler,
                     isAdult: t.isAdult,
                   } as AnimeTag;
+                })
+              : null,
+            synonyms: Array.isArray(a.synonyms)
+              ? a.synonyms.map((s: any) => {
+                  return {
+                    synonym: s,
+                  } as AnimeSynonyms;
                 })
               : null,
             format: a.format,
@@ -202,25 +222,97 @@ export class AnilistService implements IAnilistService {
 
           for (let i = 0; i < aniRaw.tags.length; i++) {
             const tag = aniRaw.tags[i];
-            const animeTagObj = await this.animeTagService.findOrCreateAnimeTag(
-              { name: tag.name, idAnilist: tag.idAnilist },
-            );
+            const animeTagObj =
+              await this.animeTagService.findOrCreateAnimeTag(tag);
             Object.assign(aniRaw.tags[i], animeTagObj);
           }
         }
 
-        //save all anime per page
-        this.animeService.createManyNewAnime(animeListMappedRaw);
+        //modify title obj
+        for (const aniRaw of animeListMappedRaw) {
+          if (!aniRaw.title) continue;
 
-        this.logger.log(
-          `Successfully saved page ${page} with ${media.length} objects`,
-        );
+          const titleObj = await this.animeTitleRepo.save(aniRaw.title);
+          Object.assign(aniRaw.title, titleObj);
+        }
+
+        //modify description obj
+        for (const aniRaw of animeListMappedRaw) {
+          if (!aniRaw.description) continue;
+
+          const animeDescObj = await this.animeDescRepo.save(
+            aniRaw.description,
+          );
+          Object.assign(aniRaw.description, animeDescObj);
+        }
+
+        //modify startDate & endDate obj
+        for (const aniRaw of animeListMappedRaw) {
+          if (aniRaw.startDate) {
+            const startDateObj = await this.fuzzDateRepo.save(aniRaw.startDate);
+            Object.assign(aniRaw.startDate, startDateObj);
+          }
+
+          if (aniRaw.endDate) {
+            const endDateObj = await this.fuzzDateRepo.save(aniRaw.endDate);
+            Object.assign(aniRaw.endDate, endDateObj);
+          }
+        }
+
+        //modify trailer obj
+        for (const aniRaw of animeListMappedRaw) {
+          if (
+            !aniRaw.trailer ||
+            (!aniRaw.trailer?._id &&
+              !aniRaw.trailer?.site &&
+              !aniRaw.trailer?.thumbnail)
+          )
+            continue;
+
+          const animeTrailerObj = await this.animeTrailerRepo.save(
+            aniRaw.trailer,
+          );
+          Object.assign(aniRaw.trailer, animeTrailerObj);
+        }
+
+        //modify coverImage obj
+        for (const aniRaw of animeListMappedRaw) {
+          if (!aniRaw.coverImage) continue;
+
+          const animeCoverImageObj = await this.animeCoverImage.save(
+            aniRaw.coverImage,
+          );
+          Object.assign(aniRaw.coverImage, animeCoverImageObj);
+        }
+
+        //modify synonyms obj
+        for (const aniRaw of animeListMappedRaw) {
+          if (!Array.isArray(aniRaw.synonyms)) {
+            continue;
+          }
+
+          for (let i = 0; i < aniRaw.synonyms.length; i++) {
+            const sys = aniRaw.synonyms[i];
+            const animeSynonyms = await this.animeSynonymsRepo.save(sys);
+            Object.assign(aniRaw.synonyms[i], animeSynonyms);
+          }
+        }
+
+        //save all anime per page
+        if (await this.animeService.createManyNewAnime(animeListMappedRaw)) {
+          this.logger.log(
+            `Successfully saved page ${page} with ${media.length} objects`,
+          );
+        }
       }
 
       // fetch and sync next page
       if (Page.pageInfo?.hasNextPage) {
-        this.handleGetAnimeScalarsType(page + 1);
+        this.handleSaveAnimeBasicInfo(page + 1);
       }
     }, this.AnilistRateLimit);
   }
+
+  @OnEvent(SAVE_ANIME_OBJECT_TYPE)
+  public async handleSaveAnimeObjectsType(page: number = 1) {}
 }
