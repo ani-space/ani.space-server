@@ -1,25 +1,22 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
-import { Anime } from '../../anime.model';
+import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
+import { BaseAnilistEntity } from '~/models/base-models/base-anilist.model';
 
 @Entity({ name: 'animeTags' })
 @ObjectType()
-export class AnimeTag {
-  @Field(() => Int)
-  @PrimaryColumn()
-  id: number;
-
+export class AnimeTag extends BaseAnilistEntity {
   @Field()
+  @Index({ unique: true })
   @Column()
   name: string;
 
-  @Field(() => Anime)
-  @ManyToOne(() => Anime, (anime) => anime.tags)
-  anime: Anime;
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  descriptionEn?: string;
 
   @Field({ nullable: true })
   @Column({ nullable: true })
-  description?: string;
+  descriptionVi?: string;
 
   @Field({ nullable: true })
   @Column({ nullable: true })

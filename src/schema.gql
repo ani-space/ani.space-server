@@ -53,6 +53,7 @@ type AnimeTitle {
   english: String
   vietnamese: String
   native: String
+  userPreferred: String
 }
 
 type AnimeDescription {
@@ -96,15 +97,14 @@ type AnimeSynonyms {
   id: String!
   createdAt: DateTime!
   updatedAt: DateTime!
-  synonym: String!
+  synonym: String
   anime: Anime
 }
 
 type AnimeTag {
-  id: Int!
   name: String!
-  anime: Anime!
-  description: String
+  descriptionEn: String
+  descriptionVi: String
   category: String
   rank: Int
   isGeneralSpoiler: Boolean
@@ -302,7 +302,6 @@ type StaffRoleType {
 }
 
 type AnimeEdge {
-  idAnilist: Int!
   node: Anime
 
   """The type of relation to the parent model"""
@@ -530,7 +529,7 @@ enum ExternalLinkType {
 }
 
 type Anime {
-  idMal: Int!
+  idMal: Int
   startDate: FuzzyDateInt
   endDate: FuzzyDateInt
   title: AnimeTitle
@@ -564,7 +563,7 @@ type Anime {
 
   """The companies who produced the media"""
   studios: StudioConnection
-  isAdult: Boolean!
+  isAdult: Boolean
 
   """The media's next episode airing schedule"""
   nextAiringEpisode: AiringSchedule

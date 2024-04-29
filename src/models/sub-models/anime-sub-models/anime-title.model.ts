@@ -20,4 +20,8 @@ export class AnimeTitle extends BaseEntity {
   @Field({ nullable: true })
   @Column({ nullable: true })
   native?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  userPreferred?: string;
 }

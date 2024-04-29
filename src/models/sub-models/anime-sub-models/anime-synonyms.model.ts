@@ -6,9 +6,9 @@ import { BaseEntity } from '~/models/base-models/base.model';
 @Entity({ name: 'animeSynonyms' })
 @ObjectType()
 export class AnimeSynonyms extends BaseEntity {
-  @Field()
-  @Column()
-  synonym: string;
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  synonym?: string;
 
   @Field(() => Anime, { nullable: true })
   @ManyToOne(() => Anime, (anime) => anime.synonyms)

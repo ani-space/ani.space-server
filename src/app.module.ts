@@ -6,13 +6,19 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
 import { envSchema } from '~/configs/env.schema';
-import { LoggerModule, MediaModule, TriggerModule } from './modules';
-import { GraphQLRequestModule } from '@golevelup/nestjs-graphql-request';
+import { DatabaseConfig } from './configs/index';
+import {
+  AnilistModule,
+  LoggerModule,
+  MediaModule,
+  TriggerModule,
+} from './modules';
 @Module({
   imports: [
     LoggerModule,
     MediaModule,
     TriggerModule,
+    AnilistModule,
 
     EventEmitterModule.forRoot({
       ignoreErrors: true,
@@ -21,6 +27,7 @@ import { GraphQLRequestModule } from '@golevelup/nestjs-graphql-request';
     ConfigModule.forRoot({
       cache: true,
       validationSchema: envSchema,
+      load: [DatabaseConfig],
     }),
 
     GraphQLModule.forRootAsync<YogaDriverConfig>({
@@ -49,27 +56,13 @@ import { GraphQLRequestModule } from '@golevelup/nestjs-graphql-request';
           username: config.get<string>('PG_USERNAME'),
           password: config.get<string>('PG_PASSWORD'),
           database: config.get<string>('PG_DB'),
-          synchronize: true,
           entities: ['dist/**/*.+(model|enum).js'],
           autoLoadEntities: true,
+          migrations: ['dist/db/migrations/*.js'],
+          migrationsRun: true,
+          synchronize: false,
         };
         return dbOptions;
-      },
-    }),
-
-    GraphQLRequestModule.forRootAsync(GraphQLRequestModule, {
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => {
-        return {
-          endpoint: config.get<string>('ANILIST_GRAPHQL_ENDPOINT') as string,
-          options: {
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-            },
-          },
-        };
       },
     }),
   ],
