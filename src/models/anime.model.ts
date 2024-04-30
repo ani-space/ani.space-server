@@ -38,7 +38,6 @@ import { MediaExternalLink } from './media-external-link.model';
 @ObjectType()
 @Entity({ name: 'anime' })
 export class Anime extends BaseAnilistEntity {
-  @Index({ unique: true })
   @Column({ nullable: true })
   @Field((type) => Int, { nullable: true })
   idMal: number;
