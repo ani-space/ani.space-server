@@ -1,3 +1,4 @@
 export const LOGGER_CREATED = 'logger.created';
 export const GET_ANIME_SCALARS_TYPE = 'get.anime-scalars-type';
 export const ANIME_CREATED_SCALARS = 'anime-scalars.created';
+export const SAVE_ANIME_OBJECT_TYPE = 'save.anime-objects-type';
