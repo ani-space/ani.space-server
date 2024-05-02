@@ -1,5 +1,11 @@
+import { Anime } from '~/models';
+
 export interface IAnilistService {
-  handleSaveAnimeObjectsType(page?: number): Promise<void>;
+  handleSaveAnimeCharacterConnectionType(
+    page: number | undefined,
+    chapterNumber: number | undefined,
+    anime: Anime,
+  ): Promise<void>;
 
   handleSaveAnimeBasicInfo(page?: number): Promise<void>;
 }

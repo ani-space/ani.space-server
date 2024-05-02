@@ -5,6 +5,16 @@ import { IAnimeRepository } from '~/contracts/repositories';
 import { IAnimeService } from '~/contracts/services';
 import { Anime } from '~/models';
 import { LOGGER_CREATED } from '../common/constants/index';
+import { IPaginateResult } from '../contracts/dtos/paginate-result.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import {
+  AnimeCoverImage,
+  AnimeDescription,
+  AnimeSynonyms,
+  AnimeTitle,
+  AnimeTrailer,
+} from '../models/sub-models/anime-sub-models';
 
 @Injectable()
 export class AnimeService implements IAnimeService {
@@ -12,6 +22,11 @@ export class AnimeService implements IAnimeService {
 
   constructor(
     @Inject(IAnimeRepository) private readonly animeRepo: IAnimeRepository,
+    @InjectRepository(AnimeTitle) private readonly animeTitleRepo: Repository<AnimeTitle>,
+    @InjectRepository(AnimeSynonyms) private readonly animeSynonymsRepo: Repository<AnimeSynonyms>,
+    @InjectRepository(AnimeCoverImage) private readonly animeCoverImageRepo: Repository<AnimeCoverImage>,
+    @InjectRepository(AnimeTrailer) private readonly animeTrailerRepo: Repository<AnimeTrailer>,
+    @InjectRepository(AnimeDescription) private readonly animeDescRepo: Repository<AnimeDescription>,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -19,15 +34,77 @@ export class AnimeService implements IAnimeService {
     try {
       return await this.animeRepo.save(anime);
     } catch (error) {
-      this.logger.error(error?.message);
+      return this.handleServiceErrors(error, anime, 'AnimeService.saveAnime');
+    }
+  }
 
-      this.eventEmitter.emit(LOGGER_CREATED, {
-        requestObject: JSON.stringify(anime),
-        errorMessage: JSON.stringify(error),
-        tracePath: `AnimeService.createNewAnime`,
-      } as CreateLoggerDto);
+  public async saveAnimeDesc(
+    animeDesc: Partial<AnimeDescription>,
+  ): Promise<(Partial<AnimeDescription> & AnimeDescription) | null> {
+    try {
+      return this.animeDescRepo.save(animeDesc);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        animeDesc,
+        'AnimeService.saveAnimeDesc',
+      );
+    }
+  }
 
-      return null;
+  public async saveAnimeTrailer(
+    animeTrailer: Partial<AnimeTrailer>,
+  ): Promise<(Partial<AnimeTrailer> & AnimeTrailer) | null> {
+    try {
+      return await this.animeTrailerRepo.save(animeTrailer);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        animeTrailer,
+        'AnimeService.saveAnimeTrailer',
+      );
+    }
+  }
+
+  public async saveAnimeTitle(
+    animeTitle: Partial<AnimeTitle>,
+  ): Promise<(Partial<AnimeTitle> & AnimeTitle) | null> {
+    try {
+      return await this.animeTitleRepo.save(animeTitle);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        animeTitle,
+        'AnimeService.saveAnimeTitle',
+      );
+    }
+  }
+
+  public async saveAnimeSynonyms(
+    animeSynonyms: Partial<AnimeSynonyms>,
+  ): Promise<(Partial<AnimeSynonyms> & AnimeSynonyms) | null> {
+    try {
+      return await this.animeSynonymsRepo.save(animeSynonyms);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        animeSynonyms,
+        'AnimeService.saveAnimeSynonyms',
+      );
+    }
+  }
+
+  public async saveAnimeCoverImage(
+    animeCoverImage: Partial<AnimeCoverImage>,
+  ): Promise<(Partial<AnimeCoverImage> & AnimeCoverImage) | null> {
+    try {
+      return await this.animeCoverImageRepo.save(animeCoverImage);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        animeCoverImage,
+        'AnimeService.saveAnimeCoverImage',
+      );
     }
   }
 
@@ -37,15 +114,11 @@ export class AnimeService implements IAnimeService {
     try {
       return await this.animeRepo.saveMany(animeList);
     } catch (error) {
-      this.logger.error(error?.message);
-
-      this.eventEmitter.emit(LOGGER_CREATED, {
-        requestObject: JSON.stringify(animeList),
-        errorMessage: JSON.stringify(error),
-        tracePath: `AnimeService.createNewAnime`,
-      } as CreateLoggerDto);
-
-      return null;
+      return this.handleServiceErrors(
+        error,
+        animeList,
+        'AnimeService.createNewAnime',
+      );
     }
   }
 
@@ -68,5 +141,50 @@ export class AnimeService implements IAnimeService {
     }
 
     return anime;
+  }
+
+  public async getAnimeListV1(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<IPaginateResult<Anime>> {
+    const [result, count] = await this.animeRepo.findAndCount({
+      take: limit,
+      skip: (page - 1) * limit,
+      order: {
+        idAnilist: 'ASC',
+      },
+    });
+
+    const lastPage = Math.ceil(count / limit);
+    const animePage: IPaginateResult<Anime> = {
+      pageInfo: {
+        total: count,
+        perPage: limit,
+        currentPage: page,
+        lastPage,
+        hasNextPage: page < lastPage,
+      },
+      docs: result,
+    };
+
+    return animePage;
+  }
+
+  private handleServiceErrors(
+    error: any,
+    obj: any,
+    tracePath: string,
+    notes?: string,
+  ) {
+    this.logger.error(error?.message);
+
+    this.eventEmitter.emit(LOGGER_CREATED, {
+      requestObject: JSON.stringify(obj),
+      errorMessage: JSON.stringify(error),
+      notes,
+      tracePath: tracePath,
+    } as CreateLoggerDto);
+
+    return null;
   }
 }

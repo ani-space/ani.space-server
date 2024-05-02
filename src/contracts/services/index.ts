@@ -3,3 +3,7 @@ export * from './anilist-service.interface';
 export * from './anime-service.interface';
 export * from './anime-genre-service.interface';
 export * from './anime-tag-service.interface';
+
+export * from './character-service.interface';
+
+export * from './staff-service.interface';
