@@ -10,9 +10,15 @@ import {
 export interface ICharacterService {
   saveCharacter(character: Partial<Character>): Promise<Character | null>;
 
+  saveManyCharacter(
+    characters: Partial<Character>[],
+  ): Promise<Character[] | null>;
+
   saveManyCharacterEdge(
     characterEdges: Partial<CharacterEdge>[],
   ): Promise<(Partial<CharacterEdge> & CharacterEdge)[] | null>;
+
+  findOrCreateCharacter(characterParam: Partial<Character>): Promise<Character>;
 
   saveCharacterConnection(
     characterConnection: CharacterConnection,

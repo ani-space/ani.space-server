@@ -30,6 +30,37 @@ export class CharacterService implements ICharacterService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
+  public async findOrCreateCharacter(
+    characterParam: Partial<Character>,
+  ): Promise<Character> {
+    const character = await this.characterRepo.findByCondition({
+      where: [
+        { idAnilist: characterParam.idAnilist },
+        { id: characterParam?.id },
+      ],
+    });
+
+    if (character) {
+      return character;
+    }
+
+    return await this.characterRepo.save(characterParam);
+  }
+
+  public async saveManyCharacter(
+    characters: Partial<Character>[],
+  ): Promise<Character[] | null> {
+    try {
+      return this.characterRepo.saveMany(characters);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        characters,
+        'CharacterService.saveManyCharacter',
+      );
+    }
+  }
+
   public async saveCharacterImage(
     characterImage: Partial<CharacterImage>,
   ): Promise<(Partial<CharacterImage> & CharacterImage) | null> {

@@ -16,10 +16,7 @@ import { Anime, Character, CharacterEdge } from '~/models';
 import { FuzzyDateInt } from '~/models/sub-models/common-sub-models';
 import { SynchronizedAnimeEnum } from '../graphql/types/enums/synchronization-type.enum';
 import { Staff } from '../models/staff.model';
-import {
-  AnimeSynonyms,
-  AnimeTag
-} from '../models/sub-models/anime-sub-models';
+import { AnimeSynonyms, AnimeTag } from '../models/sub-models/anime-sub-models';
 import { AnimeGenres } from '../models/sub-models/anime-sub-models/anime-genres.model';
 import {
   CharacterImage,
@@ -31,13 +28,14 @@ import { StaffImage, StaffName } from '../models/sub-models/staff-sub-models';
 import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
 import { StaffRoleType } from '../models/sub-models/staff-sub-models/staff-role-type.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
+import { getCharacterList } from '../graphql/requests/queries/index';
 
 @Injectable()
 export class AnilistService implements IAnilistService {
   private readonly AnilistRateLimit = 1500;
   private readonly logger = new Logger(AnilistService.name);
 
-  constructor(  
+  constructor(
     @Inject(IAnimeGenreService) private readonly animeGenreService: IAnimeGenreService,
     @Inject(IAnimeTagService) private readonly animeTagService: IAnimeTagService,
     @Inject(IAnimeService) private readonly animeService: IAnimeService,
@@ -238,9 +236,12 @@ export class AnilistService implements IAnilistService {
 
         //modify title obj
         for (const aniRaw of animeListMappedRaw) {
-          if (!aniRaw.title) continue; 
+          if (!aniRaw.title) continue;
 
-          Object.assign(aniRaw.title, await this.animeService.saveAnimeTitle(aniRaw.title));
+          Object.assign(
+            aniRaw.title,
+            await this.animeService.saveAnimeTitle(aniRaw.title),
+          );
         }
 
         //modify description obj
@@ -317,6 +318,49 @@ export class AnilistService implements IAnilistService {
       // fetch and sync next page
       if (Page.pageInfo?.hasNextPage) {
         this.handleSaveAnimeBasicInfo(page + 1);
+      }
+    }, this.AnilistRateLimit);
+  }
+
+  @OnEvent(SynchronizedAnimeEnum.SAVE_CHARACTERS_TYPE)
+  public async handleSaveCharactersInfo(page: number = 1) {
+    const document = gql`
+    {
+      Page(page: ${page}, perPage: 15) {
+        pageInfo {
+          hasNextPage
+        }
+        ${getCharacterList}
+      }
+    }
+    `;
+
+    setTimeout(async () => {
+      //@ts-ignore
+      const { Page } = await this.gqlClient.request(document);
+      if (!Page) throw new GraphQLError('Page is null or empty');
+
+      const { characters } = Page;
+      if (Array.isArray(characters)) {
+        const charactersMappedRaw = await Promise.all(
+          characters.map(async (c) => {
+            return await this.handleMapCharacterModel(c);
+          }),
+        );
+
+        //save all characters per page
+        if (
+          await this.characterService.saveManyCharacter(charactersMappedRaw)
+        ) {
+          this.logger.log(
+            `Successfully saved page ${page} with ${characters.length} objects`,
+          );
+        }
+      }
+
+      //fetch and sync next page
+      if (Page.pageInfo?.hasNextPage) {
+        this.handleSaveCharactersInfo(page + 1);
       }
     }, this.AnilistRateLimit);
   }
@@ -490,7 +534,7 @@ export class AnilistService implements IAnilistService {
                   } as StaffRoleType;
                 })
               : null,
-            anime: characterEdge?.media
+            anime: characterEdge?.media,
           };
 
           // modify voiceActors
@@ -507,6 +551,13 @@ export class AnilistService implements IAnilistService {
 
   private async handleSaveCharacter(characterEdge: any) {
     const characterNode = characterEdge.node;
+    const characterRaw: Partial<Character> =
+      await this.handleMapCharacterModel(characterNode);
+
+    return await this.characterService.saveCharacter(characterRaw);
+  }
+
+  private async handleMapCharacterModel(characterNode: any) {
     const characterRaw: Partial<Character> = {
       idAnilist: characterNode?.id,
       name: {
@@ -589,7 +640,6 @@ export class AnilistService implements IAnilistService {
         await this.fuzzDateRepo.save(characterRaw.dateOfBirth),
       );
     }
-
-    return await this.characterService.saveCharacter(characterRaw);
+    return characterRaw;
   }
 }

@@ -177,28 +177,6 @@ type CharacterImage {
   medium: String
 }
 
-type CharacterEdge {
-  node: Character
-  role: CharacterRole
-  name: String
-  anime: [Anime!]
-}
-
-enum CharacterRole {
-  MAIN
-  SUPPORTING
-  BACKGROUND
-}
-
-type CharacterConnection {
-  id: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  edges: [CharacterEdge!]
-  nodes: [Character!]
-  pageInfo: PageInfo!
-}
-
 type FuzzyDateInt {
   id: String!
   createdAt: DateTime!
@@ -206,16 +184,6 @@ type FuzzyDateInt {
   year: Int
   month: Int
   day: Int
-}
-
-type Character {
-  name: CharacterName
-  image: CharacterImage
-  description: String
-  gender: String
-  dateOfBirth: FuzzyDateInt
-  age: String
-  bloodType: String
 }
 
 type StaffName {
@@ -299,6 +267,44 @@ type StaffRoleType {
   Used for grouping roles where multiple dubs exist for the same language. Either dubbing company name or language variant.
   """
   dubGroup: String!
+}
+
+type CharacterEdge {
+  node: Character
+  role: CharacterRole
+  name: String
+
+  """The voice actors of the character"""
+  voiceActors: [Staff!]
+
+  """The voice actors of the character with role date"""
+  voiceActorRoles: [StaffRoleType!]
+  anime: [Anime!]
+}
+
+enum CharacterRole {
+  MAIN
+  SUPPORTING
+  BACKGROUND
+}
+
+type CharacterConnection {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  edges: [CharacterEdge!]
+  nodes: [Character!]
+  pageInfo: PageInfo!
+}
+
+type Character {
+  name: CharacterName
+  image: CharacterImage
+  description: String
+  gender: String
+  dateOfBirth: FuzzyDateInt
+  age: String
+  bloodType: String
 }
 
 type AnimeEdge {
@@ -615,4 +621,6 @@ type Query {
 
 enum SynchronizedAnimeEnum {
   ANIME_SCALAR_TYPE
+  SAVE_ANIME_CHARACTERS_TYPE
+  SAVE_CHARACTERS_TYPE
 }
