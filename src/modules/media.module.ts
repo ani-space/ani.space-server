@@ -44,7 +44,10 @@ import {
   AnimeTrailer,
   AnimeDescription,
 } from '../models/sub-models/anime-sub-models';
-import { StaffImage } from '../models/sub-models/staff-sub-models';
+import {
+  StaffImage,
+  StaffPrimaryOccupation,
+} from '../models/sub-models/staff-sub-models';
 import { CharacterAlternativeSpoilers } from '../models/sub-models/character-sub-models/character-alternativeSpoiler.model';
 
 const animeRepoProvider: Provider = {
@@ -108,6 +111,7 @@ const staffServiceProvider: Provider = {
       StaffName,
       StaffAlternative,
       StaffYearActive,
+      StaffPrimaryOccupation,
       StaffImage,
     ]),
   ],

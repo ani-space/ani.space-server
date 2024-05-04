@@ -26,3 +26,40 @@ characters {
     bloodType
   }
 `;
+
+export const getStaffList = `
+staff {
+  id
+  name {
+    first
+    middle
+    last
+    full
+    native
+    alternative
+    userPreferred
+  }
+  languageV2
+  image {
+    large
+    medium
+  }
+  description(asHtml: true)
+  primaryOccupations
+  gender
+  dateOfBirth {
+    year
+    month
+    day
+  }
+  dateOfDeath {
+    year
+    month
+    day
+  }
+  age
+  yearsActive
+  homeTown
+  bloodType
+}
+`;
