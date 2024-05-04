@@ -3,6 +3,7 @@ import {
   StaffAlternative,
   StaffImage,
   StaffName,
+  StaffPrimaryOccupation,
   StaffYearActive,
 } from '~/models/sub-models/staff-sub-models';
 
@@ -13,9 +14,20 @@ export interface IStaffService {
     staffName: Partial<StaffName>,
   ): Promise<(Partial<StaffName> & StaffName) | null>;
 
-  saveStaffAlternative(
-    staffAlternative: Partial<StaffAlternative>,
-  ): Promise<(Partial<StaffAlternative> & StaffAlternative) | null>;
+  findStaffByIdAnilist(
+    idAnilist: number,
+    saveErrorNotFound?: boolean,
+  ): Promise<Staff | null>;
+
+  saveManyStaffAlternative(
+    staffAlternative: Partial<StaffAlternative>[],
+  ): Promise<(Partial<StaffAlternative> & StaffAlternative)[] | null>;
+
+  saveManyStaffPrimaryOccupation(
+    staffPrimaryOccupationList: Partial<StaffPrimaryOccupation>[],
+  ): Promise<
+    (Partial<StaffPrimaryOccupation> & StaffPrimaryOccupation)[] | null
+  >;
 
   saveStaffImage(
     staffImage: Partial<StaffImage>,

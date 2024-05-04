@@ -11,6 +11,7 @@ import {
   IAnimeService,
   IAnimeTagService,
   ICharacterService,
+  IStaffService,
 } from '~/contracts/services';
 import { Anime, Character, CharacterEdge } from '~/models';
 import { FuzzyDateInt } from '~/models/sub-models/common-sub-models';
@@ -28,7 +29,11 @@ import { StaffImage, StaffName } from '../models/sub-models/staff-sub-models';
 import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
 import { StaffRoleType } from '../models/sub-models/staff-sub-models/staff-role-type.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
-import { getCharacterList } from '../graphql/requests/queries/index';
+import {
+  getCharacterList,
+  getStaffList,
+} from '../graphql/requests/queries/index';
+import { StaffPrimaryOccupation } from '../models/sub-models/staff-sub-models/staff-primary-occupations.model';
 
 @Injectable()
 export class AnilistService implements IAnilistService {
@@ -40,9 +45,49 @@ export class AnilistService implements IAnilistService {
     @Inject(IAnimeTagService) private readonly animeTagService: IAnimeTagService,
     @Inject(IAnimeService) private readonly animeService: IAnimeService,
     @Inject(ICharacterService) private readonly characterService: ICharacterService,
+    @Inject(IStaffService) private readonly staffService: IStaffService,
     @InjectRepository(FuzzyDateInt) private readonly fuzzDateRepo: Repository<FuzzyDateInt>,
     @InjectGraphQLClient() private readonly gqlClient: GraphQLClient,
   ) {}
+
+  @OnEvent(SynchronizedAnimeEnum.SAVE_STAFFS_TYPE)
+  public async handleSaveStaffsInfo(page: number = 1) {
+    const document = gql`
+    {
+      Page(page: ${page}, perPage: 15) {
+        pageInfo {
+          hasNextPage
+        }
+        ${getStaffList}
+      }
+    }
+    `;
+
+    setTimeout(async () => {
+      //@ts-ignore
+      const { Page } = await this.gqlClient.request(document);
+      if (!Page) throw new GraphQLError('Page is null or empty');
+
+      const { staff } = Page;
+      if (Array.isArray(staff)) {
+        const staffListRaw: Partial<Staff>[] = await Promise.all(
+          staff.map(async (s) => this.handleMapStaffModel(s)),
+        );
+
+        // save all characters per page
+        if (await this.staffService.saveManyStaff(staffListRaw)) {
+          this.logger.log(
+            `Successfully saved page ${page} with ${staffListRaw.length} objects`,
+          );
+        }
+      }
+
+      // fetch and sync next page
+      if (Page.pageInfo?.hasNextPage) {
+        this.handleSaveStaffsInfo(page + 1);
+      }
+    }, this.AnilistRateLimit);
+  }
 
   @OnEvent(SynchronizedAnimeEnum.ANIME_SCALAR_TYPE)
   public async handleSaveAnimeBasicInfo(page: number = 1) {
@@ -642,5 +687,123 @@ export class AnilistService implements IAnilistService {
       );
     }
     return characterRaw;
+  }
+
+  private async handleMapStaffModel(s: any) {
+    const staffRaw: Partial<Staff> = {
+      idAnilist: s.id,
+      name: {
+        first: s.name?.first,
+        middle: s.name?.middle,
+        last: s.name?.last,
+        full: s.name?.full,
+        native: s.name?.native,
+        alternative: Array.isArray(s.name?.alternative)
+          ? s.name?.alternative.map((a: any) => {
+              return {
+                name: a,
+              } as StaffAlternative;
+            })
+          : null,
+        userPreferred: s.name?.userPreferred,
+      } as StaffName,
+      languageV2: s.languageV2,
+      image: {
+        large: s.image?.large,
+        medium: s.image?.medium,
+      } as StaffImage,
+      primaryOccupations: Array.isArray(s.primaryOccupations)
+        ? s.primaryOccupations.map((p: any) => {
+            return {
+              occupation: p,
+            } as StaffPrimaryOccupation;
+          })
+        : null,
+      description: s.description,
+      gender: s.gender,
+      dateOfBirth: {
+        year: s.dateOfBirth?.year,
+        month: s.dateOfBirth?.month,
+        day: s.dateOfBirth?.day,
+      } as FuzzyDateInt,
+      dateOfDeath: {
+        year: s.dateOfDeath?.year,
+        month: s.dateOfDeath?.month,
+        day: s.dateOfDeath?.day,
+      } as FuzzyDateInt,
+      age: s.age,
+      yearsActive: {
+        startYear: s?.yearsActive?.length > 0 ? s?.yearsActive[0] : null,
+        endYear: s?.yearsActive?.length > 1 ? s?.yearsActive[1] : null,
+      } as StaffYearActive,
+      homeTown: s.homeTown,
+      bloodType: s.bloodType,
+    };
+
+    // modify StaffName
+    if (staffRaw.name?.alternative) {
+      Object.assign(
+        staffRaw.name?.alternative,
+        await this.staffService.saveManyStaffAlternative(
+          staffRaw.name?.alternative,
+        ),
+      );
+    }
+    if (staffRaw.name) {
+      Object.assign(
+        staffRaw.name,
+        await this.staffService.saveStaffName(staffRaw.name),
+      );
+    }
+
+    // modify StaffImage
+    if (staffRaw.image) {
+      Object.assign(
+        staffRaw.image,
+        await this.staffService.saveStaffImage(staffRaw.image),
+      );
+    }
+
+    // modify primaryOccupations
+    if (staffRaw.primaryOccupations) {
+      Object.assign(
+        staffRaw.primaryOccupations,
+        await this.staffService.saveManyStaffPrimaryOccupation(
+          staffRaw.primaryOccupations,
+        ),
+      );
+    }
+
+    // modify dateOfBirth, dateOfDeath
+    if (
+      staffRaw.dateOfBirth?.year ||
+      staffRaw.dateOfBirth?.month ||
+      staffRaw.dateOfBirth?.day
+    ) {
+      Object.assign(
+        staffRaw.dateOfBirth,
+        await this.fuzzDateRepo.save(staffRaw.dateOfBirth),
+      );
+    }
+    if (
+      staffRaw.dateOfDeath?.year ||
+      staffRaw.dateOfDeath?.month ||
+      staffRaw.dateOfDeath?.day
+    ) {
+      Object.assign(
+        staffRaw.dateOfDeath,
+        await this.fuzzDateRepo.save(staffRaw.dateOfDeath),
+      );
+    }
+
+    // modify StaffYearActive
+    if (staffRaw.yearsActive) {
+      Object.assign(
+        staffRaw.yearsActive,
+        await this.staffService.saveStaffYearActive(staffRaw.yearsActive),
+      );
+    }
+
+    return staffRaw;
   }
 }

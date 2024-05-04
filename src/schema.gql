@@ -195,6 +195,7 @@ type StaffName {
   last: String
   full: String
   native: String
+  userPreferred: String
 }
 
 type StaffImage {
@@ -211,6 +212,13 @@ type StaffYearActive {
   updatedAt: DateTime!
   startYear: Int
   endYear: Int
+}
+
+type StaffPrimaryOccupation {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  occupation: String
 }
 
 type StaffEdge {
@@ -240,6 +248,7 @@ type Staff {
   gender: String
   dateOfBirth: FuzzyDateInt
   dateOfDeath: FuzzyDateInt
+  primaryOccupations: [StaffPrimaryOccupation!]
   age: Int
   yearsActive: StaffYearActive
   homeTown: String
@@ -623,4 +632,5 @@ enum SynchronizedAnimeEnum {
   ANIME_SCALAR_TYPE
   SAVE_ANIME_CHARACTERS_TYPE
   SAVE_CHARACTERS_TYPE
+  SAVE_STAFFS_TYPE
 }
