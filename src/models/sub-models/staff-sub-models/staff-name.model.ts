@@ -26,6 +26,10 @@ export class StaffName extends BaseEntity {
   @Column({ nullable: true })
   native?: string;
 
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  userPreferred?: string;
+
   @OneToMany(() => StaffAlternative, (alternative) => alternative.staffName)
   alternative?: StaffAlternative[];
 }
