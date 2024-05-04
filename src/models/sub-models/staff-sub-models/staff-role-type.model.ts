@@ -3,12 +3,19 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { Staff } from '~/models/staff.model';
 import { AnimeEdge } from '../../anime-edge.model';
 import { BaseEntity } from '~/models/base-models';
+import { CharacterEdge } from '~/models/character-edge.model';
 
 @Entity({ name: 'staffRoleTypes' })
 @ObjectType()
 export class StaffRoleType extends BaseEntity {
   @ManyToOne((type) => AnimeEdge, (animeEdge) => animeEdge.voiceActorRoles)
   animeEdge: AnimeEdge;
+
+  @ManyToOne(
+    (type) => CharacterEdge,
+    (characterEdge) => characterEdge.voiceActorRoles,
+  )
+  characterEdge: CharacterEdge;
 
   @Field((type) => Staff, {
     nullable: true,

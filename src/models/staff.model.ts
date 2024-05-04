@@ -1,11 +1,19 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { BaseAnilistEntity } from './base-models/base-anilist.model';
 import { CharacterConnection } from './sub-models/character-sub-models';
 import { FuzzyDateInt } from './sub-models/common-sub-models';
 import {
   StaffImage,
   StaffName,
+  StaffPrimaryOccupation,
   StaffYearActive,
 } from './sub-models/staff-sub-models';
 import { StaffConnection } from './sub-models/staff-sub-models/staff-connection.model';
@@ -47,6 +55,13 @@ export class Staff extends BaseAnilistEntity {
   @OneToOne(() => FuzzyDateInt, { nullable: true })
   @JoinColumn()
   dateOfDeath?: FuzzyDateInt;
+
+  @Field(() => [StaffPrimaryOccupation], { nullable: true })
+  @OneToMany(
+    () => StaffPrimaryOccupation,
+    (primaryOccupations) => primaryOccupations.staff,
+  )
+  primaryOccupations: StaffPrimaryOccupation[];
 
   @Field((type) => Int, { nullable: true })
   @Column({ type: 'int', nullable: true })
