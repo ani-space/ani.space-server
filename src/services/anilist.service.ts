@@ -565,6 +565,7 @@ export class AnilistService implements IAnilistService {
         middle: characterNode?.name?.middle,
         last: characterNode?.name?.last,
         full: characterNode?.name?.full,
+        native: characterNode?.name?.native,
         alternative: Array.isArray(characterNode?.name?.alternative)
           ? characterNode?.name?.alternative.map((a: string) => {
               return {
