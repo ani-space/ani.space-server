@@ -69,7 +69,8 @@ export class AnilistService implements IAnilistService {
     const anime = docs[0];
 
     setTimeout(async () => {
-      const document = gql`
+      try {
+        const document = gql`
         {
           Media(id: ${anime.idAnilist}) {
             relations {
@@ -91,125 +92,138 @@ export class AnilistService implements IAnilistService {
         }
       `;
 
-      // @ts-ignore
-      const { Media } = await this.gqlClient.request(document);
+        // @ts-ignore
+        const { Media } = await this.gqlClient.request(document);
 
-      if (!Media) throw new GraphQLError('Media is null or empty');
+        if (!Media) throw new GraphQLError('Media is null or empty');
 
-      const { relations } = Media;
-      let { edges, nodes } = relations;
+        const { relations } = Media;
+        let { edges, nodes } = relations;
 
-      // modify edges node
-      if (Array.isArray(edges)) {
-        edges = edges.filter((e) => e.node?.type === 'ANIME');
+        // modify edges node
+        if (Array.isArray(edges)) {
+          edges = edges.filter((e) => e.node?.type === 'ANIME');
 
-        for (const edge of edges) {
-          const animeNode = await this.animeService.findAnimeByIdAnilist(
-            edge.node?.id,
-            true,
-          );
+          for (const edge of edges) {
+            const animeNode = await this.animeService.findAnimeByIdAnilist(
+              edge.node?.id,
+              true,
+            );
 
-          if (animeNode) {
-            Object.assign(edge.node, animeNode);
-          } else {
-            this.logger.warn(`Missing anime with id: ${edge.node?.id}`);
-            const newAnimeNode = await this.handleSaveAnimeById(edge.node?.id);
-
-            if (newAnimeNode) {
-              Object.assign(edge.node, newAnimeNode);
+            if (animeNode) {
+              Object.assign(edge.node, animeNode);
             } else {
-              this.logger.error(`Not found anime with id: ${edge.node?.id}`);
+              this.logger.warn(`Missing anime with id: ${edge.node?.id}`);
+              const newAnimeNode = await this.handleSaveAnimeById(
+                edge.node?.id,
+              );
 
-              this.eventEmitter.emit(LOGGER_CREATED, {
-                requestObject: JSON.stringify(edge.node?.id),
-                errorMessage: JSON.stringify(
-                  `Not found anime with id: ${edge.node?.id}`,
-                ),
-                tracePath: `AnilistService.handleSaveRelationAnime`,
-              } as CreateLoggerDto);
+              if (newAnimeNode) {
+                Object.assign(edge.node, newAnimeNode);
+              } else {
+                this.logger.error(`Not found anime with id: ${edge.node?.id}`);
+
+                this.eventEmitter.emit(LOGGER_CREATED, {
+                  requestObject: JSON.stringify(edge.node?.id),
+                  errorMessage: JSON.stringify(
+                    `Not found anime with id: ${edge.node?.id}`,
+                  ),
+                  tracePath: `AnilistService.handleSaveRelationAnime`,
+                } as CreateLoggerDto);
+              }
             }
           }
         }
-      }
 
-      // modify nodes
-      if (Array.isArray(nodes)) {
-        nodes = nodes.filter((n) => n.type === 'ANIME');
+        // modify nodes
+        if (Array.isArray(nodes)) {
+          nodes = nodes.filter((n) => n.type === 'ANIME');
 
-        for (const node of nodes) {
-          const animeNode = await this.animeService.findAnimeByIdAnilist(
-            node?.id,
-            true,
-          );
+          for (const node of nodes) {
+            const animeNode = await this.animeService.findAnimeByIdAnilist(
+              node?.id,
+              true,
+            );
 
-          if (animeNode) {
-            Object.assign(node, animeNode);
-          } else {
-            this.logger.warn(`Missing anime with id: ${node?.id}`);
-
-            const newAnimeNode = await this.handleSaveAnimeById(node?.id);
-
-            if (newAnimeNode) {
-              Object.assign(node, newAnimeNode);
+            if (animeNode) {
+              Object.assign(node, animeNode);
             } else {
-              this.logger.error(`Not found anime with id: ${node?.id}`);
+              this.logger.warn(`Missing anime with id: ${node?.id}`);
 
-              this.eventEmitter.emit(LOGGER_CREATED, {
-                requestObject: JSON.stringify(node?.id),
-                errorMessage: JSON.stringify(
-                  `Not found anime with id: ${node?.id}`,
-                ),
-                tracePath: `AnilistService.handleSaveRelationAnime`,
-              } as CreateLoggerDto);
+              const newAnimeNode = await this.handleSaveAnimeById(node?.id);
+
+              if (newAnimeNode) {
+                Object.assign(node, newAnimeNode);
+              } else {
+                this.logger.error(`Not found anime with id: ${node?.id}`);
+
+                this.eventEmitter.emit(LOGGER_CREATED, {
+                  requestObject: JSON.stringify(node?.id),
+                  errorMessage: JSON.stringify(
+                    `Not found anime with id: ${node?.id}`,
+                  ),
+                  tracePath: `AnilistService.handleSaveRelationAnime`,
+                } as CreateLoggerDto);
+              }
             }
           }
         }
-      }
 
-      const animeConnectionRaw: Partial<AnimeConnection> = {
-        edges: Array.isArray(edges)
-          ? edges.map((e) => {
-              return {
-                node: e.node,
-                idAnilist: e.id,
-                relationType: e.relationType,
-                isMainStudio: e.isMainStudio,
-              } as AnimeEdge;
-            })
-          : [],
-        nodes: Array.isArray(nodes)
-          ? nodes.map((n) => {
-              return n as Anime;
-            })
-          : [],
-      };
+        const animeConnectionRaw: Partial<AnimeConnection> = {
+          edges: Array.isArray(edges)
+            ? edges.map((e) => {
+                return {
+                  node: e.node,
+                  idAnilist: e.id,
+                  relationType: e.relationType,
+                  isMainStudio: e.isMainStudio,
+                } as AnimeEdge;
+              })
+            : [],
+          nodes: Array.isArray(nodes)
+            ? nodes.map((n) => {
+                return n as Anime;
+              })
+            : [],
+        };
 
-      // modify edges
-      if (
-        Array.isArray(animeConnectionRaw.edges) &&
-        animeConnectionRaw.edges.length > 0
-      ) {
-        Object.assign(
-          animeConnectionRaw.edges,
-          await this.animeService.saveManyAnimeEdge(animeConnectionRaw.edges),
-        );
-      }
-
-      const savedAnimeConnection =
-        await this.animeService.saveAnimeConnection(animeConnectionRaw);
-
-      if (savedAnimeConnection) {
-        anime.relations = { ...savedAnimeConnection };
-
-        if (await this.animeService.saveAnime(anime)) {
-          this.logger.log(
-            `Successfully saved anime ${anime.idAnilist} with ${savedAnimeConnection.id}`,
+        // modify edges
+        if (
+          Array.isArray(animeConnectionRaw.edges) &&
+          animeConnectionRaw.edges.length > 0
+        ) {
+          Object.assign(
+            animeConnectionRaw.edges,
+            await this.animeService.saveManyAnimeEdge(animeConnectionRaw.edges),
           );
         }
-      }
 
-      if (pageInfo.hasNextPage) {
-        await this.handleSaveRelationAnime(page + 1);
+        const savedAnimeConnection =
+          await this.animeService.saveAnimeConnection(animeConnectionRaw);
+
+        if (savedAnimeConnection) {
+          anime.relations = { ...savedAnimeConnection };
+
+          if (await this.animeService.saveAnime(anime)) {
+            this.logger.log(
+              `Successfully saved anime ${anime.idAnilist} with ${savedAnimeConnection.id}`,
+            );
+          }
+        }
+
+        if (pageInfo.hasNextPage) {
+          await this.handleSaveRelationAnime(page + 1);
+        }
+      } catch (error) {
+        this.eventEmitter.emit(LOGGER_CREATED, {
+          requestObject: JSON.stringify(anime),
+          errorMessage: JSON.stringify(error),
+          notes: `Fetch error page: ${page}`,
+          tracePath: `AnilistService.handleSaveRelationAnime`,
+        } as CreateLoggerDto);
+
+        // fetch and sync next page
+        this.handleSaveRelationAnime(page + 1);
       }
     }, this.AnilistRateLimit);
   }
@@ -228,26 +242,38 @@ export class AnilistService implements IAnilistService {
     `;
 
     setTimeout(async () => {
-      //@ts-ignore
-      const { Page } = await this.gqlClient.request(document);
-      if (!Page) throw new GraphQLError('Page is null or empty');
+      try {
+        //@ts-ignore
+        const { Page } = await this.gqlClient.request(document);
+        if (!Page) throw new GraphQLError('Page is null or empty');
 
-      const { staff } = Page;
-      if (Array.isArray(staff)) {
-        const staffListRaw: Partial<Staff>[] = await Promise.all(
-          staff.map(async (s) => this.handleMapStaffModel(s)),
-        );
-
-        // save all characters per page
-        if (await this.staffService.saveManyStaff(staffListRaw)) {
-          this.logger.log(
-            `Successfully saved page ${page} with ${staffListRaw.length} objects`,
+        const { staff } = Page;
+        if (Array.isArray(staff)) {
+          const staffListRaw: Partial<Staff>[] = await Promise.all(
+            staff.map(async (s) => this.handleMapStaffModel(s)),
           );
-        }
-      }
 
-      // fetch and sync next page
-      if (Page.pageInfo?.hasNextPage) {
+          // save all characters per page
+          if (await this.staffService.saveManyStaff(staffListRaw)) {
+            this.logger.log(
+              `Successfully saved page ${page} with ${staffListRaw.length} objects`,
+            );
+          }
+        }
+
+        // fetch and sync next page
+        if (Page.pageInfo?.hasNextPage) {
+          this.handleSaveStaffsInfo(page + 1);
+        }
+      } catch (error) {
+        this.eventEmitter.emit(LOGGER_CREATED, {
+          requestObject: JSON.stringify(page),
+          errorMessage: JSON.stringify(error),
+          notes: `Fetch error page: ${page}`,
+          tracePath: `AnilistService.handleSaveStaffsInfo`,
+        } as CreateLoggerDto);
+
+        // fetch and sync next page
         this.handleSaveStaffsInfo(page + 1);
       }
     }, this.AnilistRateLimit);
