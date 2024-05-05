@@ -80,7 +80,7 @@ export class AnilistService implements IAnilistService {
                   type
                 }
                 id
-                relationType
+                relationType(version: 2)
                 isMainStudio
               }
               nodes {
@@ -206,7 +206,7 @@ export class AnilistService implements IAnilistService {
 
           if (await this.animeService.saveAnime(anime)) {
             this.logger.log(
-              `Successfully saved anime ${anime.idAnilist} with ${savedAnimeConnection.id}`,
+              `Successfully saved anime ${anime.idAnilist} page: ${page}`,
             );
           }
         }
@@ -225,7 +225,7 @@ export class AnilistService implements IAnilistService {
         // fetch and sync next page
         this.handleSaveRelationAnime(page + 1);
       }
-    }, this.AnilistRateLimit);
+    }, 2500);
   }
 
   @OnEvent(SynchronizedAnimeEnum.SAVE_STAFFS_TYPE)

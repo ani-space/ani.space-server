@@ -2,12 +2,10 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import {
   Column,
   Entity,
-  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
-  OneToOne
+  OneToMany
 } from 'typeorm';
 import { Anime } from './anime.model';
 import { BaseAnilistEntity } from './base-models/base-anilist.model';
@@ -25,8 +23,7 @@ export class AnimeEdge extends BaseAnilistEntity {
   animeConnection: AnimeConnection;
 
   @Field((type) => Anime, { nullable: true })
-  @OneToOne((type) => Anime, { nullable: true })
-  @JoinColumn()
+  @ManyToOne(() => Anime)
   node?: Anime;
 
   @Field((type) => AnimeRelation, {
