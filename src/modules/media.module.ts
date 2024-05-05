@@ -26,7 +26,7 @@ import {
 } from '~/services';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Anime, Character, CharacterEdge, Staff } from '~/models';
-import { AnimeGenres, AnimeTag } from '~/models/sub-models/anime-sub-models';
+import { AnimeConnection, AnimeGenres, AnimeTag } from '~/models/sub-models/anime-sub-models';
 import { CharacterService } from '~/services/character.service';
 import { CharacterConnection } from '~/models/sub-models/character-sub-models';
 import { CharacterAlternative } from '../models/sub-models/character-sub-models/character-alternative.model';
@@ -49,6 +49,7 @@ import {
   StaffPrimaryOccupation,
 } from '../models/sub-models/staff-sub-models';
 import { CharacterAlternativeSpoilers } from '../models/sub-models/character-sub-models/character-alternativeSpoiler.model';
+import { AnimeEdge } from '~/models/anime-edge.model';
 
 const animeRepoProvider: Provider = {
   provide: IAnimeRepository,
@@ -91,6 +92,7 @@ const staffServiceProvider: Provider = {
   imports: [
     TypeOrmModule.forFeature([
       Anime,
+      AnimeEdge,
       AnimeGenres,
       AnimeTag,
       AnimeTitle,
@@ -98,6 +100,7 @@ const staffServiceProvider: Provider = {
       AnimeCoverImage,
       AnimeTrailer,
       AnimeDescription,
+      AnimeConnection,
 
       Character,
       CharacterEdge,

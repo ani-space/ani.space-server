@@ -1,10 +1,11 @@
 import { InjectGraphQLClient } from '@golevelup/nestjs-graphql-request';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GraphQLError } from 'graphql';
 import { GraphQLClient, gql } from 'graphql-request';
 import { Repository } from 'typeorm';
+import { CreateLoggerDto } from '~/common/dtos';
 import {
   IAnilistService,
   IAnimeGenreService,
@@ -14,10 +15,25 @@ import {
   IStaffService,
 } from '~/contracts/services';
 import { Anime, Character, CharacterEdge } from '~/models';
+import { AnimeEdge } from '~/models/anime-edge.model';
 import { FuzzyDateInt } from '~/models/sub-models/common-sub-models';
+import { LOGGER_CREATED } from '../common/constants/index';
+import {
+  getAnime,
+  getCharacterList,
+  getStaffList,
+} from '../graphql/requests/queries/index';
 import { SynchronizedAnimeEnum } from '../graphql/types/enums/synchronization-type.enum';
 import { Staff } from '../models/staff.model';
-import { AnimeSynonyms, AnimeTag } from '../models/sub-models/anime-sub-models';
+import {
+  AnimeConnection,
+  AnimeCoverImage,
+  AnimeDescription,
+  AnimeSynonyms,
+  AnimeTag,
+  AnimeTitle,
+  AnimeTrailer,
+} from '../models/sub-models/anime-sub-models';
 import { AnimeGenres } from '../models/sub-models/anime-sub-models/anime-genres.model';
 import {
   CharacterImage,
@@ -27,13 +43,9 @@ import { CharacterAlternative } from '../models/sub-models/character-sub-models/
 import { CharacterAlternativeSpoilers } from '../models/sub-models/character-sub-models/character-alternativeSpoiler.model';
 import { StaffImage, StaffName } from '../models/sub-models/staff-sub-models';
 import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
+import { StaffPrimaryOccupation } from '../models/sub-models/staff-sub-models/staff-primary-occupations.model';
 import { StaffRoleType } from '../models/sub-models/staff-sub-models/staff-role-type.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
-import {
-  getCharacterList,
-  getStaffList,
-} from '../graphql/requests/queries/index';
-import { StaffPrimaryOccupation } from '../models/sub-models/staff-sub-models/staff-primary-occupations.model';
 
 @Injectable()
 export class AnilistService implements IAnilistService {
@@ -48,7 +60,159 @@ export class AnilistService implements IAnilistService {
     @Inject(IStaffService) private readonly staffService: IStaffService,
     @InjectRepository(FuzzyDateInt) private readonly fuzzDateRepo: Repository<FuzzyDateInt>,
     @InjectGraphQLClient() private readonly gqlClient: GraphQLClient,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  @OnEvent(SynchronizedAnimeEnum.SAVE_ANIME_RELATIONS_TYPE)
+  public async handleSaveRelationAnime(page: number = 1) {
+    const { docs, pageInfo } = await this.animeService.getAnimeListV1(page, 1);
+    const anime = docs[0];
+
+    setTimeout(async () => {
+      const document = gql`
+        {
+          Media(id: ${anime.idAnilist}) {
+            relations {
+              edges {
+                node {
+                  id
+                  type
+                }
+                id
+                relationType
+                isMainStudio
+              }
+              nodes {
+                id
+                type
+              }
+            }
+          }
+        }
+      `;
+
+      // @ts-ignore
+      const { Media } = await this.gqlClient.request(document);
+
+      if (!Media) throw new GraphQLError('Media is null or empty');
+
+      const { relations } = Media;
+      let { edges, nodes } = relations;
+
+      // modify edges node
+      if (Array.isArray(edges)) {
+        edges = edges.filter((e) => e.node?.type === 'ANIME');
+
+        for (const edge of edges) {
+          const animeNode = await this.animeService.findAnimeByIdAnilist(
+            edge.node?.id,
+            true,
+          );
+
+          if (animeNode) {
+            Object.assign(edge.node, animeNode);
+          } else {
+            this.logger.warn(`Missing anime with id: ${edge.node?.id}`);
+            const newAnimeNode = await this.handleSaveAnimeById(edge.node?.id);
+
+            if (newAnimeNode) {
+              Object.assign(edge.node, newAnimeNode);
+            } else {
+              this.logger.error(`Not found anime with id: ${edge.node?.id}`);
+
+              this.eventEmitter.emit(LOGGER_CREATED, {
+                requestObject: JSON.stringify(edge.node?.id),
+                errorMessage: JSON.stringify(
+                  `Not found anime with id: ${edge.node?.id}`,
+                ),
+                tracePath: `AnilistService.handleSaveRelationAnime`,
+              } as CreateLoggerDto);
+            }
+          }
+        }
+      }
+
+      // modify nodes
+      if (Array.isArray(nodes)) {
+        nodes = nodes.filter((n) => n.type === 'ANIME');
+
+        for (const node of nodes) {
+          const animeNode = await this.animeService.findAnimeByIdAnilist(
+            node?.id,
+            true,
+          );
+
+          if (animeNode) {
+            Object.assign(node, animeNode);
+          } else {
+            this.logger.warn(`Missing anime with id: ${node?.id}`);
+
+            const newAnimeNode = await this.handleSaveAnimeById(node?.id);
+
+            if (newAnimeNode) {
+              Object.assign(node, newAnimeNode);
+            } else {
+              this.logger.error(`Not found anime with id: ${node?.id}`);
+
+              this.eventEmitter.emit(LOGGER_CREATED, {
+                requestObject: JSON.stringify(node?.id),
+                errorMessage: JSON.stringify(
+                  `Not found anime with id: ${node?.id}`,
+                ),
+                tracePath: `AnilistService.handleSaveRelationAnime`,
+              } as CreateLoggerDto);
+            }
+          }
+        }
+      }
+
+      const animeConnectionRaw: Partial<AnimeConnection> = {
+        edges: Array.isArray(edges)
+          ? edges.map((e) => {
+              return {
+                node: e.node,
+                idAnilist: e.id,
+                relationType: e.relationType,
+                isMainStudio: e.isMainStudio,
+              } as AnimeEdge;
+            })
+          : [],
+        nodes: Array.isArray(nodes)
+          ? nodes.map((n) => {
+              return n as Anime;
+            })
+          : [],
+      };
+
+      // modify edges
+      if (
+        Array.isArray(animeConnectionRaw.edges) &&
+        animeConnectionRaw.edges.length > 0
+      ) {
+        Object.assign(
+          animeConnectionRaw.edges,
+          await this.animeService.saveManyAnimeEdge(animeConnectionRaw.edges),
+        );
+      }
+
+      const savedAnimeConnection =
+        await this.animeService.saveAnimeConnection(animeConnectionRaw);
+
+      if (savedAnimeConnection) {
+        anime.relations = { ...savedAnimeConnection };
+
+        if (await this.animeService.saveAnime(anime)) {
+          this.logger.log(
+            `Successfully saved anime ${anime.idAnilist} with ${savedAnimeConnection.id}`,
+          );
+        }
+      }
+
+      if (pageInfo.hasNextPage) {
+        await this.handleSaveRelationAnime(page + 1);
+      }
+    }, this.AnilistRateLimit);
+  }
 
   @OnEvent(SynchronizedAnimeEnum.SAVE_STAFFS_TYPE)
   public async handleSaveStaffsInfo(page: number = 1) {
@@ -265,7 +429,7 @@ export class AnilistService implements IAnilistService {
           }
         }
 
-        //modify tag obj
+        // modify tag obj
         for (const aniRaw of animeListMappedRaw) {
           if (!Array.isArray(aniRaw.tags)) {
             continue;
@@ -279,7 +443,7 @@ export class AnilistService implements IAnilistService {
           }
         }
 
-        //modify title obj
+        // modify title obj
         for (const aniRaw of animeListMappedRaw) {
           if (!aniRaw.title) continue;
 
@@ -289,7 +453,7 @@ export class AnilistService implements IAnilistService {
           );
         }
 
-        //modify description obj
+        // modify description obj
         for (const aniRaw of animeListMappedRaw) {
           if (!aniRaw.description) continue;
 
@@ -299,7 +463,7 @@ export class AnilistService implements IAnilistService {
           );
         }
 
-        //modify startDate & endDate obj
+        // modify startDate & endDate obj
         for (const aniRaw of animeListMappedRaw) {
           if (aniRaw.startDate) {
             const startDateObj = await this.fuzzDateRepo.save(aniRaw.startDate);
@@ -312,7 +476,7 @@ export class AnilistService implements IAnilistService {
           }
         }
 
-        //modify trailer obj
+        // modify trailer obj
         for (const aniRaw of animeListMappedRaw) {
           if (
             !aniRaw.trailer ||
@@ -328,7 +492,7 @@ export class AnilistService implements IAnilistService {
           );
         }
 
-        //modify coverImage obj
+        // modify coverImage obj
         for (const aniRaw of animeListMappedRaw) {
           if (!aniRaw.coverImage) continue;
 
@@ -338,7 +502,7 @@ export class AnilistService implements IAnilistService {
           );
         }
 
-        //modify synonyms obj
+        // modify synonyms obj
         for (const aniRaw of animeListMappedRaw) {
           if (!Array.isArray(aniRaw.synonyms)) {
             continue;
@@ -592,6 +756,182 @@ export class AnilistService implements IAnilistService {
         this.handleSaveAnimeCharacterConnectionType(page + 1, 1);
       }
     }, this.AnilistRateLimit);
+  }
+
+  private async handleSaveAnimeById(anilistId: number) {
+    const document = gql`
+    {
+      Media(id: ${anilistId}) {
+        ${getAnime}
+      }
+    }
+    `;
+
+    // sleep 1s because rate limit
+    await new Promise((r) => setTimeout(r, 1000));
+
+    // @ts-ignore
+    const { Media } = await this.gqlClient.request(document);
+
+    if (!Media) {
+      return null;
+    }
+
+    return await this.handleMapAnimeModel(Media);
+  }
+
+  private async handleMapAnimeModel(a: any) {
+    const aniRaw: Partial<Anime> = {
+      idAnilist: a.id,
+      idMal: a.idMal,
+      isAdult: a.isAdult,
+      title: {
+        romaji: a.title?.romaji,
+        english: a.title?.english,
+        userPreferred: a.title?.userPreferred,
+        native: a.title?.native,
+      } as AnimeTitle,
+      genres: Array.isArray(a.genres)
+        ? a.genres.map((g: any) => {
+            return {
+              genre: g,
+            } as AnimeGenres;
+          })
+        : null,
+      tags: Array.isArray(a.tags)
+        ? a.tags.map((t: any) => {
+            return {
+              idAnilist: t.id,
+              name: t.name,
+              descriptionEn: t.description,
+              category: t.category,
+              rank: t.rank,
+              isGeneralSpoiler: t.isGeneralSpoiler,
+              isMediaSpoiler: t.isMediaSpoiler,
+              isAdult: t.isAdult,
+            } as AnimeTag;
+          })
+        : null,
+      synonyms: Array.isArray(a.synonyms)
+        ? a.synonyms.map((s: any) => {
+            return {
+              synonym: s,
+            } as AnimeSynonyms;
+          })
+        : null,
+      format: a.format,
+      status: a.status,
+      description: {
+        english: a.description,
+      } as AnimeDescription,
+      startDate: {
+        year: a.startDate?.year,
+        month: a.startDate?.month,
+        day: a.startDate?.day,
+      } as FuzzyDateInt,
+      endDate: {
+        year: a.endDate?.year,
+        month: a.endDate?.month,
+        day: a.endDate?.day,
+      } as FuzzyDateInt,
+      season: a.season,
+      seasonYear: a.seasonYear,
+      seasonInt: a.seasonInt,
+      episodes: a.episodes,
+      duration: a.duration,
+      countryOfOrigin: a.countryOfOrigin,
+      isLicensed: a.isLicensed,
+      source: a.source,
+      hashtag: a.hashtag,
+      trailer: {
+        _id: a.trailer?.id,
+        site: a.trailer?.site,
+        thumbnail: a.trailer?.thumbnail,
+      } as AnimeTrailer,
+      coverImage: {
+        extraLarge: a.coverImage?.extraLarge,
+        large: a.coverImage?.large,
+        medium: a.coverImage?.medium,
+        color: a.coverImage?.color,
+      } as AnimeCoverImage,
+      bannerImage: a.bannerImage,
+      averageScore: a.averageScore,
+      meanScore: a.meanScore,
+      popularity: a.popularity,
+    };
+
+    // modify genre obj
+    if (Array.isArray(aniRaw.genres)) {
+      for (let i = 0; i < aniRaw.genres.length; i++) {
+        const animeGenreObj =
+          await this.animeGenreService.findOrCreateAnimeGenre({
+            genre: aniRaw.genres[i].genre,
+          });
+        Object.assign(aniRaw.genres[i], animeGenreObj);
+      }
+    }
+
+    // modify anime title
+    if (aniRaw.title) {
+      Object.assign(
+        aniRaw.title,
+        await this.animeService.saveAnimeTitle(aniRaw.title),
+      );
+    }
+
+    // modify description obj
+    if (aniRaw.description) {
+      Object.assign(
+        aniRaw.description,
+        await this.animeService.saveAnimeDesc(aniRaw.description),
+      );
+    }
+
+    // modify startDate & endDate obj
+    if (aniRaw.startDate) {
+      Object.assign(
+        aniRaw.startDate,
+        await this.fuzzDateRepo.save(aniRaw.startDate),
+      );
+    }
+    if (aniRaw.endDate) {
+      Object.assign(
+        aniRaw.endDate,
+        await this.fuzzDateRepo.save(aniRaw.endDate),
+      );
+    }
+
+    // modify trailer obj
+    if (
+      aniRaw.trailer?._id ||
+      aniRaw.trailer?.site ||
+      aniRaw.trailer?.thumbnail
+    ) {
+      Object.assign(
+        aniRaw.trailer,
+        await this.animeService.saveAnimeTrailer(aniRaw.trailer),
+      );
+    }
+
+    // modify coverImage obj
+    if (aniRaw.coverImage) {
+      Object.assign(
+        aniRaw.coverImage,
+        await this.animeService.saveAnimeCoverImage(aniRaw.coverImage),
+      );
+    }
+
+    // modify synonyms obj
+    if (Array.isArray(aniRaw.synonyms)) {
+      for (let i = 0; i < aniRaw.synonyms.length; i++) {
+        Object.assign(
+          aniRaw.synonyms[i],
+          await this.animeService.saveAnimeSynonyms(aniRaw.synonyms[i]),
+        );
+      }
+    }
+
+    return await this.animeService.saveAnime(aniRaw);
   }
 
   private async handleSaveCharacter(characterEdge: any) {

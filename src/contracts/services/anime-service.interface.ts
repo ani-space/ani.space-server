@@ -1,6 +1,7 @@
-import { Anime } from '~/models';
+import { Anime, AnimeEdge } from '~/models';
 import { IPaginateResult } from '../dtos';
 import {
+  AnimeConnection,
   AnimeCoverImage,
   AnimeDescription,
   AnimeSynonyms,
@@ -23,9 +24,17 @@ export interface IAnimeService {
     limit?: number,
   ): Promise<IPaginateResult<Anime>>;
 
+  saveAnimeConnection(
+    animeConnection: Partial<AnimeConnection>,
+  ): Promise<Partial<AnimeConnection> & AnimeConnection> | null;
+
   saveAnimeTitle(
     animeTitle: Partial<AnimeTitle>,
   ): Promise<(Partial<AnimeTitle> & AnimeTitle) | null>;
+
+  saveManyAnimeEdge(
+    animeEdgeList: Partial<AnimeEdge>[],
+  ): Promise<(Partial<AnimeEdge> & AnimeEdge)[] | null>;
 
   saveAnimeSynonyms(
     animeSynonyms: Partial<AnimeSynonyms>,
