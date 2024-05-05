@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { BaseAnilistEntity } from './base-models/base-anilist.model';
 import { Staff } from './staff.model';
 import { StaffConnection } from './sub-models/staff-sub-models/staff-connection.model';
@@ -11,8 +11,7 @@ export class StaffEdge extends BaseAnilistEntity {
   staffConnection: StaffConnection;
 
   @Field((type) => Staff, { nullable: true })
-  @OneToOne((type) => Staff, { nullable: true })
-  @JoinColumn()
+  @ManyToOne(() => Staff)
   node?: Staff;
 
   @Field({

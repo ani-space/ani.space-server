@@ -2,19 +2,17 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import {
   Column,
   Entity,
-  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
-  OneToOne,
+  OneToMany
 } from 'typeorm';
 import { Anime } from './anime.model';
 import { BaseAnilistEntity } from './base-models/base-anilist.model';
 import { Character } from './character.model';
+import { Staff } from './staff.model';
 import { CharacterRole } from './sub-models/character-sub-models';
 import { CharacterConnection } from './sub-models/character-sub-models/character-connection.model';
-import { Staff } from './staff.model';
 import { StaffRoleType } from './sub-models/staff-sub-models/staff-role-type.model';
 
 @ObjectType()
@@ -27,8 +25,7 @@ export class CharacterEdge extends BaseAnilistEntity {
   characterConnection: CharacterConnection;
 
   @Field((type) => Character, { nullable: true })
-  @OneToOne((type) => Character, { nullable: true })
-  @JoinColumn()
+  @ManyToOne(() => Character)
   node?: Character;
 
   @Field((type) => CharacterRole, { nullable: true })

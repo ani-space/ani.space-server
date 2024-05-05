@@ -6,6 +6,7 @@ import {
   StaffPrimaryOccupation,
   StaffYearActive,
 } from '~/models/sub-models/staff-sub-models';
+import { StaffRoleType } from '~/models/sub-models/staff-sub-models/staff-role-type.model';
 
 export interface IStaffService {
   saveStaff(staff: Partial<Staff>): Promise<(Partial<Staff> & Staff) | null>;
@@ -18,6 +19,10 @@ export interface IStaffService {
     idAnilist: number,
     saveErrorNotFound?: boolean,
   ): Promise<Staff | null>;
+
+  saveStaffRoleType(
+    staffRoleTypeParam: Partial<StaffRoleType>,
+  ): Promise<(Partial<StaffRoleType> & StaffRoleType) | null>;
 
   saveManyStaffAlternative(
     staffAlternative: Partial<StaffAlternative>[],

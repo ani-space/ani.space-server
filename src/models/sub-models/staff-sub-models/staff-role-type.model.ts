@@ -21,8 +21,7 @@ export class StaffRoleType extends BaseEntity {
     nullable: true,
     description: 'The voice actors of the character',
   })
-  @OneToOne(() => Staff, { nullable: true })
-  @JoinColumn()
+  @ManyToOne(() => Staff)
   voiceActor?: Staff;
 
   @Field({ description: `Notes regarding the VA's role for the character` })

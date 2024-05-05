@@ -5,13 +5,14 @@ import { Repository } from 'typeorm';
 import { CreateLoggerDto } from '~/common/dtos';
 import { IStaffService } from '~/contracts/services';
 import { Staff } from '~/models';
-import { LOGGER_CREATED } from '../common/constants/index';
 import { StaffName } from '~/models/sub-models/staff-sub-models';
-import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
+import { LOGGER_CREATED } from '../common/constants/index';
 import {
   StaffImage,
   StaffPrimaryOccupation,
 } from '../models/sub-models/staff-sub-models';
+import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
+import { StaffRoleType } from '../models/sub-models/staff-sub-models/staff-role-type.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
 
 @Injectable()
@@ -21,6 +22,7 @@ export class StaffService implements IStaffService {
   constructor(
     @InjectRepository(Staff) private readonly staffRepo: Repository<Staff>,
     @InjectRepository(StaffName) private readonly staffNameRepo: Repository<StaffName>,
+    @InjectRepository(StaffRoleType) private readonly staffRoleTypeRepo: Repository<StaffRoleType>,
     @InjectRepository(StaffPrimaryOccupation) private readonly staffPrimaryOccupationRepo: Repository<StaffPrimaryOccupation>,
     @InjectRepository(StaffAlternative) private readonly staffAlternativeRepo: Repository<StaffAlternative>,
     @InjectRepository(StaffImage) private readonly staffImageRepo: Repository<StaffImage>,
@@ -64,6 +66,18 @@ export class StaffService implements IStaffService {
       } as CreateLoggerDto);
 
       return null;
+    }
+  }
+
+  public async saveStaffRoleType(staffRoleTypeParam: Partial<StaffRoleType>) {
+    try {
+      return this.staffRoleTypeRepo.save(staffRoleTypeParam);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        staffRoleTypeParam,
+        'StaffService.saveStaffRoleType',
+      );
     }
   }
 
