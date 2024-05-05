@@ -797,7 +797,7 @@ export class AnilistService implements IAnilistService {
     }
 
     // modify StaffYearActive
-    if (staffRaw.yearsActive) {
+    if (staffRaw.yearsActive?.startYear || staffRaw.yearsActive?.endYear) {
       Object.assign(
         staffRaw.yearsActive,
         await this.staffService.saveStaffYearActive(staffRaw.yearsActive),
