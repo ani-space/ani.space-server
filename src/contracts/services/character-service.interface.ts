@@ -20,9 +20,14 @@ export interface ICharacterService {
 
   findOrCreateCharacter(characterParam: Partial<Character>): Promise<Character>;
 
+  findCharacterByIdAnilist(
+    anilistId: number,
+    saveLogIfNotFound?: boolean,
+  ): Promise<Character | null>;
+
   saveCharacterConnection(
-    characterConnection: CharacterConnection,
-  ): Promise<CharacterConnection | null>;
+    characterConnection: Partial<CharacterConnection>,
+  ): Promise<(Partial<CharacterConnection> & CharacterConnection) | null>;
 
   saveManyCharacterAlternative(
     characterAlternative: Partial<CharacterAlternative>[],

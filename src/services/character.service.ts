@@ -1,17 +1,17 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CreateLoggerDto } from '~/common/dtos';
 import { ICharacterRepository } from '~/contracts/repositories';
 import { ICharacterService } from '~/contracts/services';
 import { Character, CharacterEdge } from '~/models';
-import { Repository } from 'typeorm';
+import { LOGGER_CREATED } from '../common/constants/index';
 import {
   CharacterConnection,
-  CharacterName,
   CharacterImage,
+  CharacterName,
 } from '../models/sub-models/character-sub-models';
-import { CreateLoggerDto } from '~/common/dtos';
-import { LOGGER_CREATED } from '../common/constants/index';
 import { CharacterAlternative } from '../models/sub-models/character-sub-models/character-alternative.model';
 import { CharacterAlternativeSpoilers } from '../models/sub-models/character-sub-models/character-alternativeSpoiler.model';
 
@@ -45,6 +45,27 @@ export class CharacterService implements ICharacterService {
     }
 
     return await this.characterRepo.save(characterParam);
+  }
+
+  public async findCharacterByIdAnilist(
+    anilistId: number,
+    saveLogIfNotFound?: boolean,
+  ) {
+    const character = await this.characterRepo.findByCondition({
+      where: {
+        idAnilist: anilistId,
+      },
+    });
+
+    if (!character && saveLogIfNotFound) {
+      this.eventEmitter.emit(LOGGER_CREATED, {
+        requestObject: JSON.stringify(anilistId),
+        notes: `Anime not found with anilistId: ${anilistId}`,
+        tracePath: `CharacterService.findCharacterByIdAnilist`,
+      } as CreateLoggerDto);
+    }
+
+    return character;
   }
 
   public async saveManyCharacter(
@@ -151,8 +172,8 @@ export class CharacterService implements ICharacterService {
   }
 
   public async saveCharacterConnection(
-    characterConnection: CharacterConnection,
-  ): Promise<CharacterConnection | null> {
+    characterConnection: Partial<CharacterConnection>,
+  ) {
     try {
       return await this.characterConnectionRepo.save(characterConnection);
     } catch (error) {
