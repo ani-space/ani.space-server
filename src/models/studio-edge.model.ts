@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { BaseAnilistEntity } from './base-models/base-anilist.model';
 import { Studio } from './studio.model';
 import { StudioConnection } from './sub-models/studio-sub-models/studio-connection.model';
@@ -8,8 +8,7 @@ import { StudioConnection } from './sub-models/studio-sub-models/studio-connecti
 @ObjectType()
 export class StudioEdge extends BaseAnilistEntity {
   @Field((type) => Studio, { nullable: true })
-  @OneToOne((type) => Studio, { nullable: true })
-  @JoinColumn()
+  @ManyToOne(() => Studio)
   node?: Studio;
 
   @ManyToOne(
