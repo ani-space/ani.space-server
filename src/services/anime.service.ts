@@ -14,7 +14,9 @@ import {
   AnimeSynonyms,
   AnimeTitle,
   AnimeTrailer,
+  AnimeConnection,
 } from '../models/sub-models/anime-sub-models';
+import { AnimeEdge } from '~/models/anime-edge.model';
 
 @Injectable()
 export class AnimeService implements IAnimeService {
@@ -23,8 +25,10 @@ export class AnimeService implements IAnimeService {
   constructor(
     @Inject(IAnimeRepository) private readonly animeRepo: IAnimeRepository,
     @InjectRepository(AnimeTitle) private readonly animeTitleRepo: Repository<AnimeTitle>,
+    @InjectRepository(AnimeConnection) private readonly animeConnectionRepo: Repository<AnimeConnection>,
     @InjectRepository(AnimeSynonyms) private readonly animeSynonymsRepo: Repository<AnimeSynonyms>,
     @InjectRepository(AnimeCoverImage) private readonly animeCoverImageRepo: Repository<AnimeCoverImage>,
+    @InjectRepository(AnimeEdge) private readonly animeEdgeRepo: Repository<AnimeEdge>,
     @InjectRepository(AnimeTrailer) private readonly animeTrailerRepo: Repository<AnimeTrailer>,
     @InjectRepository(AnimeDescription) private readonly animeDescRepo: Repository<AnimeDescription>,
     private readonly eventEmitter: EventEmitter2,
@@ -35,6 +39,34 @@ export class AnimeService implements IAnimeService {
       return await this.animeRepo.save(anime);
     } catch (error) {
       return this.handleServiceErrors(error, anime, 'AnimeService.saveAnime');
+    }
+  }
+
+  public saveAnimeConnection(
+    animeConnection: Partial<AnimeConnection>,
+  ): Promise<Partial<AnimeConnection> & AnimeConnection> | null {
+    try {
+      return this, this.animeConnectionRepo.save(animeConnection);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        animeConnection,
+        'AnimeService.saveAnimeConnection',
+      );
+    }
+  }
+
+  public async saveManyAnimeEdge(
+    animeEdgeList: Partial<AnimeEdge>[],
+  ): Promise<(Partial<AnimeEdge> & AnimeEdge)[] | null> {
+    try {
+      return this.animeEdgeRepo.save(animeEdgeList);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        animeEdgeList,
+        'AnimeService.saveManyAnimeEdge',
+      );
     }
   }
 

@@ -1,5 +1,34 @@
 export const getCharacterList = `
-characters {
+  characters {
+      id
+      name {
+        first
+        middle
+        last
+        full
+        native
+        alternative
+        alternativeSpoiler
+        userPreferred
+      }
+      image {
+        large
+        medium
+      }
+      description
+      gender
+      dateOfBirth {
+        year
+        month
+        day
+      }
+      age
+      bloodType
+    }
+`;
+
+export const getStaffList = `
+  staff {
     id
     name {
       first
@@ -8,58 +37,90 @@ characters {
       full
       native
       alternative
-      alternativeSpoiler
       userPreferred
     }
+    languageV2
     image {
       large
       medium
     }
-    description
+    description(asHtml: true)
+    primaryOccupations
     gender
     dateOfBirth {
       year
       month
       day
     }
+    dateOfDeath {
+      year
+      month
+      day
+    }
     age
+    yearsActive
+    homeTown
     bloodType
   }
 `;
 
-export const getStaffList = `
-staff {
+export const getAnime = `
   id
-  name {
-    first
-    middle
-    last
-    full
+  idMal
+  title {
+    romaji
+    english
     native
-    alternative
     userPreferred
   }
-  languageV2
-  image {
+  tags {
+    id
+    name
+    description
+    category
+    rank
+    isGeneralSpoiler
+    isMediaSpoiler
+    isAdult
+  }
+  genres
+  synonyms
+  format
+  status
+  description
+  startDate {
+    year
+    month
+    day
+  }
+  endDate {
+    year
+    month
+    day
+  }
+  season
+  seasonYear
+  seasonInt
+  episodes
+  duration
+  countryOfOrigin
+  isLicensed
+  source
+  hashtag
+  trailer {
+    id
+    site
+    thumbnail
+  }
+  coverImage {
+    extraLarge
     large
     medium
+    color
   }
-  description(asHtml: true)
-  primaryOccupations
-  gender
-  dateOfBirth {
-    year
-    month
-    day
-  }
-  dateOfDeath {
-    year
-    month
-    day
-  }
-  age
-  yearsActive
-  homeTown
-  bloodType
-}
+  bannerImage
+  averageScore
+  meanScore
+  popularity
+  isAdult
 `;
