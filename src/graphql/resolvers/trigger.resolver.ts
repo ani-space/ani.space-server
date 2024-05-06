@@ -15,9 +15,9 @@ export class TriggerResolver {
   @UseGuards(TriggerGuard)
   @Query(() => String, { name: TriggerResolverActionName.TRIGGER })
   handleTrigger(@Args() triggerArgs: TriggerArgs) {
-    const { page } = triggerArgs;
+    const { page, nestedPage } = triggerArgs;
 
-    this.eventEmitter.emit(`${triggerArgs.animeSynchronization}`, page);
+    this.eventEmitter.emit(`${triggerArgs.animeSynchronization}`, page, nestedPage);
 
     return 'ok';
   }

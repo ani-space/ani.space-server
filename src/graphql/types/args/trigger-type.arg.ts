@@ -8,4 +8,7 @@ export class TriggerArgs {
 
   @Field(() => Int, { defaultValue: 1 })
   page: number;
+
+  @Field(() => Int, { defaultValue: 1 })
+  nestedPage: number;
 }

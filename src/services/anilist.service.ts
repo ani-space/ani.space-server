@@ -271,6 +271,9 @@ export class AnilistService implements IAnilistService {
                     id
                   }
                 }
+                nodes {
+                  id
+                }
               }
             }
           }
@@ -372,21 +375,15 @@ export class AnilistService implements IAnilistService {
                 if (animeModel) {
                   Object.assign(anime, animeModel);
                 } else {
-                  const newAnimeObj = await this.handleSaveAnimeById(anime.id);
+                  this.logger.error(`Not found anime with id: ${anime.id}`);
 
-                  if (newAnimeObj) {
-                    Object.assign(anime, newAnimeObj);
-                  } else {
-                    this.logger.error(`Not found anime with id: ${anime.id}`);
-
-                    this.eventEmitter.emit(LOGGER_CREATED, {
-                      requestObject: JSON.stringify(anime.id),
-                      errorMessage: JSON.stringify(
-                        `Not found anime with id: ${anime.id}`,
-                      ),
-                      tracePath: `AnilistService.handleSaveAnimeCharacterConnectionType`,
-                    } as CreateLoggerDto);
-                  }
+                  this.eventEmitter.emit(LOGGER_CREATED, {
+                    requestObject: JSON.stringify(anime.id),
+                    errorMessage: JSON.stringify(
+                      `Not found anime with id: ${anime.id}`,
+                    ),
+                    tracePath: `AnilistService.handleSaveAnimeCharacterConnectionType`,
+                  } as CreateLoggerDto);
                 }
               }
             }
@@ -458,19 +455,35 @@ export class AnilistService implements IAnilistService {
           );
         }
 
-        const savedCharacterConnection =
-          await this.characterService.saveCharacterConnection(
-            characterConnectionRaw,
+        if (anime.characters && characterConnectionRaw.edges) {
+          anime.characters.edges = anime.characters.edges.concat(
+            characterConnectionRaw.edges,
           );
+        }
 
-        if (savedCharacterConnection) {
-          anime.characters = { ...savedCharacterConnection };
+        if (anime.characters && characterConnectionRaw.nodes) {
+          anime.characters.nodes = anime.characters.nodes.concat(
+            characterConnectionRaw.nodes,
+          );
+        }
 
-          if (await this.animeService.saveAnime(anime)) {
-            this.logger.log(
-              `Successfully saved anime characters ${anime.idAnilist} page: ${page}`,
+        if (anime.characters) {
+          await this.characterService.saveCharacterConnection(anime.characters);
+        } else {
+          const savedCharacterConnection =
+            await this.characterService.saveCharacterConnection(
+              characterConnectionRaw,
             );
+
+          if (savedCharacterConnection) {
+            anime.characters = { ...savedCharacterConnection };
           }
+        }
+
+        if (await this.animeService.saveAnime(anime)) {
+          this.logger.log(
+            `Successfully saved anime characters ${anime.idAnilist} page: ${page}, chapterPage: ${chapterNumber}`,
+          );
         }
 
         if (characters?.pageInfo?.hasNextPage) {
