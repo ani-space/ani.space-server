@@ -180,6 +180,28 @@ export class AnimeService implements IAnimeService {
     limit: number = 10,
   ): Promise<IPaginateResult<Anime>> {
     const [result, count] = await this.animeRepo.findAndCount({
+      relations: {
+        characters: {
+          nodes: true,
+          edges: true,
+        },
+        staff: {
+          nodes: true,
+          edges: true,
+        },
+        studios: {
+          nodes: true,
+          edges: true,
+        },
+        airingSchedule: {
+          nodes: true,
+          edges: true,
+        },
+        trends: {
+          nodes: true,
+          edges: true,
+        },
+      },
       take: limit,
       skip: (page - 1) * limit,
       order: {

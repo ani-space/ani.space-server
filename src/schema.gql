@@ -625,7 +625,7 @@ enum AnimeSource {
 }
 
 type Query {
-  trigger(animeSynchronization: SynchronizedAnimeEnum, page: Int! = 1): String!
+  trigger(animeSynchronization: SynchronizedAnimeEnum, page: Int! = 1, nestedPage: Int! = 1): String!
 }
 
 enum SynchronizedAnimeEnum {
