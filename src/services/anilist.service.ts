@@ -13,6 +13,7 @@ import {
   IAnimeTagService,
   ICharacterService,
   IStaffService,
+  IStudioService,
 } from '~/contracts/services';
 import { Anime, Character } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
@@ -53,6 +54,7 @@ import { CharacterEdge } from '~/models/character-edge.model';
 import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
 import { StaffEdge } from '~/models/staff-edge.model';
 import { unique } from 'radash';
+import { Studio } from '~/models/studio.model';
 
 @Injectable()
 export class AnilistService implements IAnilistService {
@@ -62,6 +64,7 @@ export class AnilistService implements IAnilistService {
   constructor(
     @Inject(IAnimeGenreService)
     private readonly animeGenreService: IAnimeGenreService,
+    @Inject(IStudioService) private readonly studioService: IStudioService,
     @Inject(IAnimeTagService)
     private readonly animeTagService: IAnimeTagService,
     @Inject(IAnimeService) private readonly animeService: IAnimeService,
@@ -1063,6 +1066,67 @@ export class AnilistService implements IAnilistService {
       //fetch and sync next page
       if (Page.pageInfo?.hasNextPage) {
         this.handleSaveCharactersInfo(page + 1);
+      }
+    }, this.AnilistRateLimit);
+  }
+
+  @OnEvent(SynchronizedAnimeEnum.SAVE_STUDIO_TYPE)
+  public async handleSaveStudiosInfo(page: number = 1) {
+    const document = gql`
+      {
+        Page(page: ${page}, perPage: 15) {
+          pageInfo {
+            hasNextPage
+          }
+          studios {
+            id
+            name
+            isAnimationStudio
+          }
+        }
+      }
+    `;
+
+    setTimeout(async () => {
+      try {
+        //@ts-ignore
+        const { Page } = await this.gqlClient.request(document);
+        if (!Page) throw new GraphQLError('Page is null or empty');
+
+        let { studios } = Page;
+
+        if (Array.isArray(studios)) {
+          // @ts-ignore: make sure anilist data not error
+          studios = unique(studios, (s) => s.id);
+
+          const studiosListRaw: Partial<Studio>[] = studios.map((e: any) => {
+            return {
+              idAnilist: e.id,
+              name: e.name,
+              isAnimationStudio: e.isAnimationStudio,
+            } as Studio;
+          });
+
+          if (await this.studioService.saveManyStudio(studiosListRaw)) {
+            this.logger.log(
+              `Successfully saved page ${page} with ${studios.length} objects`,
+            );
+          }
+        }
+
+        //fetch and sync next page
+        if (Page.pageInfo?.hasNextPage) {
+          this.handleSaveStudiosInfo(page + 1);
+        }
+      } catch (error) {
+        this.eventEmitter.emit(LOGGER_CREATED, {
+          requestObject: JSON.stringify(page),
+          errorMessage: JSON.stringify(error),
+          notes: `Fetch error page: ${page}`,
+          tracePath: `AnilistService.handleSaveStudiosInfo`,
+        } as CreateLoggerDto);
+
+        this.handleSaveStudiosInfo(page + 1);
       }
     }, this.AnilistRateLimit);
   }
