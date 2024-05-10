@@ -13,13 +13,11 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-
     "typeorm": "ts-node --require tsconfig-paths/register ./node_modules/typeorm/cli",
     "migration:run": "yarn run typeorm migration:run -- -d ./db/typeorm.config.ts",
     "migration:generate": "yarn run typeorm -- -d ./db/typeorm.config.ts migration:generate",
@@ -45,6 +43,7 @@
     "graphql-yoga": "^5.3.0",
     "joi": "^17.13.0",
     "pg": "^8.11.5",
+    "radash": "^12.1.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.20"

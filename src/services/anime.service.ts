@@ -185,23 +185,18 @@ export class AnimeService implements IAnimeService {
       relations: {
         characters: {
           nodes: true,
-          edges: true,
         },
         staff: {
           nodes: true,
-          edges: true,
         },
         studios: {
           nodes: true,
-          edges: true,
         },
         airingSchedule: {
           nodes: true,
-          edges: true,
         },
         trends: {
           nodes: true,
-          edges: true,
         },
       },
       take: limit,

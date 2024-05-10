@@ -54,6 +54,10 @@ export interface IStaffService {
   saveManyStaff(
     staffs: Partial<Staff>[],
   ): Promise<(Partial<Staff> & Staff)[] | null>;
+
+  saveStaffEdge(
+    staffEdge: Partial<StaffEdge>,
+  ): Promise<(Partial<StaffEdge> & StaffEdge) | null>;
 }
 
 export const IStaffService = Symbol('IStaffService');

@@ -96,6 +96,18 @@ export class StaffService implements IStaffService {
     }
   }
 
+  public async saveStaffEdge(staffEdge: Partial<StaffEdge>) {
+    try {
+      return this.staffEdgeRepo.save(staffEdge);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        staffEdge,
+        'StaffService.saveStaffEdge',
+      );
+    }
+  }
+
   public async saveStaffRoleType(staffRoleTypeParam: Partial<StaffRoleType>) {
     try {
       return this.staffRoleTypeRepo.save(staffRoleTypeParam);
