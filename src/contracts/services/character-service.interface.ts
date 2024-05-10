@@ -25,6 +25,10 @@ export interface ICharacterService {
     saveLogIfNotFound?: boolean,
   ): Promise<Character | null>;
 
+  saveCharacterEdge(
+    characterEdge: Partial<CharacterEdge>,
+  ): Promise<(Partial<CharacterEdge> & CharacterEdge) | null>;
+
   saveCharacterConnection(
     characterConnection: Partial<CharacterConnection>,
   ): Promise<(Partial<CharacterConnection> & CharacterConnection) | null>;

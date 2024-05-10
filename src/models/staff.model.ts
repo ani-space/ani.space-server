@@ -3,9 +3,8 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToMany,
-  OneToOne,
+  OneToOne
 } from 'typeorm';
 import { BaseAnilistEntity } from './base-models/base-anilist.model';
 import { CharacterConnection } from './sub-models/character-sub-models';
@@ -16,14 +15,10 @@ import {
   StaffPrimaryOccupation,
   StaffYearActive,
 } from './sub-models/staff-sub-models';
-import { StaffConnection } from './sub-models/staff-sub-models/staff-connection.model';
 
 @Entity({ name: 'staffs' })
 @ObjectType()
 export class Staff extends BaseAnilistEntity {
-  @ManyToOne(() => StaffConnection, (staffConnection) => staffConnection.nodes)
-  staffConnection: StaffConnection;
-
   @Field((type) => StaffName, { nullable: true })
   @OneToOne(() => StaffName, { nullable: true })
   @JoinColumn()

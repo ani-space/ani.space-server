@@ -59,10 +59,4 @@ export class AnimeTrend extends BaseEntity {
   @OneToOne(() => Anime)
   @JoinColumn()
   anime?: Anime;
-
-  @ManyToOne(
-    () => AnimeTrendConnection,
-    (animeTrendConnection) => animeTrendConnection.nodes,
-  )
-  animeTrendConnection: AnimeTrendConnection;
 }

@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Entity, OneToMany } from 'typeorm';
+import { Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
 import { BaseEntity } from '~/models/base-models';
 import { PageInfo } from '~/models/base-models/page-info.model';
 import { IBaseConnection } from '~/models/contracts/base-connection.interface';
@@ -16,7 +16,8 @@ export class AnimeTrendConnection
   @Field(() => [AnimeTrendEdge], { nullable: true })
   edges: AnimeTrendEdge[];
 
-  @OneToMany(() => AnimeTrend, (nodes) => nodes.animeTrendConnection)
+  @ManyToMany(() => AnimeTrend)
+  @JoinTable()
   @Field(() => [AnimeTrend], { nullable: true })
   nodes: AnimeTrend[];
 

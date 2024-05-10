@@ -2,14 +2,11 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import {
   Column,
   Entity,
-  Index,
   JoinColumn,
-  ManyToOne,
-  OneToOne,
+  OneToOne
 } from 'typeorm';
 import { Anime } from './anime.model';
 import { BaseAnilistEntity } from './base-models/base-anilist.model';
-import { AiringScheduleConnection } from './sub-models/airing-schedule-sub-models/airing-schedule-connection.model';
 
 @ObjectType()
 @Entity({ name: 'airingSchedules' })
@@ -38,10 +35,4 @@ export class AiringSchedule extends BaseAnilistEntity {
   @OneToOne(() => Anime)
   @JoinColumn()
   anime: Anime;
-
-  @ManyToOne(
-    () => AiringScheduleConnection,
-    (airingScheduleConnection) => airingScheduleConnection.nodes,
-  )
-  airingScheduleConnection: AiringScheduleConnection;
 }

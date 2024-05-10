@@ -2,32 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type AiringScheduleEdge {
-  node: AiringSchedule
-}
-
-type PageInfo {
-  total: Int!
-  perPage: Int!
-  currentPage: Int!
-  lastPage: Int!
-  hasNextPage: Boolean!
-}
-
-type AiringScheduleConnection {
-  id: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  edges: [AiringScheduleEdge!]
-  nodes: [AiringSchedule!]
-  pageInfo: PageInfo!
-}
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
-
 type AiringSchedule {
   """The time the episode airs at"""
   airingAt: Int!
@@ -55,6 +29,11 @@ type AnimeTitle {
   native: String
   userPreferred: String
 }
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 type AnimeDescription {
   id: String!
@@ -221,25 +200,6 @@ type StaffPrimaryOccupation {
   occupation: String
 }
 
-type StaffEdge {
-  node: Staff
-
-  """The role of the staff member in the production of the media"""
-  role: String
-
-  """The order the staff should be displayed from the users favourites"""
-  favouriteOrder: Int
-}
-
-type StaffConnection {
-  id: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  edges: [StaffEdge!]
-  nodes: [Staff!]
-  pageInfo: PageInfo!
-}
-
 type Staff {
   name: StaffName
   languageV2: String
@@ -295,6 +255,14 @@ enum CharacterRole {
   MAIN
   SUPPORTING
   BACKGROUND
+}
+
+type PageInfo {
+  total: Int!
+  perPage: Int!
+  currentPage: Int!
+  lastPage: Int!
+  hasNextPage: Boolean!
 }
 
 type CharacterConnection {
@@ -451,6 +419,25 @@ type AnimeTrendConnection {
   pageInfo: PageInfo!
 }
 
+type StaffEdge {
+  node: Staff
+
+  """The role of the staff member in the production of the media"""
+  role: String
+
+  """The order the staff should be displayed from the users favourites"""
+  favouriteOrder: Int
+}
+
+type StaffConnection {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  edges: [StaffEdge!]
+  nodes: [Staff!]
+  pageInfo: PageInfo!
+}
+
 type Studio {
   name: String!
 
@@ -479,6 +466,19 @@ type StudioConnection {
   updatedAt: DateTime!
   edges: [StudioEdge!]
   nodes: [Studio!]
+  pageInfo: PageInfo!
+}
+
+type AiringScheduleEdge {
+  node: AiringSchedule
+}
+
+type AiringScheduleConnection {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  edges: [AiringScheduleEdge!]
+  nodes: [AiringSchedule!]
   pageInfo: PageInfo!
 }
 
