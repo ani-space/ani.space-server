@@ -13,7 +13,7 @@ import {
   ICharacterService,
   IStaffService,
 } from '~/contracts/services';
-import { Anime, Character, CharacterEdge, Staff } from '~/models';
+import { Anime, Character, CharacterEdge, Staff, StaffEdge } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
 import {
   AnimeConnection,
@@ -55,6 +55,8 @@ import {
 } from '../models/sub-models/staff-sub-models';
 import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
+import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
+import {LoggerModule} from './logger.module';
 
 const animeRepoProvider: Provider = {
   provide: IAnimeRepository,
@@ -95,6 +97,8 @@ const staffServiceProvider: Provider = {
 
 @Module({
   imports: [
+    LoggerModule,
+    
     TypeOrmModule.forFeature([
       Anime,
       AnimeEdge,
@@ -121,6 +125,8 @@ const staffServiceProvider: Provider = {
       StaffAlternative,
       StaffYearActive,
       StaffPrimaryOccupation,
+      StaffConnection,
+      StaffEdge,
       StaffImage,
     ]),
   ],

@@ -171,6 +171,18 @@ export class CharacterService implements ICharacterService {
     }
   }
 
+  public async saveCharacterEdge(characterEdge: Partial<CharacterEdge>) {
+    try {
+      return await this.characterEdgeRepo.save(characterEdge);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        characterEdge,
+        'CharacterService.saveCharacterEdge',
+      );
+    }
+  }
+
   public async saveCharacterConnection(
     characterConnection: Partial<CharacterConnection>,
   ) {

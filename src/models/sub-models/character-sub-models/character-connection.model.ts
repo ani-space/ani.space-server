@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Entity, OneToMany } from 'typeorm';
+import { Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
 import { BaseEntity } from '~/models/base-models';
 import { CharacterEdge } from '~/models/character-edge.model';
 import { Character } from '~/models/character.model';
@@ -16,7 +16,8 @@ export class CharacterConnection
   @Field((type) => [CharacterEdge], { nullable: true })
   edges: CharacterEdge[];
 
-  @OneToMany(() => Character, (nodes) => nodes.characterConnection)
+  @ManyToMany(() => Character)
+  @JoinTable()
   @Field((type) => [Character], { nullable: true })
   nodes: Character[];
 

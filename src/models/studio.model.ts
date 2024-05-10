@@ -1,18 +1,11 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity } from 'typeorm';
 import { BaseAnilistEntity } from './base-models/base-anilist.model';
 import { AnimeConnection } from './sub-models/anime-sub-models/anime-connection.model';
-import { StudioConnection } from './sub-models/studio-sub-models/studio-connection.model';
 
 @Entity({ name: 'studios' })
 @ObjectType()
 export class Studio extends BaseAnilistEntity {
-  @ManyToOne(
-    () => StudioConnection,
-    (studioConnection) => studioConnection.nodes,
-  )
-  studioConnection: StudioConnection;
-
   @Field()
   @Column()
   name: string;

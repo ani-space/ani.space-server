@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateLoggerDto } from '~/common/dtos';
 import { IStaffService } from '~/contracts/services';
-import { Staff } from '~/models';
+import { Staff, StaffEdge } from '~/models';
 import { StaffName } from '~/models/sub-models/staff-sub-models';
 import { LOGGER_CREATED } from '../common/constants/index';
 import {
@@ -14,6 +14,7 @@ import {
 import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
 import { StaffRoleType } from '../models/sub-models/staff-sub-models/staff-role-type.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
+import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
 
 @Injectable()
 export class StaffService implements IStaffService {
@@ -21,6 +22,8 @@ export class StaffService implements IStaffService {
 
   constructor(
     @InjectRepository(Staff) private readonly staffRepo: Repository<Staff>,
+    @InjectRepository(StaffConnection) private readonly staffConnectionRepo: Repository<StaffConnection>,
+    @InjectRepository(StaffEdge) private readonly staffEdgeRepo: Repository<StaffEdge>,
     @InjectRepository(StaffName) private readonly staffNameRepo: Repository<StaffName>,
     @InjectRepository(StaffRoleType) private readonly staffRoleTypeRepo: Repository<StaffRoleType>,
     @InjectRepository(StaffPrimaryOccupation) private readonly staffPrimaryOccupationRepo: Repository<StaffPrimaryOccupation>,
@@ -51,6 +54,18 @@ export class StaffService implements IStaffService {
     return staff;
   }
 
+  public async saveStaffConnection(staffConnection: Partial<StaffConnection>) {
+    try {
+      return this.staffConnectionRepo.save(staffConnection);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        staffConnection,
+        'StaffService.saveStaffConnection',
+      );
+    }
+  }
+
   public async saveStaff(
     staff: Partial<Staff>,
   ): Promise<(Partial<Staff> & Staff) | null> {
@@ -66,6 +81,30 @@ export class StaffService implements IStaffService {
       } as CreateLoggerDto);
 
       return null;
+    }
+  }
+
+  public async saveManyStaffEdge(staffEdges: Partial<StaffEdge>[]) {
+    try {
+      return this.staffEdgeRepo.save(staffEdges);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        staffEdges,
+        'StaffService.saveManyStaffEdge',
+      );
+    }
+  }
+
+  public async saveStaffEdge(staffEdge: Partial<StaffEdge>) {
+    try {
+      return this.staffEdgeRepo.save(staffEdge);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        staffEdge,
+        'StaffService.saveStaffEdge',
+      );
     }
   }
 

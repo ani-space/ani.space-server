@@ -1,5 +1,5 @@
 import { InjectGraphQLClient } from '@golevelup/nestjs-graphql-request';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Scope } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GraphQLError } from 'graphql';
@@ -50,6 +50,9 @@ import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-na
 import { StaffPrimaryOccupation } from '../models/sub-models/staff-sub-models/staff-primary-occupations.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
 import { CharacterEdge } from '~/models/character-edge.model';
+import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
+import { StaffEdge } from '~/models/staff-edge.model';
+import { unique } from 'radash';
 
 @Injectable()
 export class AnilistService implements IAnilistService {
@@ -57,12 +60,16 @@ export class AnilistService implements IAnilistService {
   private readonly logger = new Logger(AnilistService.name);
 
   constructor(
-    @Inject(IAnimeGenreService) private readonly animeGenreService: IAnimeGenreService,
-    @Inject(IAnimeTagService) private readonly animeTagService: IAnimeTagService,
+    @Inject(IAnimeGenreService)
+    private readonly animeGenreService: IAnimeGenreService,
+    @Inject(IAnimeTagService)
+    private readonly animeTagService: IAnimeTagService,
     @Inject(IAnimeService) private readonly animeService: IAnimeService,
-    @Inject(ICharacterService) private readonly characterService: ICharacterService,
+    @Inject(ICharacterService)
+    private readonly characterService: ICharacterService,
     @Inject(IStaffService) private readonly staffService: IStaffService,
-    @InjectRepository(FuzzyDateInt) private readonly fuzzDateRepo: Repository<FuzzyDateInt>,
+    @InjectRepository(FuzzyDateInt)
+    private readonly fuzzDateRepo: Repository<FuzzyDateInt>,
     @InjectGraphQLClient() private readonly gqlClient: GraphQLClient,
     private readonly eventEmitter: EventEmitter2,
   ) {}
@@ -447,29 +454,26 @@ export class AnilistService implements IAnilistService {
           Array.isArray(characterConnectionRaw.edges) &&
           characterConnectionRaw.edges.length > 0
         ) {
-          Object.assign(
-            characterConnectionRaw.edges,
-            await this.characterService.saveManyCharacterEdge(
-              characterConnectionRaw.edges,
-            ),
-          );
-        }
-
-        if (anime.characters && characterConnectionRaw.edges) {
-          anime.characters.edges = anime.characters.edges.concat(
-            characterConnectionRaw.edges,
-          );
+          for (const edge of characterConnectionRaw.edges) {
+            if (anime.characters) {
+              edge.characterConnection = anime.characters;
+            }
+            Object.assign(
+              edge,
+              await this.characterService.saveCharacterEdge(edge),
+            );
+          }
         }
 
         if (anime.characters && characterConnectionRaw.nodes) {
-          anime.characters.nodes = anime.characters.nodes.concat(
-            characterConnectionRaw.nodes,
-          );
+          anime.characters.nodes = [
+            ...anime.characters.nodes,
+            ...characterConnectionRaw.nodes,
+          ];
+          await this.characterService.saveCharacterConnection(anime.characters);
         }
 
-        if (anime.characters) {
-          await this.characterService.saveCharacterConnection(anime.characters);
-        } else {
+        if (!anime.characters) {
           const savedCharacterConnection =
             await this.characterService.saveCharacterConnection(
               characterConnectionRaw,
@@ -505,37 +509,190 @@ export class AnilistService implements IAnilistService {
     }, this.AnilistRateLimit);
   }
 
-  private async handleAssignVoiceActorModel(voiceActor: any) {
-    const staffModel = await this.staffService.findStaffByIdAnilist(
-      voiceActor.id,
-      true,
-    );
+  @OnEvent(SynchronizedAnimeEnum.SAVE_ANIME_STAFF_TYPE)
+  public async handleSaveAnimeStaffConnectionType(
+    page: number = 1,
+    staffPage: number = 1,
+  ) {
+    const { docs, pageInfo } = await this.animeService.getAnimeListV1(page, 1);
+    const anime = docs[0];
 
-    // assign if have
-    if (staffModel) {
-      Object.assign(voiceActor, staffModel);
-    }
+    setTimeout(async () => {
+      try {
+        const document = gql`
+        {
+          Media(id: ${anime.idAnilist}) {
+            id
+            staff(page: ${staffPage}, perPage: 15) {
+              edges {
+                id
+                node {
+                  id
+                }
+                role
+              }
+              nodes {
+                id
+              }
+              pageInfo {
+                hasNextPage
+              }
+            }
+          }
+        }
+        `;
 
-    // get on anilist if not found
-    else {
-      this.logger.warn(`Missing staff with id: ${voiceActor.id}`);
-      const newStaff = await this.handleSaveStaffById(voiceActor.id);
+        //@ts-ignore
+        const { Media } = await this.gqlClient.request(document);
+        if (!Media) throw new GraphQLError('Media is null or empty');
 
-      // reassign if found
-      if (newStaff) {
-        Object.assign(voiceActor, newStaff);
-      } else {
-        this.logger.error(`Not found staff with id: ${voiceActor.id}`);
+        const { staff } = Media;
+        let { edges, nodes } = staff;
 
+        // remove duplicated node (Anilist error data)
+        // @ts-ignore
+        edges = unique(edges, (e) => e.node?.id);
+        // @ts-ignore
+        nodes = unique(nodes, (n) => n.id);
+
+        // modify edges
+        if (Array.isArray(edges)) {
+          for (const edge of edges) {
+            // modify edges node
+            const staffNode = await this.staffService.findStaffByIdAnilist(
+              edge.node?.id,
+              true,
+            );
+            if (staffNode) {
+              Object.assign(edge.node, staffNode);
+            } else {
+              this.logger.warn(`Missing staff with id: ${edge.node?.id}`);
+
+              // sleep 1s because rate limit
+              await new Promise((r) => setTimeout(r, 1000));
+
+              const newStaffNode = await this.handleSaveStaffById(
+                edge.node?.id,
+              );
+
+              if (newStaffNode) {
+                Object.assign(edge.node, newStaffNode);
+              } else {
+                this.logger.error(`Not found staff with id: ${edge.node?.id}`);
+
+                this.eventEmitter.emit(LOGGER_CREATED, {
+                  requestObject: JSON.stringify(edge.node?.id),
+                  errorMessage: JSON.stringify(
+                    `Not found character with id: ${edge.node?.id}`,
+                  ),
+                  tracePath: `AnilistService.handleSaveAnimeStaffConnectionType`,
+                } as CreateLoggerDto);
+              }
+            }
+          }
+        }
+
+        // modify nodes
+        if (Array.isArray(nodes)) {
+          for (const node of nodes) {
+            const staffNode = await this.staffService.findStaffByIdAnilist(
+              node.id,
+              true,
+            );
+
+            if (staffNode) {
+              Object.assign(node, staffNode);
+            } else {
+              this.logger.warn(`Missing staff with id: ${node?.id}`);
+
+              const newStaffNode = await this.handleSaveStaffById(node?.id);
+
+              if (newStaffNode) {
+                Object.assign(node, newStaffNode);
+              } else {
+                this.logger.error(`Not found staff with id: ${node?.id}`);
+
+                this.eventEmitter.emit(LOGGER_CREATED, {
+                  requestObject: JSON.stringify(node?.id),
+                  errorMessage: JSON.stringify(
+                    `Not found character with id: ${node?.id}`,
+                  ),
+                  tracePath: `AnilistService.handleSaveAnimeStaffConnectionType`,
+                } as CreateLoggerDto);
+              }
+            }
+          }
+        }
+
+        const staffConnectionRaw: Partial<StaffConnection> = {
+          edges: Array.isArray(edges)
+            ? edges.map((e) => {
+                return {
+                  idAnilist: e.id,
+                  node: e.node,
+                  role: e.role,
+                } as StaffEdge;
+              })
+            : [],
+          nodes: Array.isArray(nodes) ? nodes.map((n) => n as Staff) : [],
+        };
+
+        // modify edges
+        if (
+          Array.isArray(staffConnectionRaw.edges) &&
+          staffConnectionRaw.edges.length > 0
+        ) {
+          for (const edge of staffConnectionRaw.edges) {
+            if (anime.staff) {
+              edge.staffConnection = anime.staff;
+            }
+
+            Object.assign(edge, await this.staffService.saveStaffEdge(edge));
+          }
+        }
+
+        if (anime.staff && staffConnectionRaw.nodes) {
+          anime.staff.nodes = anime.staff.nodes.concat(
+            staffConnectionRaw.nodes,
+          );
+
+          await this.staffService.saveStaffConnection(anime.staff);
+        }
+
+        if (!anime.staff) {
+          const savedStaffConnection =
+            await this.staffService.saveStaffConnection(staffConnectionRaw);
+
+          if (savedStaffConnection) {
+            anime.staff = { ...savedStaffConnection };
+          }
+        }
+
+        if (await this.animeService.saveAnime(anime)) {
+          this.logger.log(
+            `Successfully saved anime staff ${anime.idAnilist} page: ${page}, chapterPage: ${staffPage}`,
+          );
+        }
+
+        if (staff?.pageInfo?.hasNextPage) {
+          this.handleSaveAnimeStaffConnectionType(page, staffPage + 1);
+        } else if (pageInfo.hasNextPage) {
+          this.handleSaveAnimeStaffConnectionType(page + 1, 1);
+        } else {
+          this.logger.log('SAVE DONE');
+        }
+      } catch (error) {
         this.eventEmitter.emit(LOGGER_CREATED, {
-          requestObject: JSON.stringify(voiceActor.id),
-          errorMessage: JSON.stringify(
-            `Not found staff with id: ${voiceActor.id}`,
-          ),
-          tracePath: `AnilistService.handleSaveAnimeCharacterConnectionType`,
+          requestObject: JSON.stringify(anime),
+          errorMessage: JSON.stringify(error),
+          notes: `Fetch error page: ${page}`,
+          tracePath: `AnilistService.handleSaveAnimeStaffConnectionType`,
         } as CreateLoggerDto);
+
+        // fetch and sync next page
+        this.handleSaveAnimeStaffConnectionType(page + 1);
       }
-    }
+    }, this.AnilistRateLimit);
   }
 
   @OnEvent(SynchronizedAnimeEnum.SAVE_STAFFS_TYPE)
@@ -1105,7 +1262,9 @@ export class AnilistService implements IAnilistService {
       return null;
     }
 
-    return await this.handleMapCharacterModel(Character);
+    return await this.characterService.saveCharacter(
+      await this.handleMapCharacterModel(Character),
+    );
   }
 
   private async handleMapCharacterModel(characterNode: any) {
@@ -1218,7 +1377,7 @@ export class AnilistService implements IAnilistService {
       return null;
     }
 
-    return this.handleMapStaffModel(Staff);
+    return this.staffService.saveStaff(await this.handleMapStaffModel(Staff));
   }
 
   private async handleMapStaffModel(s: any) {
@@ -1337,5 +1496,38 @@ export class AnilistService implements IAnilistService {
     }
 
     return staffRaw;
+  }
+
+  private async handleAssignVoiceActorModel(voiceActor: any) {
+    const staffModel = await this.staffService.findStaffByIdAnilist(
+      voiceActor.id,
+      true,
+    );
+
+    // assign if have
+    if (staffModel) {
+      Object.assign(voiceActor, staffModel);
+    }
+
+    // get on anilist if not found
+    else {
+      this.logger.warn(`Missing staff with id: ${voiceActor.id}`);
+      const newStaff = await this.handleSaveStaffById(voiceActor.id);
+
+      // reassign if found
+      if (newStaff) {
+        Object.assign(voiceActor, newStaff);
+      } else {
+        this.logger.error(`Not found staff with id: ${voiceActor.id}`);
+
+        this.eventEmitter.emit(LOGGER_CREATED, {
+          requestObject: JSON.stringify(voiceActor.id),
+          errorMessage: JSON.stringify(
+            `Not found staff with id: ${voiceActor.id}`,
+          ),
+          tracePath: `AnilistService.handleSaveAnimeCharacterConnectionType`,
+        } as CreateLoggerDto);
+      }
+    }
   }
 }

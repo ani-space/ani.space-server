@@ -1,4 +1,4 @@
-import { Staff } from '~/models';
+import { Staff, StaffEdge } from '~/models';
 import {
   StaffAlternative,
   StaffImage,
@@ -6,6 +6,7 @@ import {
   StaffPrimaryOccupation,
   StaffYearActive,
 } from '~/models/sub-models/staff-sub-models';
+import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
 import { StaffRoleType } from '~/models/sub-models/staff-sub-models/staff-role-type.model';
 
 export interface IStaffService {
@@ -23,6 +24,14 @@ export interface IStaffService {
   saveStaffRoleType(
     staffRoleTypeParam: Partial<StaffRoleType>,
   ): Promise<(Partial<StaffRoleType> & StaffRoleType) | null>;
+
+  saveManyStaffEdge(
+    staffEdges: Partial<StaffEdge>[],
+  ): Promise<(Partial<StaffEdge> & StaffEdge)[] | null>;
+
+  saveStaffConnection(
+    staffConnection: Partial<StaffConnection>,
+  ): Promise<(Partial<StaffConnection> & StaffConnection) | null>;
 
   saveManyStaffAlternative(
     staffAlternative: Partial<StaffAlternative>[],
@@ -45,6 +54,10 @@ export interface IStaffService {
   saveManyStaff(
     staffs: Partial<Staff>[],
   ): Promise<(Partial<Staff> & Staff)[] | null>;
+
+  saveStaffEdge(
+    staffEdge: Partial<StaffEdge>,
+  ): Promise<(Partial<StaffEdge> & StaffEdge) | null>;
 }
 
 export const IStaffService = Symbol('IStaffService');

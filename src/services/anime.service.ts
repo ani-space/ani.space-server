@@ -1,22 +1,24 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CreateLoggerDto } from '~/common/dtos';
-import { IAnimeRepository } from '~/contracts/repositories';
-import { IAnimeService } from '~/contracts/services';
-import { Anime } from '~/models';
-import { LOGGER_CREATED } from '../common/constants/index';
-import { IPaginateResult } from '../contracts/dtos/paginate-result.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CreateLoggerDto } from '~/common/dtos';
 import {
+  IAnimeRepository
+} from '~/contracts/repositories';
+import { IAnimeService } from '~/contracts/services';
+import { Anime } from '~/models';
+import { AnimeEdge } from '~/models/anime-edge.model';
+import { LOGGER_CREATED } from '../common/constants/index';
+import { IPaginateResult } from '../contracts/dtos/paginate-result.interface';
+import {
+  AnimeConnection,
   AnimeCoverImage,
   AnimeDescription,
   AnimeSynonyms,
   AnimeTitle,
   AnimeTrailer,
-  AnimeConnection,
 } from '../models/sub-models/anime-sub-models';
-import { AnimeEdge } from '~/models/anime-edge.model';
 
 @Injectable()
 export class AnimeService implements IAnimeService {
@@ -183,23 +185,18 @@ export class AnimeService implements IAnimeService {
       relations: {
         characters: {
           nodes: true,
-          edges: true,
         },
         staff: {
           nodes: true,
-          edges: true,
         },
         studios: {
           nodes: true,
-          edges: true,
         },
         airingSchedule: {
           nodes: true,
-          edges: true,
         },
         trends: {
           nodes: true,
-          edges: true,
         },
       },
       take: limit,

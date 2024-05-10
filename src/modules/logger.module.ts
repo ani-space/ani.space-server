@@ -18,6 +18,15 @@ import { LoggerService } from '~/services';
       useClass: LoggerService,
     },
   ],
-  exports: [],
+  exports: [
+    {
+      provide: IAniSpaceLogRepository,
+      useClass: AniSpaceLogRepository,
+    },
+    {
+      provide: ILoggerService,
+      useClass: LoggerService,
+    },
+  ],
 })
 export class LoggerModule {}
