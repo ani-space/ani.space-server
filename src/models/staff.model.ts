@@ -1,11 +1,5 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToMany,
-  OneToOne
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { BaseAnilistEntity } from './base-models/base-anilist.model';
 import { CharacterConnection } from './sub-models/character-sub-models';
 import { FuzzyDateInt } from './sub-models/common-sub-models';
@@ -15,6 +9,7 @@ import {
   StaffPrimaryOccupation,
   StaffYearActive,
 } from './sub-models/staff-sub-models';
+import { AnimeConnection } from './sub-models/anime-sub-models';
 
 @Entity({ name: 'staffs' })
 @ObjectType()
@@ -82,6 +77,14 @@ export class Staff extends BaseAnilistEntity {
   @OneToOne(() => CharacterConnection, { nullable: true })
   @JoinColumn()
   characters?: CharacterConnection;
+
+  @Field(() => AnimeConnection, {
+    nullable: true,
+    description: 'Media where the staff member has a production role',
+  })
+  @OneToOne(() => AnimeConnection, { nullable: true })
+  @JoinColumn()
+  staffAnime?: AnimeConnection;
 
   @Field((type) => Int, {
     nullable: true,
