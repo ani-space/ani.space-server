@@ -268,6 +268,10 @@ type StaffRoleType {
 }
 
 type CharacterEdge {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  idAnilist: Int!
   node: Character
   role: CharacterRole
   name: String
@@ -319,6 +323,10 @@ type Character {
 }
 
 type AnimeEdge {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  idAnilist: Int!
   node: Anime
 
   """
@@ -512,6 +520,10 @@ type AnimeTrendConnection {
 }
 
 type StaffEdge {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  idAnilist: Int!
   node: Staff
 
   """
@@ -555,6 +567,10 @@ type Studio {
 }
 
 type StudioEdge {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  idAnilist: Int!
   node: Studio
 
   """
@@ -574,6 +590,10 @@ type StudioConnection {
 }
 
 type AiringScheduleEdge {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  idAnilist: Int!
   node: AiringSchedule
 }
 

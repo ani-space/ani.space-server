@@ -132,3 +132,38 @@ export const getAnime = `
   popularity
   isAdult
 `;
+
+export const animeConnection = `
+  edges {
+    node {
+      id
+    }
+    id
+    relationType(version: 2)
+    isMainStudio
+    characters {
+      id
+    }
+    characterRole
+    characterName
+    roleNotes
+    dubGroup
+    staffRole
+    voiceActors {
+      id
+    }
+    voiceActorRoles {
+      roleNotes
+      dubGroup
+      voiceActor {
+        id
+      }
+    }
+  }
+  nodes {
+    id
+  }
+  pageInfo {
+    hasNextPage
+  }
+`;
