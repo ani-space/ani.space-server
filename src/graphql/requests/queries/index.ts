@@ -167,3 +167,33 @@ export const animeConnection = `
     hasNextPage
   }
 `;
+
+export const characterConnection = `
+  pageInfo {
+    hasNextPage
+  }
+  edges {
+    node {
+      id
+    }
+    id
+    role
+    name
+    voiceActors {
+      id
+    }
+    voiceActorRoles {
+      voiceActor {
+        id
+      }
+      roleNotes
+      dubGroup
+    }
+    media {
+      id
+    }
+  }
+  nodes {
+    id
+  }
+`;
