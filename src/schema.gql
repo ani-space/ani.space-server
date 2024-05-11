@@ -236,6 +236,11 @@ type Staff {
   characters: CharacterConnection
 
   """
+  Media where the staff member has a production role
+  """
+  staffAnime: AnimeConnection
+
+  """
   The amount of user's who have favourited the staff member
   """
   favorites: Int
@@ -768,5 +773,6 @@ enum SynchronizedAnimeEnum {
   SAVE_CHARACTERS_TYPE
   SAVE_CHARACTER_ANIME_TYPE
   SAVE_STAFFS_TYPE
+  SAVE_STAFF_ANIME_TYPE
   SAVE_STUDIO_TYPE
 }

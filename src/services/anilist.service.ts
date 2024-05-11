@@ -1269,7 +1269,7 @@ export class AnilistService implements IAnilistService {
                     id
                   }
                   id
-                  relationType
+                  relationType(version: 2)
                   isMainStudio
                   characters {
                     id
