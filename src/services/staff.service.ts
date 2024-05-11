@@ -6,7 +6,9 @@ import { CreateLoggerDto } from '~/common/dtos';
 import { IStaffService } from '~/contracts/services';
 import { Staff, StaffEdge } from '~/models';
 import { StaffName } from '~/models/sub-models/staff-sub-models';
+import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
 import { LOGGER_CREATED } from '../common/constants/index';
+import { IPaginateResult } from '../contracts/dtos/paginate-result.interface';
 import {
   StaffImage,
   StaffPrimaryOccupation,
@@ -14,7 +16,6 @@ import {
 import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
 import { StaffRoleType } from '../models/sub-models/staff-sub-models/staff-role-type.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
-import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
 
 @Injectable()
 export class StaffService implements IStaffService {
@@ -22,16 +23,56 @@ export class StaffService implements IStaffService {
 
   constructor(
     @InjectRepository(Staff) private readonly staffRepo: Repository<Staff>,
-    @InjectRepository(StaffConnection) private readonly staffConnectionRepo: Repository<StaffConnection>,
-    @InjectRepository(StaffEdge) private readonly staffEdgeRepo: Repository<StaffEdge>,
-    @InjectRepository(StaffName) private readonly staffNameRepo: Repository<StaffName>,
-    @InjectRepository(StaffRoleType) private readonly staffRoleTypeRepo: Repository<StaffRoleType>,
-    @InjectRepository(StaffPrimaryOccupation) private readonly staffPrimaryOccupationRepo: Repository<StaffPrimaryOccupation>,
-    @InjectRepository(StaffAlternative) private readonly staffAlternativeRepo: Repository<StaffAlternative>,
-    @InjectRepository(StaffImage) private readonly staffImageRepo: Repository<StaffImage>,
-    @InjectRepository(StaffYearActive) private readonly staffYearActiveRepo: Repository<StaffYearActive>,
+    @InjectRepository(StaffConnection)
+    private readonly staffConnectionRepo: Repository<StaffConnection>,
+    @InjectRepository(StaffEdge)
+    private readonly staffEdgeRepo: Repository<StaffEdge>,
+    @InjectRepository(StaffName)
+    private readonly staffNameRepo: Repository<StaffName>,
+    @InjectRepository(StaffRoleType)
+    private readonly staffRoleTypeRepo: Repository<StaffRoleType>,
+    @InjectRepository(StaffPrimaryOccupation)
+    private readonly staffPrimaryOccupationRepo: Repository<StaffPrimaryOccupation>,
+    @InjectRepository(StaffAlternative)
+    private readonly staffAlternativeRepo: Repository<StaffAlternative>,
+    @InjectRepository(StaffImage)
+    private readonly staffImageRepo: Repository<StaffImage>,
+    @InjectRepository(StaffYearActive)
+    private readonly staffYearActiveRepo: Repository<StaffYearActive>,
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  public async getStaffListV1(page: number = 1, limit: number = 10) {
+    const [result, count] = await this.staffRepo.findAndCount({
+      relations: {
+        staffAnime: {
+          nodes: true,
+        },
+        characters: {
+          nodes: true,
+        },
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      order: {
+        idAnilist: 'ASC',
+      },
+    });
+
+    const lastPage = Math.ceil(count / limit);
+    const staffPage: IPaginateResult<Staff> = {
+      pageInfo: {
+        total: count,
+        perPage: limit,
+        currentPage: page,
+        lastPage,
+        hasNextPage: page < lastPage,
+      },
+      docs: result,
+    };
+
+    return staffPage;
+  }
 
   public async findStaffByIdAnilist(
     idAnilist: number,

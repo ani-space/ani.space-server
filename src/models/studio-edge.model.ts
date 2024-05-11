@@ -1,12 +1,16 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, ManyToOne } from 'typeorm';
-import { BaseAnilistEntity } from './base-models/base-anilist.model';
+import { BaseEntity } from './base-models';
 import { Studio } from './studio.model';
 import { StudioConnection } from './sub-models/studio-sub-models/studio-connection.model';
 
 @Entity({ name: 'studioEdges' })
 @ObjectType()
-export class StudioEdge extends BaseAnilistEntity {
+export class StudioEdge extends BaseEntity {
+  @Column()
+  @Field((type) => Int)
+  idAnilist: number;
+
   @Field((type) => Studio, { nullable: true })
   @ManyToOne(() => Studio)
   node?: Studio;

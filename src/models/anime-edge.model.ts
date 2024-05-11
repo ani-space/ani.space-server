@@ -5,10 +5,10 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany
+  OneToMany,
 } from 'typeorm';
 import { Anime } from './anime.model';
-import { BaseAnilistEntity } from './base-models/base-anilist.model';
+import { BaseEntity } from './base-models';
 import { Character } from './character.model';
 import { Staff } from './staff.model';
 import { AnimeRelation } from './sub-models/anime-sub-models';
@@ -18,7 +18,11 @@ import { StaffRoleType } from './sub-models/staff-sub-models/staff-role-type.mod
 
 @ObjectType()
 @Entity({ name: 'animeEdges' })
-export class AnimeEdge extends BaseAnilistEntity {
+export class AnimeEdge extends BaseEntity {
+  @Column()
+  @Field((type) => Int)
+  idAnilist: number;
+
   @ManyToOne(() => AnimeConnection, (animeConnection) => animeConnection.edges)
   animeConnection: AnimeConnection;
 

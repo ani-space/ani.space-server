@@ -7,6 +7,7 @@ import { ICharacterRepository } from '~/contracts/repositories';
 import { ICharacterService } from '~/contracts/services';
 import { Character, CharacterEdge } from '~/models';
 import { LOGGER_CREATED } from '../common/constants/index';
+import { IPaginateResult } from '../contracts/dtos/paginate-result.interface';
 import {
   CharacterConnection,
   CharacterImage,
@@ -20,13 +21,20 @@ export class CharacterService implements ICharacterService {
   private readonly logger = new Logger(CharacterService.name);
 
   constructor(
-    @Inject(ICharacterRepository) private readonly characterRepo: ICharacterRepository,
-    @InjectRepository(CharacterEdge) private readonly characterEdgeRepo: Repository<CharacterEdge>,
-    @InjectRepository(CharacterConnection) private readonly characterConnectionRepo: Repository<CharacterConnection>,
-    @InjectRepository(CharacterAlternative) private readonly characterAlternativeRepo: Repository<CharacterAlternative>,
-    @InjectRepository(CharacterAlternativeSpoilers) private readonly characterAlternativeSpoilersRepo: Repository<CharacterAlternativeSpoilers>,
-    @InjectRepository(CharacterName) private readonly characterNameRepo: Repository<CharacterName>,
-    @InjectRepository(CharacterImage) private readonly characterImageRepo: Repository<CharacterImage>,
+    @Inject(ICharacterRepository)
+    private readonly characterRepo: ICharacterRepository,
+    @InjectRepository(CharacterEdge)
+    private readonly characterEdgeRepo: Repository<CharacterEdge>,
+    @InjectRepository(CharacterConnection)
+    private readonly characterConnectionRepo: Repository<CharacterConnection>,
+    @InjectRepository(CharacterAlternative)
+    private readonly characterAlternativeRepo: Repository<CharacterAlternative>,
+    @InjectRepository(CharacterAlternativeSpoilers)
+    private readonly characterAlternativeSpoilersRepo: Repository<CharacterAlternativeSpoilers>,
+    @InjectRepository(CharacterName)
+    private readonly characterNameRepo: Repository<CharacterName>,
+    @InjectRepository(CharacterImage)
+    private readonly characterImageRepo: Repository<CharacterImage>,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -195,6 +203,35 @@ export class CharacterService implements ICharacterService {
         'CharacterService.saveCharacterConnection',
       );
     }
+  }
+
+  public async getCharacterListV1(page: number = 1, limit: number = 10) {
+    const [result, count] = await this.characterRepo.findAndCount({
+      relations: {
+        anime: {
+          nodes: true,
+        },
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      order: {
+        idAnilist: 'ASC',
+      },
+    });
+
+    const lastPage = Math.ceil(count / limit);
+    const charactersPage: IPaginateResult<Character> = {
+      pageInfo: {
+        total: count,
+        perPage: limit,
+        currentPage: page,
+        lastPage,
+        hasNextPage: page < lastPage,
+      },
+      docs: result,
+    };
+
+    return charactersPage;
   }
 
   private handleServiceErrors(

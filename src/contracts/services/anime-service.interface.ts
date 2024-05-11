@@ -19,6 +19,10 @@ export interface IAnimeService {
     saveNotFoundLog?: boolean,
   ): Promise<Anime | null>;
 
+  saveAnimeEdge(
+    animeEdge: Partial<AnimeEdge>,
+  ): Promise<(Partial<AnimeEdge> & AnimeEdge) | null>;
+
   getAnimeListV1(
     page?: number,
     limit?: number,

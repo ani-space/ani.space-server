@@ -3,9 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateLoggerDto } from '~/common/dtos';
-import {
-  IAnimeRepository
-} from '~/contracts/repositories';
+import { IAnimeRepository } from '~/contracts/repositories';
 import { IAnimeService } from '~/contracts/services';
 import { Anime } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
@@ -26,13 +24,20 @@ export class AnimeService implements IAnimeService {
 
   constructor(
     @Inject(IAnimeRepository) private readonly animeRepo: IAnimeRepository,
-    @InjectRepository(AnimeTitle) private readonly animeTitleRepo: Repository<AnimeTitle>,
-    @InjectRepository(AnimeConnection) private readonly animeConnectionRepo: Repository<AnimeConnection>,
-    @InjectRepository(AnimeSynonyms) private readonly animeSynonymsRepo: Repository<AnimeSynonyms>,
-    @InjectRepository(AnimeCoverImage) private readonly animeCoverImageRepo: Repository<AnimeCoverImage>,
-    @InjectRepository(AnimeEdge) private readonly animeEdgeRepo: Repository<AnimeEdge>,
-    @InjectRepository(AnimeTrailer) private readonly animeTrailerRepo: Repository<AnimeTrailer>,
-    @InjectRepository(AnimeDescription) private readonly animeDescRepo: Repository<AnimeDescription>,
+    @InjectRepository(AnimeTitle)
+    private readonly animeTitleRepo: Repository<AnimeTitle>,
+    @InjectRepository(AnimeConnection)
+    private readonly animeConnectionRepo: Repository<AnimeConnection>,
+    @InjectRepository(AnimeSynonyms)
+    private readonly animeSynonymsRepo: Repository<AnimeSynonyms>,
+    @InjectRepository(AnimeCoverImage)
+    private readonly animeCoverImageRepo: Repository<AnimeCoverImage>,
+    @InjectRepository(AnimeEdge)
+    private readonly animeEdgeRepo: Repository<AnimeEdge>,
+    @InjectRepository(AnimeTrailer)
+    private readonly animeTrailerRepo: Repository<AnimeTrailer>,
+    @InjectRepository(AnimeDescription)
+    private readonly animeDescRepo: Repository<AnimeDescription>,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -48,7 +53,7 @@ export class AnimeService implements IAnimeService {
     animeConnection: Partial<AnimeConnection>,
   ): Promise<Partial<AnimeConnection> & AnimeConnection> | null {
     try {
-      return this, this.animeConnectionRepo.save(animeConnection);
+      return this.animeConnectionRepo.save(animeConnection);
     } catch (error) {
       return this.handleServiceErrors(
         error,
@@ -68,6 +73,18 @@ export class AnimeService implements IAnimeService {
         error,
         animeEdgeList,
         'AnimeService.saveManyAnimeEdge',
+      );
+    }
+  }
+
+  public async saveAnimeEdge(animeEdge: Partial<AnimeEdge>) {
+    try {
+      return this.animeEdgeRepo.save(animeEdge);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        animeEdge,
+        'AnimeService.saveAnimeEdge',
       );
     }
   }

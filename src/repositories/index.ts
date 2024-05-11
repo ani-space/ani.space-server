@@ -5,3 +5,5 @@ export * from './anime-genre.repository';
 export * from './anime-tag.repository';
 
 export * from './character.repository';
+
+export * from './studio.repository';

@@ -6,8 +6,14 @@ import {
   CharacterImage,
   CharacterName,
 } from '~/models/sub-models/character-sub-models';
+import { IPaginateResult } from '../dtos';
 
 export interface ICharacterService {
+  getCharacterListV1(
+    page?: number,
+    limit?: number,
+  ): Promise<IPaginateResult<Character>>;
+
   saveCharacter(character: Partial<Character>): Promise<Character | null>;
 
   saveManyCharacter(

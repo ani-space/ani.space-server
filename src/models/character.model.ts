@@ -1,16 +1,12 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { BaseAnilistEntity } from './base-models/base-anilist.model';
 import {
   CharacterImage,
   CharacterName,
 } from './sub-models/character-sub-models';
 import { FuzzyDateInt } from './sub-models/common-sub-models';
+import { AnimeConnection } from './sub-models/anime-sub-models';
 
 @ObjectType()
 @Entity({ name: 'characters' })
@@ -45,4 +41,9 @@ export class Character extends BaseAnilistEntity {
   @Field({ nullable: true })
   @Column({ nullable: true })
   bloodType?: string;
+
+  @Field(() => AnimeConnection, { nullable: true })
+  @OneToOne(() => AnimeConnection, { nullable: true })
+  @JoinColumn()
+  anime?: AnimeConnection;
 }

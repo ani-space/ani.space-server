@@ -8,9 +8,15 @@ import {
 } from '~/models/sub-models/staff-sub-models';
 import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
 import { StaffRoleType } from '~/models/sub-models/staff-sub-models/staff-role-type.model';
+import { IPaginateResult } from '../dtos';
 
 export interface IStaffService {
   saveStaff(staff: Partial<Staff>): Promise<(Partial<Staff> & Staff) | null>;
+
+  getStaffListV1(
+    page?: number,
+    limit?: number,
+  ): Promise<IPaginateResult<Staff>>;
 
   saveStaffName(
     staffName: Partial<StaffName>,
