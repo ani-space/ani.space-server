@@ -1,9 +1,10 @@
 import { InjectGraphQLClient } from '@golevelup/nestjs-graphql-request';
-import { Inject, Injectable, Logger, Scope } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GraphQLError } from 'graphql';
 import { GraphQLClient, gql } from 'graphql-request';
+import { unique } from 'radash';
 import { Repository } from 'typeorm';
 import { CreateLoggerDto } from '~/common/dtos';
 import {
@@ -17,8 +18,13 @@ import {
 } from '~/contracts/services';
 import { Anime, Character } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
+import { CharacterEdge } from '~/models/character-edge.model';
+import { StaffEdge } from '~/models/staff-edge.model';
+import { Studio } from '~/models/studio.model';
 import { FuzzyDateInt } from '~/models/sub-models/common-sub-models';
+import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
 import { StaffRoleType } from '~/models/sub-models/staff-sub-models/staff-role-type.model';
+import { StudioConnection } from '~/models/sub-models/studio-sub-models/studio-connection.model';
 import { LOGGER_CREATED } from '../common/constants/index';
 import {
   characterFields,
@@ -50,11 +56,7 @@ import { StaffImage, StaffName } from '../models/sub-models/staff-sub-models';
 import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
 import { StaffPrimaryOccupation } from '../models/sub-models/staff-sub-models/staff-primary-occupations.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
-import { CharacterEdge } from '~/models/character-edge.model';
-import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
-import { StaffEdge } from '~/models/staff-edge.model';
-import { unique } from 'radash';
-import { Studio } from '~/models/studio.model';
+import {StudioEdge} from '~/models/studio-edge.model';
 
 @Injectable()
 export class AnilistService implements IAnilistService {
@@ -698,6 +700,179 @@ export class AnilistService implements IAnilistService {
     }, this.AnilistRateLimit);
   }
 
+  @OnEvent(SynchronizedAnimeEnum.SAVE_ANIME_STUDIO_TYPE)
+  public async handleSaveAnimeStudioConnectionType(page: number = 1) {
+    const { docs, pageInfo } = await this.animeService.getAnimeListV1(page, 1);
+    const anime = docs[0];
+
+    setTimeout(async () => {
+      try {
+        const document = gql`
+          {
+            Media(id: ${anime.idAnilist}) {
+              studios {
+                edges {
+                  id
+                  isMain
+                  node {
+                    id
+                  }
+                }
+                nodes {
+                  id
+                }
+              }
+            }
+          }
+        `;
+
+        //@ts-ignore
+        const { Media } = await this.gqlClient.request(document);
+        if (!Media) throw new GraphQLError('Media is null or empty');
+        const { studios } = Media;
+        let { edges, nodes } = studios;
+
+        // modify edges
+        if (Array.isArray(edges)) {
+          // @ts-ignore, remove duplicated node (Anilist error data)
+          edges = unique(edges, (e) => e.node?.id);
+          for (const edge of edges) {
+            const studioNode = await this.studioService.findStudioByIdAnilist(
+              edge.node?.id,
+            );
+
+            if (studioNode) {
+              Object.assign(edge, studioNode);
+            } else {
+              this.logger.warn(`Missing studio with id: ${edge.node?.id}`);
+
+              // sleep 1s because rate limit
+              await new Promise((r) => setTimeout(r, 1000));
+
+              const newStudioNode = await this.handleSaveStudioById(
+                edge.node?.id,
+              );
+
+              if (newStudioNode) {
+                Object.assign(edge, newStudioNode);
+              } else {
+                this.logger.error(`Not found studio with id: ${edge.node?.id}`);
+
+                this.eventEmitter.emit(LOGGER_CREATED, {
+                  requestObject: JSON.stringify(edge.node?.id),
+                  errorMessage: JSON.stringify(
+                    `Not found studio with id: ${edge.node?.id}`,
+                  ),
+                  tracePath: `AnilistService.handleSaveAnimeStudioConnectionType`,
+                } as CreateLoggerDto);
+              }
+            }
+          }
+        }
+
+        // modify nodes
+        if (Array.isArray(nodes)) {
+          // @ts-ignore
+          nodes = unique(nodes, (n) => n.id);
+          for (const node of nodes) {
+            const studioNode = await this.studioService.findStudioByIdAnilist(
+              node?.id,
+            );
+
+            if (studioNode) {
+              Object.assign(node, studioNode);
+            } else {
+              this.logger.warn(`Missing studio with id: ${node?.id}`);
+
+              // sleep 1s because rate limit
+              await new Promise((r) => setTimeout(r, 1000));
+
+              const newStudioNode = await this.handleSaveStudioById(node?.id);
+
+              if (newStudioNode) {
+                Object.assign(node, newStudioNode);
+              } else {
+                this.logger.error(`Not found studio with id: ${node?.id}`);
+
+                this.eventEmitter.emit(LOGGER_CREATED, {
+                  requestObject: JSON.stringify(node?.id),
+                  errorMessage: JSON.stringify(
+                    `Not found studio with id: ${node?.id}`,
+                  ),
+                  tracePath: `AnilistService.handleSaveAnimeStudioConnectionType`,
+                } as CreateLoggerDto);
+              }
+            }
+          }
+        }
+
+        const studioConnectionRaw: Partial<StudioConnection> = {
+          edges: Array.isArray(edges)
+            ? edges.map((e: any) => {
+                return {
+                  idAnilist: e.id,
+                  isMain: e.isMain,
+                  node: e.node,
+                } as StudioEdge;
+              })
+            : [],
+          nodes: Array.isArray(nodes) ? nodes : [],
+        };
+
+        // save edges
+        if (
+          Array.isArray(studioConnectionRaw.edges) &&
+          studioConnectionRaw.edges.length > 0
+        ) {
+          for (const edge of studioConnectionRaw.edges) {
+            if (anime.studios) {
+              edge.studioConnection = anime.studios;
+            }
+
+            Object.assign(edge, await this.studioService.saveStudioEdge(edge));
+          }
+        }
+
+        if(anime.studios && studioConnectionRaw.nodes) {
+          anime.studios.nodes = anime.studios.nodes.concat(studioConnectionRaw.nodes);
+
+          await this.studioService.saveStudioConnection(anime.studios)
+        }
+
+        if (!anime.studios) {
+          const saveStudioConnection =
+            await this.studioService.saveStudioConnection(studioConnectionRaw);
+
+          if (saveStudioConnection) {
+            anime.studios = { ...saveStudioConnection };
+          }
+        }
+
+        if (await this.animeService.saveAnime(anime)) {
+          this.logger.log(
+            `Successfully saved anime studio ${anime.idAnilist} page: ${page}`,
+          );
+        }
+
+        if (pageInfo.hasNextPage) {
+          await this.handleSaveAnimeStudioConnectionType(page + 1);
+        } else {
+          this.logger.log('SAVE DONE');
+        }
+      } catch (error) {
+        this.eventEmitter.emit(LOGGER_CREATED, {
+          requestObject: JSON.stringify(anime),
+          errorMessage: JSON.stringify(error),
+          notes: `Fetch error page: ${page}`,
+          tracePath: `AnilistService.handleSaveAnimeStudioConnectionType`,
+        } as CreateLoggerDto);
+
+        // fetch and sync next page
+        this.handleSaveAnimeStudioConnectionType(page + 1);
+      }
+    }, this.AnilistRateLimit)
+  }
+
   @OnEvent(SynchronizedAnimeEnum.SAVE_STAFFS_TYPE)
   public async handleSaveStaffsInfo(page: number = 1) {
     const document = gql`
@@ -1129,6 +1304,29 @@ export class AnilistService implements IAnilistService {
         this.handleSaveStudiosInfo(page + 1);
       }
     }, this.AnilistRateLimit);
+  }
+
+  private async handleSaveStudioById(anilistId: number) {
+    const document = gql`
+      {
+        Studio(id: ${anilistId}) {
+          name
+          isAnimationStudio
+        }
+      }
+    `;
+
+    // sleep 1s because rate limit
+    await new Promise((r) => setTimeout(r, 1000));
+
+    // @ts-ignore
+    const { Studio } = await this.gqlClient.request(document);
+
+    if (!Studio) {
+      return null;
+    }
+
+    return await this.studioService.saveStudio(Studio);
   }
 
   private async handleSaveAnimeById(anilistId: number) {

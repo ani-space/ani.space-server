@@ -48,7 +48,7 @@ export class AnimeService implements IAnimeService {
     animeConnection: Partial<AnimeConnection>,
   ): Promise<Partial<AnimeConnection> & AnimeConnection> | null {
     try {
-      return this, this.animeConnectionRepo.save(animeConnection);
+      return this.animeConnectionRepo.save(animeConnection);
     } catch (error) {
       return this.handleServiceErrors(
         error,
