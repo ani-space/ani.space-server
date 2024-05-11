@@ -13,9 +13,12 @@ import {
   IAnimeTagService,
   ICharacterService,
   IStaffService,
+  IStudioService,
 } from '~/contracts/services';
 import { Anime, Character, CharacterEdge, Staff, StaffEdge } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
+import { StudioEdge } from '~/models/studio-edge.model';
+import { Studio } from '~/models/studio.model';
 import {
   AnimeConnection,
   AnimeGenres,
@@ -25,6 +28,7 @@ import { CharacterConnection } from '~/models/sub-models/character-sub-models';
 import { StaffName } from '~/models/sub-models/staff-sub-models';
 import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
 import { StaffRoleType } from '~/models/sub-models/staff-sub-models/staff-role-type.model';
+import { StudioConnection } from '~/models/sub-models/studio-sub-models/studio-connection.model';
 import {
   AnimeGenreRepository,
   AnimeRepository,
@@ -58,9 +62,8 @@ import {
 } from '../models/sub-models/staff-sub-models';
 import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
-import { LoggerModule } from './logger.module';
 import { StudioService } from '../services/studio.service';
-import { Studio } from '~/models/studio.model';
+import { LoggerModule } from './logger.module';
 
 const animeRepoProvider: Provider = {
   provide: IAnimeRepository,
@@ -103,7 +106,7 @@ const studioRepositoryProvider: Provider = {
   useClass: StudioRepository,
 };
 const studioServiceProvider: Provider = {
-  provide: IStudioRepository,
+  provide: IStudioService,
   useClass: StudioService,
 };
 
@@ -142,6 +145,8 @@ const studioServiceProvider: Provider = {
       StaffImage,
 
       Studio,
+      StudioEdge,
+      StudioConnection,
     ]),
   ],
   providers: [

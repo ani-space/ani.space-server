@@ -56,7 +56,7 @@ import { StaffImage, StaffName } from '../models/sub-models/staff-sub-models';
 import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
 import { StaffPrimaryOccupation } from '../models/sub-models/staff-sub-models/staff-primary-occupations.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
-import {StudioEdge} from '~/models/studio-edge.model';
+import { StudioEdge } from '~/models/studio-edge.model';
 
 @Injectable()
 export class AnilistService implements IAnilistService {
@@ -833,10 +833,12 @@ export class AnilistService implements IAnilistService {
           }
         }
 
-        if(anime.studios && studioConnectionRaw.nodes) {
-          anime.studios.nodes = anime.studios.nodes.concat(studioConnectionRaw.nodes);
+        if (anime.studios && studioConnectionRaw.nodes) {
+          anime.studios.nodes = anime.studios.nodes.concat(
+            studioConnectionRaw.nodes,
+          );
 
-          await this.studioService.saveStudioConnection(anime.studios)
+          await this.studioService.saveStudioConnection(anime.studios);
         }
 
         if (!anime.studios) {
@@ -870,7 +872,7 @@ export class AnilistService implements IAnilistService {
         // fetch and sync next page
         this.handleSaveAnimeStudioConnectionType(page + 1);
       }
-    }, this.AnilistRateLimit)
+    }, this.AnilistRateLimit);
   }
 
   @OnEvent(SynchronizedAnimeEnum.SAVE_STAFFS_TYPE)
@@ -1241,6 +1243,284 @@ export class AnilistService implements IAnilistService {
       //fetch and sync next page
       if (Page.pageInfo?.hasNextPage) {
         this.handleSaveCharactersInfo(page + 1);
+      }
+    }, this.AnilistRateLimit);
+  }
+
+  @OnEvent(SynchronizedAnimeEnum.SAVE_CHARACTER_ANIME_TYPE)
+  public async handleSaveCharacterAnimeConnectionType(
+    page: number = 1,
+    animePage: number = 1,
+  ) {
+    const { docs, pageInfo } = await this.characterService.getCharacterListV1(
+      page,
+      1,
+    );
+    const character = docs[0];
+
+    setTimeout(async () => {
+      try {
+        const document = gql`
+          {
+            Character(id: ${character.idAnilist}) {
+              media(page: ${animePage}, perPage: 15) {
+                edges {
+                  node {
+                    id
+                  }
+                  id
+                  relationType
+                  isMainStudio
+                  characters {
+                    id
+                  }
+                  characterRole
+                  characterName
+                  roleNotes
+                  dubGroup
+                  staffRole
+                  voiceActors {
+                    id
+                  }
+                  voiceActorRoles {
+                    roleNotes
+                    dubGroup
+                    voiceActor {
+                      id
+                    }
+                  }
+                }
+                nodes {
+                  id
+                }
+                pageInfo {
+                  hasNextPage
+                }
+              }
+            }
+          }
+        `;
+
+        //@ts-ignore
+        const { Character } = await this.gqlClient.request(document);
+        const { media } = Character;
+        let { edges, nodes } = media;
+
+        // modify edges
+        if (Array.isArray(edges)) {
+          // @ts-ignore make sure remove duplicate error
+          edges = unique(edges, (e) => e.node?.id);
+
+          for (const edge of edges) {
+            // modify node
+            const animeNode = await this.animeService.findAnimeByIdAnilist(
+              edge.node?.id,
+            );
+            if (animeNode) {
+              Object.assign(edge.node, animeNode);
+            } else {
+              this.logger.warn(`Missing anime with id: ${edge.node?.id}`);
+
+              const newAnimeNode = await this.handleSaveAnimeById(
+                edge.node?.id,
+              );
+
+              if (newAnimeNode) {
+                Object.assign(edge.node, animeNode);
+              } else {
+                this.logger.error(`Not found anime with id: ${edge.node?.id}`);
+
+                this.eventEmitter.emit(LOGGER_CREATED, {
+                  requestObject: JSON.stringify(edge.node?.id),
+                  errorMessage: JSON.stringify(
+                    `Not found anime with id: ${edge.node?.id}`,
+                  ),
+                  tracePath: `AnilistService.handleSaveCharacterAnimeConnectionType`,
+                } as CreateLoggerDto);
+              }
+            }
+
+            // modify characters
+            if (Array.isArray(edge.characters)) {
+              edge.characters = edge.characters.filter(Boolean);
+              for (const c of edge.characters) {
+                const character =
+                  await this.characterService.findCharacterByIdAnilist(
+                    c.id,
+                    true,
+                  );
+
+                if (character) {
+                  Object.assign(c, character);
+                } else {
+                  this.logger.error(`Not found character with id: ${c.id}`);
+
+                  // sleep 500ms because rate limit
+                  await new Promise((r) => setTimeout(r, 500));
+                  const newCharacter = await this.handleSaveCharacterById(c.id);
+
+                  if (newCharacter) {
+                    Object.assign(c, newCharacter);
+                  }
+                }
+              }
+            }
+
+            // modify voiceActors
+            if (Array.isArray(edge.voiceActors)) {
+              //@ts-ignore
+              edge.voiceActors = unique(edge.voiceActors, (v) => v.id).filter(
+                Boolean,
+              );
+              for (const va of edge.voiceActors) {
+                const staff = await this.staffService.findStaffByIdAnilist(
+                  va.id,
+                  true,
+                );
+
+                if (staff) {
+                  Object.assign(va, staff);
+                } else {
+                  // sleep 1s because rate limit
+                  await new Promise((r) => setTimeout(r, 500));
+
+                  const newStaff = await this.handleSaveStaffById(va.id);
+
+                  if (newStaff) {
+                    Object.assign(va, newStaff);
+                  }
+                }
+              }
+            }
+
+            // modify voiceActorRoles
+            if (Array.isArray(edge.voiceActorRoles)) {
+              for (const ev of edge.voiceActorRoles) {
+                const voiceActor = await this.staffService.findStaffByIdAnilist(
+                  ev.voiceActor?.id,
+                );
+
+                if (voiceActor) {
+                  Object.assign(ev.voiceActor, voiceActor);
+                }
+
+                Object.assign(
+                  ev,
+                  await this.staffService.saveStaffRoleType(ev),
+                );
+              }
+            }
+          }
+        }
+
+        // modify nodes
+        if (Array.isArray(nodes)) {
+          nodes = unique(nodes, (n) => n.id);
+          for (const node of nodes) {
+            const animeNode = await this.animeService.findAnimeByIdAnilist(
+              node.id,
+            );
+
+            if (animeNode) {
+              Object.assign(node, animeNode);
+            } else {
+              this.logger.warn(`Missing anime with id: ${node?.id}`);
+
+              const newAnimeNode = await this.handleSaveAnimeById(node.id);
+
+              if (newAnimeNode) {
+                Object.assign(node, animeNode);
+              }
+            }
+          }
+        }
+
+        const animeConnectionRaw: Partial<AnimeConnection> = {
+          edges: Array.isArray(edges)
+            ? edges.map((e) => {
+                return {
+                  idAnilist: e.id,
+                  node: e.node,
+                  relationType: e.relationType,
+                  isMainStudio: e.isMainStudio,
+                  characters: Array.isArray(e.characters) ? e.characters : [],
+                  characterRole: e.characterRole,
+                  characterName: e.characterName,
+                  roleNotes: e.roleNotes,
+                  dubGroup: e.dubGroup,
+                  staffRole: e.staffRole,
+                  voiceActors: Array.isArray(e.voiceActors)
+                    ? e.voiceActors
+                    : [],
+                  voiceActorRoles: Array.isArray(e.voiceActorRoles)
+                    ? e.voiceActorRoles
+                    : [],
+                } as AnimeEdge;
+              })
+            : [],
+          nodes: Array.isArray(nodes) ? nodes : [],
+        };
+
+        // save edges
+        if (
+          Array.isArray(animeConnectionRaw.edges) &&
+          animeConnectionRaw.edges.length > 0
+        ) {
+          for (const edge of animeConnectionRaw.edges) {
+            if (character.anime) {
+              edge.animeConnection = character.anime;
+            }
+
+            Object.assign(edge, await this.animeService.saveAnimeEdge(edge));
+          }
+        }
+
+        // save nodes
+        if (character.anime && animeConnectionRaw.nodes) {
+          character.anime.nodes = character.anime.nodes.concat(
+            animeConnectionRaw.nodes,
+          );
+        }
+
+        // save new connection raw
+        if (!character.anime) {
+          const savedAnimeConnection =
+            await this.animeService.saveAnimeConnection(animeConnectionRaw);
+
+          if (savedAnimeConnection) {
+            character.anime = { ...savedAnimeConnection };
+          }
+        }
+
+        if (await this.characterService.saveCharacter(character)) {
+          this.logger.log(
+            `Successfully saved character anime ${character.idAnilist} page: ${page}, animePage: ${animePage}`,
+          );
+        }
+
+        if (media?.pageInfo?.hasNextPage) {
+          await this.handleSaveCharacterAnimeConnectionType(
+            page,
+            animePage + 1,
+          );
+        } else if (pageInfo.hasNextPage) {
+          await this.handleSaveCharacterAnimeConnectionType(
+            page + 1,
+            animePage,
+          );
+        } else {
+          this.logger.log(`Save character anime DONE!`);
+        }
+      } catch (error) {
+        this.eventEmitter.emit(LOGGER_CREATED, {
+          requestObject: JSON.stringify(character),
+          errorMessage: JSON.stringify(error),
+          notes: `Fetch error page: ${page}`,
+          tracePath: `AnilistService.handleSaveCharacterAnimeConnectionType`,
+        } as CreateLoggerDto);
+
+        // fetch and sync next page
+        this.handleSaveCharacterAnimeConnectionType(page + 1);
       }
     }, this.AnilistRateLimit);
   }
