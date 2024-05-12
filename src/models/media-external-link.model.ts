@@ -21,6 +21,13 @@ export class MediaExternalLink extends BaseEntity {
 
   @Field({
     nullable: true,
+    description: `The relative path leading to the details page of the anime`,
+  })
+  @Column({ nullable: true })
+  animePath?: string;
+
+  @Field({
+    nullable: true,
     description: `The url of the external link or name of link source`,
   })
   @Column({ nullable: true })
