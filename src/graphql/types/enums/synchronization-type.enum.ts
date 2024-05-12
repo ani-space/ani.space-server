@@ -16,6 +16,7 @@ export enum SynchronizedAnimeEnum {
   SAVE_STAFF_CHARACTER_TYPE = 'SAVE_STAFF_CHARACTER_TYPE',
 
   SAVE_STUDIO_TYPE = 'SAVE_STUDIO_TYPE',
+  SAVE_STUDIO_ANIME_TYPE = 'SAVE_STUDIO_ANIME_TYPE'
 }
 
 registerEnumType(SynchronizedAnimeEnum, {

@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { BaseAnilistEntity } from './base-models/base-anilist.model';
 import { AnimeConnection } from './sub-models/anime-sub-models/anime-connection.model';
 
@@ -21,6 +21,8 @@ export class Studio extends BaseAnilistEntity {
     nullable: true,
     description: 'The media the studio has worked on',
   })
+  @OneToOne(() => AnimeConnection, { nullable: true })
+  @JoinColumn()
   anime?: AnimeConnection;
 
   @Field({ nullable: true })
