@@ -49,6 +49,23 @@ export class AnimeStreamingEpisode extends BaseEntity {
   @Column({ nullable: true })
   url?: string;
 
+  @Field({ nullable: true, description: `Quality of the episode` })
+  @Column({ nullable: true })
+  quality?: string;
+
+  @Field({
+    description: `Check whether the source format is m3u8`,
+  })
+  @Column({ default: false })
+  isM3U8: boolean;
+
+  @Field({
+    nullable: true,
+    description: `The format of the video source`,
+  })
+  @Column({ nullable: true })
+  formatType?: string;
+
   @Field({ nullable: true, description: `The name server of the episode` })
   @Column({ nullable: true })
   serverName?: string;
