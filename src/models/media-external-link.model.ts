@@ -66,19 +66,6 @@ export class MediaExternalLink extends BaseEntity {
     nullable: true,
   })
   @Column({ nullable: true })
-  color?: string;
-
-  @Field({
-    nullable: true,
-    description: `The icon image url of the site. Not available for all links. Transparent PNG 64x64`,
-  })
-  @Column({ nullable: true })
-  icon?: string;
-
-  @Field({
-    nullable: true,
-  })
-  @Column({ nullable: true })
   notes?: string;
 
   @Field({
