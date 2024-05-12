@@ -16,6 +16,7 @@ import {
 import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
 import { StaffRoleType } from '../models/sub-models/staff-sub-models/staff-role-type.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
+import { getMethodName } from '~/utils/tools/functions';
 
 @Injectable()
 export class StaffService implements IStaffService {
@@ -88,7 +89,7 @@ export class StaffService implements IStaffService {
       this.eventEmitter.emit(LOGGER_CREATED, {
         requestObject: JSON.stringify(idAnilist),
         notes: `Can't not found staff with id ${idAnilist}`,
-        tracePath: `StaffService.findStaffByIdAnilist`,
+        tracePath: `${StaffService.name}.${getMethodName()}`,
       } as CreateLoggerDto);
     }
 
@@ -118,7 +119,7 @@ export class StaffService implements IStaffService {
       this.eventEmitter.emit(LOGGER_CREATED, {
         requestObject: JSON.stringify(staff),
         errorMessage: JSON.stringify(error),
-        tracePath: `StaffService.saveStaff`,
+        tracePath: `${StaffService.name}.${getMethodName()}`,
       } as CreateLoggerDto);
 
       return null;
@@ -182,7 +183,7 @@ export class StaffService implements IStaffService {
       this.eventEmitter.emit(LOGGER_CREATED, {
         requestObject: JSON.stringify(staffs),
         errorMessage: JSON.stringify(error),
-        tracePath: `StaffService.saveManyStaff`,
+        tracePath: `${StaffService.name}.${getMethodName()}`,
       } as CreateLoggerDto);
 
       return null;
@@ -200,7 +201,7 @@ export class StaffService implements IStaffService {
       this.eventEmitter.emit(LOGGER_CREATED, {
         requestObject: JSON.stringify(staffName),
         errorMessage: JSON.stringify(error),
-        tracePath: `StaffService.saveStaffName`,
+        tracePath: `${StaffService.name}.${getMethodName()}`,
       } as CreateLoggerDto);
 
       return null;
@@ -232,7 +233,7 @@ export class StaffService implements IStaffService {
       this.eventEmitter.emit(LOGGER_CREATED, {
         requestObject: JSON.stringify(staffAlternative),
         errorMessage: JSON.stringify(error),
-        tracePath: `StaffService.saveManyStaffAlternative`,
+        tracePath: `${StaffService.name}.${getMethodName()}`,
       } as CreateLoggerDto);
 
       return null;
@@ -250,7 +251,7 @@ export class StaffService implements IStaffService {
       this.eventEmitter.emit(LOGGER_CREATED, {
         requestObject: JSON.stringify(staffImage),
         errorMessage: JSON.stringify(error),
-        tracePath: `StaffService.saveStaffImage`,
+        tracePath: `${StaffService.name}.${getMethodName()}`,
       } as CreateLoggerDto);
 
       return null;
@@ -268,7 +269,7 @@ export class StaffService implements IStaffService {
       this.eventEmitter.emit(LOGGER_CREATED, {
         requestObject: JSON.stringify(staffYearActive),
         errorMessage: JSON.stringify(error),
-        tracePath: `StaffService.saveStaffYearActive`,
+        tracePath: `${StaffService.name}.${getMethodName()}`,
       } as CreateLoggerDto);
 
       return null;

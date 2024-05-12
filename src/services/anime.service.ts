@@ -17,6 +17,7 @@ import {
   AnimeTitle,
   AnimeTrailer,
 } from '../models/sub-models/anime-sub-models';
+import { getMethodName } from '~/utils/tools/functions';
 
 @Injectable()
 export class AnimeService implements IAnimeService {
@@ -45,7 +46,11 @@ export class AnimeService implements IAnimeService {
     try {
       return await this.animeRepo.save(anime);
     } catch (error) {
-      return this.handleServiceErrors(error, anime, 'AnimeService.saveAnime');
+      return this.handleServiceErrors(
+        error,
+        anime,
+        `${AnimeService.name}.${getMethodName()}`,
+      );
     }
   }
 
@@ -58,7 +63,7 @@ export class AnimeService implements IAnimeService {
       return this.handleServiceErrors(
         error,
         animeConnection,
-        'AnimeService.saveAnimeConnection',
+        `${AnimeService.name}.${getMethodName()}`,
       );
     }
   }
@@ -72,7 +77,7 @@ export class AnimeService implements IAnimeService {
       return this.handleServiceErrors(
         error,
         animeEdgeList,
-        'AnimeService.saveManyAnimeEdge',
+        `${AnimeService.name}.${getMethodName()}`,
       );
     }
   }
@@ -84,7 +89,7 @@ export class AnimeService implements IAnimeService {
       return this.handleServiceErrors(
         error,
         animeEdge,
-        'AnimeService.saveAnimeEdge',
+        `${AnimeService.name}.${getMethodName()}`,
       );
     }
   }
@@ -112,7 +117,7 @@ export class AnimeService implements IAnimeService {
       return this.handleServiceErrors(
         error,
         animeTrailer,
-        'AnimeService.saveAnimeTrailer',
+        `${AnimeService.name}.${getMethodName()}`,
       );
     }
   }
@@ -126,7 +131,7 @@ export class AnimeService implements IAnimeService {
       return this.handleServiceErrors(
         error,
         animeTitle,
-        'AnimeService.saveAnimeTitle',
+        `${AnimeService.name}.${getMethodName()}`,
       );
     }
   }
@@ -140,7 +145,7 @@ export class AnimeService implements IAnimeService {
       return this.handleServiceErrors(
         error,
         animeSynonyms,
-        'AnimeService.saveAnimeSynonyms',
+        `${AnimeService.name}.${getMethodName()}`,
       );
     }
   }
@@ -154,7 +159,7 @@ export class AnimeService implements IAnimeService {
       return this.handleServiceErrors(
         error,
         animeCoverImage,
-        'AnimeService.saveAnimeCoverImage',
+        `${AnimeService.name}.${getMethodName()}`,
       );
     }
   }
@@ -168,7 +173,7 @@ export class AnimeService implements IAnimeService {
       return this.handleServiceErrors(
         error,
         animeList,
-        'AnimeService.createNewAnime',
+        `${AnimeService.name}.${getMethodName()}`,
       );
     }
   }
@@ -187,7 +192,7 @@ export class AnimeService implements IAnimeService {
       this.eventEmitter.emit(LOGGER_CREATED, {
         requestObject: JSON.stringify(idAnilist),
         notes: `Anime not found with anilistId: ${idAnilist}`,
-        tracePath: `AnimeService.findAnimeByIdAnilist`,
+        tracePath: `${AnimeService.name}.${getMethodName()}`,
       } as CreateLoggerDto);
     }
 

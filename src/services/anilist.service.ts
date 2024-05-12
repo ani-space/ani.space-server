@@ -59,6 +59,7 @@ import { StaffImage, StaffName } from '../models/sub-models/staff-sub-models';
 import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-name-alternative.model';
 import { StaffPrimaryOccupation } from '../models/sub-models/staff-sub-models/staff-primary-occupations.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
+import { getMethodName } from '~/utils/tools/functions';
 
 @Injectable()
 export class AnilistService implements IAnilistService {
@@ -146,7 +147,7 @@ export class AnilistService implements IAnilistService {
                   errorMessage: JSON.stringify(
                     `Not found anime with id: ${edge.node?.id}`,
                   ),
-                  tracePath: `AnilistService.handleSaveRelationAnime`,
+                  tracePath: `${AnilistService.name}.${getMethodName()}`,
                 } as CreateLoggerDto);
               }
             }
@@ -180,7 +181,7 @@ export class AnilistService implements IAnilistService {
                   errorMessage: JSON.stringify(
                     `Not found anime with id: ${node?.id}`,
                   ),
-                  tracePath: `AnilistService.handleSaveRelationAnime`,
+                  tracePath: `${AnilistService.name}.${getMethodName()}`,
                 } as CreateLoggerDto);
               }
             }
@@ -237,7 +238,7 @@ export class AnilistService implements IAnilistService {
           requestObject: JSON.stringify(anime),
           errorMessage: JSON.stringify(error),
           notes: `Fetch error page: ${page}`,
-          tracePath: `AnilistService.handleSaveRelationAnime`,
+          tracePath: `${AnilistService.name}.${getMethodName()}`,
         } as CreateLoggerDto);
 
         // fetch and sync next page
@@ -333,7 +334,7 @@ export class AnilistService implements IAnilistService {
           requestObject: JSON.stringify(anime),
           errorMessage: JSON.stringify(error),
           notes: `Fetch error page: ${page}`,
-          tracePath: `AnilistService.handleSaveAnimeCharacterConnectionType`,
+          tracePath: `${AnilistService.name}.${getMethodName()}`,
         } as CreateLoggerDto);
 
         // fetch and sync next page
@@ -418,7 +419,7 @@ export class AnilistService implements IAnilistService {
                   errorMessage: JSON.stringify(
                     `Not found character with id: ${edge.node?.id}`,
                   ),
-                  tracePath: `AnilistService.handleSaveAnimeStaffConnectionType`,
+                  tracePath: `${AnilistService.name}.${getMethodName()}`,
                 } as CreateLoggerDto);
               }
             }
@@ -450,7 +451,7 @@ export class AnilistService implements IAnilistService {
                   errorMessage: JSON.stringify(
                     `Not found character with id: ${node?.id}`,
                   ),
-                  tracePath: `AnilistService.handleSaveAnimeStaffConnectionType`,
+                  tracePath: `${AnilistService.name}.${getMethodName()}`,
                 } as CreateLoggerDto);
               }
             }
@@ -519,7 +520,7 @@ export class AnilistService implements IAnilistService {
           requestObject: JSON.stringify(anime),
           errorMessage: JSON.stringify(error),
           notes: `Fetch error page: ${page}`,
-          tracePath: `AnilistService.handleSaveAnimeStaffConnectionType`,
+          tracePath: `${AnilistService.name}.${getMethodName()}`,
         } as CreateLoggerDto);
 
         // fetch and sync next page
@@ -591,7 +592,7 @@ export class AnilistService implements IAnilistService {
                   errorMessage: JSON.stringify(
                     `Not found studio with id: ${edge.node?.id}`,
                   ),
-                  tracePath: `AnilistService.handleSaveAnimeStudioConnectionType`,
+                  tracePath: `${AnilistService.name}.${getMethodName()}`,
                 } as CreateLoggerDto);
               }
             }
@@ -627,7 +628,7 @@ export class AnilistService implements IAnilistService {
                   errorMessage: JSON.stringify(
                     `Not found studio with id: ${node?.id}`,
                   ),
-                  tracePath: `AnilistService.handleSaveAnimeStudioConnectionType`,
+                  tracePath: `${AnilistService.name}.${getMethodName()}`,
                 } as CreateLoggerDto);
               }
             }
@@ -694,7 +695,7 @@ export class AnilistService implements IAnilistService {
           requestObject: JSON.stringify(anime),
           errorMessage: JSON.stringify(error),
           notes: `Fetch error page: ${page}`,
-          tracePath: `AnilistService.handleSaveAnimeStudioConnectionType`,
+          tracePath: `${AnilistService.name}.${getMethodName()}`,
         } as CreateLoggerDto);
 
         // fetch and sync next page
@@ -745,7 +746,7 @@ export class AnilistService implements IAnilistService {
           requestObject: JSON.stringify(page),
           errorMessage: JSON.stringify(error),
           notes: `Fetch error page: ${page}`,
-          tracePath: `AnilistService.handleSaveStaffsInfo`,
+          tracePath: `${AnilistService.name}.${getMethodName()}`,
         } as CreateLoggerDto);
 
         // fetch and sync next page
@@ -839,7 +840,7 @@ export class AnilistService implements IAnilistService {
           requestObject: JSON.stringify(staff),
           errorMessage: JSON.stringify(error),
           notes: `Fetch error page: ${page}`,
-          tracePath: `AnilistService.handleSaveStaffAnimeConnection`,
+          tracePath: `${AnilistService.name}.${getMethodName()}`,
         } as CreateLoggerDto);
 
         // fetch and sync next page
@@ -937,7 +938,7 @@ export class AnilistService implements IAnilistService {
           requestObject: JSON.stringify(staff),
           errorMessage: JSON.stringify(error),
           notes: `Fetch error page: ${page}`,
-          tracePath: `AnilistService.handleSaveStaffCharacterConnection`,
+          tracePath: `${AnilistService.name}.${getMethodName()}`,
         } as CreateLoggerDto);
 
         // fetch and sync next page
@@ -1361,7 +1362,7 @@ export class AnilistService implements IAnilistService {
           requestObject: JSON.stringify(character),
           errorMessage: JSON.stringify(error),
           notes: `Fetch error page: ${page}`,
-          tracePath: `AnilistService.handleSaveCharacterAnimeConnectionType`,
+          tracePath: `${AnilistService.name}.${getMethodName()}`,
         } as CreateLoggerDto);
 
         // fetch and sync next page
@@ -1423,10 +1424,107 @@ export class AnilistService implements IAnilistService {
           requestObject: JSON.stringify(page),
           errorMessage: JSON.stringify(error),
           notes: `Fetch error page: ${page}`,
-          tracePath: `AnilistService.handleSaveStudiosInfo`,
+          tracePath: `${AnilistService.name}.${getMethodName()}`,
         } as CreateLoggerDto);
 
         this.handleSaveStudiosInfo(page + 1);
+      }
+    }, this.AnilistRateLimit);
+  }
+
+  @OnEvent(SynchronizedAnimeEnum.SAVE_STUDIO_ANIME_TYPE)
+  public async handleSaveStudioAnimeConnection(
+    page: number = 1,
+    animePage: number = 1,
+  ) {
+    const { docs, pageInfo } = await this.studioService.getStudioListV1(
+      page,
+      1,
+    );
+    const studio = docs[0];
+
+    setTimeout(async () => {
+      try {
+        const document = gql`
+          {
+            Studio(id: ${studio.idAnilist}) {
+              media(page: ${animePage}, perPage: 15) {
+                ${animeConnection}
+              }
+            }
+          }
+        `;
+
+        //@ts-ignore
+        const { Studio } = await this.gqlClient.request(document);
+        const { media } = Studio;
+        let { edges, nodes } = media;
+
+        // modify edges
+        edges = await this.handleModifyAnimeEdges(edges);
+
+        // modify nodes
+        nodes = await this.handleModifyAnimeNodes(nodes);
+
+        const animeConnectionRaw: Partial<AnimeConnection> =
+          this.createAnimeConnectionRaw(edges, nodes);
+
+        // save edges
+        if (
+          Array.isArray(animeConnectionRaw.edges) &&
+          animeConnectionRaw.edges.length > 0
+        ) {
+          for (const edge of animeConnectionRaw.edges) {
+            if (studio.anime) {
+              edge.animeConnection = studio.anime;
+            }
+
+            Object.assign(edge, await this.animeService.saveAnimeEdge(edge));
+          }
+        }
+
+        // save nodes
+        if (studio.anime && animeConnectionRaw.nodes) {
+          studio.anime.nodes = studio.anime.nodes.concat(
+            animeConnectionRaw.nodes,
+          );
+
+          await this.animeService.saveAnimeConnection(studio.anime);
+        }
+
+        // save new connection raw
+        if (!studio.anime) {
+          const savedAnimeConnection =
+            await this.animeService.saveAnimeConnection(animeConnectionRaw);
+
+          if (savedAnimeConnection) {
+            studio.anime = { ...savedAnimeConnection };
+          }
+        }
+
+        if (await this.studioService.saveStudio(studio)) {
+          this.logger.log(
+            `Successfully saved studio anime ${studio.idAnilist} page: ${page}, animePage: ${animePage}`,
+          );
+        }
+
+        if (media?.pageInfo?.hasNextPage) {
+          await this.handleSaveStudioAnimeConnection(page, animePage + 1);
+        } else if (pageInfo.hasNextPage) {
+          await this.handleSaveStudioAnimeConnection(page + 1, animePage);
+        } else {
+          this.logger.log(`Save studio anime DONE!`);
+        }
+      } catch (error) {
+        this.eventEmitter.emit(LOGGER_CREATED, {
+          requestObject: JSON.stringify('studio'),
+          errorMessage: JSON.stringify(error),
+          notes: `Fetch error page: ${page}`,
+          tracePath: `${AnilistService.name}.${getMethodName()}`,
+        } as CreateLoggerDto);
+
+        // fetch and sync next page
+        this.handleSaveStudioAnimeConnection(page + 1);
       }
     }, this.AnilistRateLimit);
   }
@@ -1477,7 +1575,7 @@ export class AnilistService implements IAnilistService {
               errorMessage: JSON.stringify(
                 `Not found character with id: ${node?.id}`,
               ),
-              tracePath: `AnilistService.handleModifyCharacterNodes`,
+              tracePath: `${AnilistService.name}.${getMethodName()}`,
             } as CreateLoggerDto);
           }
         }
@@ -1517,7 +1615,7 @@ export class AnilistService implements IAnilistService {
               errorMessage: JSON.stringify(
                 `Not found character with id: ${edge.node?.id}`,
               ),
-              tracePath: `AnilistService.handleModifyCharacterEdge`,
+              tracePath: `${AnilistService.name}.${getMethodName()}`,
             } as CreateLoggerDto);
           }
         }
@@ -1583,7 +1681,7 @@ export class AnilistService implements IAnilistService {
                   errorMessage: JSON.stringify(
                     `Not found anime with id: ${anime.id}`,
                   ),
-                  tracePath: `AnilistService.handleModifyCharacterEdge`,
+                  tracePath: `${AnilistService.name}.${getMethodName()}`,
                 } as CreateLoggerDto);
               }
             }
@@ -1673,7 +1771,7 @@ export class AnilistService implements IAnilistService {
               errorMessage: JSON.stringify(
                 `Not found anime with id: ${edge.node?.id}`,
               ),
-              tracePath: `AnilistService.handleModifyAnimeEdges`,
+              tracePath: `${AnilistService.name}.${getMethodName()}`,
             } as CreateLoggerDto);
           }
         }
@@ -2228,7 +2326,7 @@ export class AnilistService implements IAnilistService {
           errorMessage: JSON.stringify(
             `Not found staff with id: ${voiceActor.id}`,
           ),
-          tracePath: `AnilistService.handleSaveAnimeCharacterConnectionType`,
+          tracePath: `${AnilistService.name}.${getMethodName()}`,
         } as CreateLoggerDto);
       }
     }

@@ -9,6 +9,8 @@ import { IStudioService } from '~/contracts/services';
 import { StudioEdge } from '~/models/studio-edge.model';
 import { Studio } from '~/models/studio.model';
 import { StudioConnection } from '~/models/sub-models/studio-sub-models/studio-connection.model';
+import { IPaginateResult } from '../contracts/dtos/paginate-result.interface';
+import { getMethodName } from '~/utils/tools/functions';
 
 @Injectable()
 export class StudioService implements IStudioService {
@@ -24,17 +26,18 @@ export class StudioService implements IStudioService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  public async saveStudioConnection(studioConnection: Partial<StudioConnection>) {
+  public async saveStudioConnection(
+    studioConnection: Partial<StudioConnection>,
+  ) {
     try {
       return await this.studioConnectionRepo.save(studioConnection);
     } catch (error) {
       return this.handleServiceErrors(
         error,
         studioConnection,
-        'StudioService.saveStudioConnection',
+        `${StudioService.name}.${getMethodName()}`,
       );
     }
-
   }
 
   public async saveStudioEdge(studioEdge: Partial<StudioEdge>) {
@@ -44,7 +47,7 @@ export class StudioService implements IStudioService {
       return this.handleServiceErrors(
         error,
         studioEdge,
-        'StudioService.saveStudioEdge',
+        `${StudioService.name}.${getMethodName()}`,
       );
     }
   }
@@ -56,7 +59,7 @@ export class StudioService implements IStudioService {
       return this.handleServiceErrors(
         error,
         studio,
-        'StudioService.saveStudio',
+        `${StudioService.name}.${getMethodName()}`,
       );
     }
   }
@@ -75,7 +78,7 @@ export class StudioService implements IStudioService {
       this.eventEmitter.emit(LOGGER_CREATED, {
         requestObject: JSON.stringify(idAnilist),
         notes: `Can't not found studio with id ${idAnilist}`,
-        tracePath: `StudioService.findStudioByIdAnilist`,
+        tracePath: `${StudioService.name}.${getMethodName()}`,
       } as CreateLoggerDto);
     }
 
@@ -89,9 +92,38 @@ export class StudioService implements IStudioService {
       return this.handleServiceErrors(
         error,
         studios,
-        'StudioService.saveManyStudio',
+        `${StudioService.name}.${getMethodName()}`,
       );
     }
+  }
+
+  public async getStudioListV1(page: number = 1, limit: number = 10) {
+    const [result, count] = await this.studioRepository.findAndCount({
+      relations: {
+        anime: {
+          nodes: true,
+        },
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      order: {
+        idAnilist: 'ASC',
+      },
+    });
+
+    const lastPage = Math.ceil(count / limit);
+    const studioPage: IPaginateResult<Studio> = {
+      pageInfo: {
+        total: count,
+        perPage: limit,
+        currentPage: page,
+        lastPage,
+        hasNextPage: page < lastPage,
+      },
+      docs: result,
+    };
+
+    return studioPage;
   }
 
   private handleServiceErrors(
