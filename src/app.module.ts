@@ -13,12 +13,14 @@ import {
   MediaModule,
   TriggerModule,
 } from './modules';
+import { AnimevsubModule } from './modules/animevsub.module';
 @Module({
   imports: [
     LoggerModule,
     MediaModule,
     TriggerModule,
     AnilistModule,
+    AnimevsubModule,
 
     EventEmitterModule.forRoot({
       ignoreErrors: true,
