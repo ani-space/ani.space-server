@@ -10,6 +10,7 @@ import { StudioEdge } from '~/models/studio-edge.model';
 import { Studio } from '~/models/studio.model';
 import { StudioConnection } from '~/models/sub-models/studio-sub-models/studio-connection.model';
 import { IPaginateResult } from '../contracts/dtos/paginate-result.interface';
+import { getMethodName } from '~/utils/tools/functions';
 
 @Injectable()
 export class StudioService implements IStudioService {
@@ -34,7 +35,7 @@ export class StudioService implements IStudioService {
       return this.handleServiceErrors(
         error,
         studioConnection,
-        'StudioService.saveStudioConnection',
+        `${StudioService.name}.${getMethodName()}`,
       );
     }
   }
@@ -46,7 +47,7 @@ export class StudioService implements IStudioService {
       return this.handleServiceErrors(
         error,
         studioEdge,
-        'StudioService.saveStudioEdge',
+        `${StudioService.name}.${getMethodName()}`,
       );
     }
   }
@@ -58,7 +59,7 @@ export class StudioService implements IStudioService {
       return this.handleServiceErrors(
         error,
         studio,
-        'StudioService.saveStudio',
+        `${StudioService.name}.${getMethodName()}`,
       );
     }
   }
@@ -77,7 +78,7 @@ export class StudioService implements IStudioService {
       this.eventEmitter.emit(LOGGER_CREATED, {
         requestObject: JSON.stringify(idAnilist),
         notes: `Can't not found studio with id ${idAnilist}`,
-        tracePath: `StudioService.findStudioByIdAnilist`,
+        tracePath: `${StudioService.name}.${getMethodName()}`,
       } as CreateLoggerDto);
     }
 
@@ -91,7 +92,7 @@ export class StudioService implements IStudioService {
       return this.handleServiceErrors(
         error,
         studios,
-        'StudioService.saveManyStudio',
+        `${StudioService.name}.${getMethodName()}`,
       );
     }
   }

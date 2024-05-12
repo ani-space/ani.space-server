@@ -15,6 +15,7 @@ import {
 } from '../models/sub-models/character-sub-models';
 import { CharacterAlternative } from '../models/sub-models/character-sub-models/character-alternative.model';
 import { CharacterAlternativeSpoilers } from '../models/sub-models/character-sub-models/character-alternativeSpoiler.model';
+import { getMethodName } from '~/utils/tools/functions';
 
 @Injectable()
 export class CharacterService implements ICharacterService {
@@ -69,7 +70,7 @@ export class CharacterService implements ICharacterService {
       this.eventEmitter.emit(LOGGER_CREATED, {
         requestObject: JSON.stringify(anilistId),
         notes: `Anime not found with anilistId: ${anilistId}`,
-        tracePath: `CharacterService.findCharacterByIdAnilist`,
+        tracePath: `${CharacterService.name}.${getMethodName()}`,
       } as CreateLoggerDto);
     }
 
@@ -85,7 +86,7 @@ export class CharacterService implements ICharacterService {
       return this.handleServiceErrors(
         error,
         characters,
-        'CharacterService.saveManyCharacter',
+        `${CharacterService.name}.${getMethodName()}`,
       );
     }
   }
@@ -99,7 +100,7 @@ export class CharacterService implements ICharacterService {
       return this.handleServiceErrors(
         error,
         characterImage,
-        'CharacterService.saveCharacterName',
+        `${CharacterService.name}.${getMethodName()}`,
       );
     }
   }
@@ -113,7 +114,7 @@ export class CharacterService implements ICharacterService {
       return this.handleServiceErrors(
         error,
         characterName,
-        'CharacterService.saveCharacterName',
+        `${CharacterService.name}.${getMethodName()}`,
       );
     }
   }
@@ -132,7 +133,7 @@ export class CharacterService implements ICharacterService {
       return this.handleServiceErrors(
         error,
         characterAlternativeSpoilers,
-        'CharacterService.saveManyCharacterAlternativeSpoilers',
+        `${CharacterService.name}.${getMethodName()}`,
       );
     }
   }
@@ -146,7 +147,7 @@ export class CharacterService implements ICharacterService {
       return this.handleServiceErrors(
         error,
         characterAlternative,
-        'CharacterService.saveCharacterAlternative',
+        `${CharacterService.name}.${getMethodName()}`,
       );
     }
   }
@@ -160,7 +161,7 @@ export class CharacterService implements ICharacterService {
       return this.handleServiceErrors(
         error,
         character,
-        'CharacterService.saveCharacter',
+        `${CharacterService.name}.${getMethodName()}`,
       );
     }
   }
@@ -174,7 +175,7 @@ export class CharacterService implements ICharacterService {
       return this.handleServiceErrors(
         error,
         characterEdges,
-        'CharacterService.saveManyCharacterEdge',
+        `${CharacterService.name}.${getMethodName()}`,
       );
     }
   }
@@ -186,7 +187,7 @@ export class CharacterService implements ICharacterService {
       return this.handleServiceErrors(
         error,
         characterEdge,
-        'CharacterService.saveCharacterEdge',
+        `${CharacterService.name}.${getMethodName()}`,
       );
     }
   }
@@ -200,7 +201,7 @@ export class CharacterService implements ICharacterService {
       return this.handleServiceErrors(
         error,
         characterConnection,
-        'CharacterService.saveCharacterConnection',
+        `${CharacterService.name}.${getMethodName()}`,
       );
     }
   }
