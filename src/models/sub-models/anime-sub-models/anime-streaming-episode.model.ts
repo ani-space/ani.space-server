@@ -1,8 +1,9 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, ManyToOne } from 'typeorm';
-import { MediaExternalLink } from '../../media-external-link.model';
-import { TranslationType } from './anime-streaming-translation-type.enum';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '~/models/base-models';
+import { MediaExternalLink } from '../../media-external-link.model';
+import { ServerType } from './anime-streaming-server-type.enum';
+import { TranslationType } from './anime-streaming-translation-type.enum';
 
 @ObjectType()
 @Entity({ name: 'animeStreamingEpisodes' })
@@ -47,6 +48,23 @@ export class AnimeStreamingEpisode extends BaseEntity {
   @Field({ nullable: true, description: `The url of the episode` })
   @Column({ nullable: true })
   url?: string;
+
+  @Field({ nullable: true, description: `The name server of the episode` })
+  @Column({ nullable: true })
+  serverName?: string;
+
+  @Field(() => ServerType, { nullable: true })
+  @Column({
+    type: 'enum',
+    enum: ServerType,
+    nullable: true,
+  })
+  serverType?: ServerType;
+
+  @Field(() => AnimeStreamingEpisode, { nullable: true })
+  @ManyToOne(() => AnimeStreamingEpisode, (fallbackServer) => fallbackServer.id)
+  @JoinColumn()
+  fallbackServer?: AnimeStreamingEpisode;
 
   @Field({ nullable: true })
   @Column({ nullable: true })

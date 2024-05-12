@@ -637,12 +637,24 @@ type AnimeStreamingEpisode {
   The url of the episode
   """
   url: String
+
+  """
+  The name server of the episode
+  """
+  serverName: String
+  serverType: ServerType
+  fallbackServer: AnimeStreamingEpisode
   cachedProxy: String
 }
 
 enum TranslationType {
   DUBBING_TRANSLATION
   SUBBING_TRANSLATION
+}
+
+enum ServerType {
+  PRIMARY
+  FALLBACK
 }
 
 type MediaExternalLink {
