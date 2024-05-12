@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base-models';
 import { AnimeStreamingEpisode } from './sub-models/anime-sub-models/anime-streaming-episode.model';
@@ -21,17 +21,24 @@ export class MediaExternalLink extends BaseEntity {
 
   @Field({
     nullable: true,
-    description: `The url of the external link or base url of link source`,
+    description: `The url of the external link or name of link source`,
   })
   @Column({ nullable: true })
   site?: string;
 
   @Field({
     nullable: true,
-    description: `The links website site id`,
+    description: `Determine if the mapping to an external source truly matches during synchronization.`,
   })
-  @Column({ type: 'int', nullable: true })
-  siteId?: number;
+  @Column({ nullable: true })
+  isMatching?: boolean;
+
+  @Field(() => Float, {
+    nullable: true,
+    description: `Determine the number of matching points in the fuzzy search process, the closer to 0, the more accurate`,
+  })
+  @Column({ type: 'float', nullable: true })
+  matchingScore?: number;
 
   @Field(() => ExternalLinkType, { nullable: true })
   @Column({
