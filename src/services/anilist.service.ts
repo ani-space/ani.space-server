@@ -571,7 +571,7 @@ export class AnilistService implements IAnilistService {
             );
 
             if (studioNode) {
-              Object.assign(edge, studioNode);
+              Object.assign(edge.node, studioNode);
             } else {
               this.logger.warn(`Missing studio with id: ${edge.node?.id}`);
 
@@ -583,7 +583,7 @@ export class AnilistService implements IAnilistService {
               );
 
               if (newStudioNode) {
-                Object.assign(edge, newStudioNode);
+                Object.assign(edge.node, newStudioNode);
               } else {
                 this.logger.error(`Not found studio with id: ${edge.node?.id}`);
 
@@ -1849,6 +1849,7 @@ export class AnilistService implements IAnilistService {
     const document = gql`
       {
         Studio(id: ${anilistId}) {
+          id
           name
           isAnimationStudio
         }
@@ -1865,7 +1866,11 @@ export class AnilistService implements IAnilistService {
       return null;
     }
 
-    return await this.studioService.saveStudio(Studio);
+    return await this.studioService.saveStudio({
+      idAnilist: Studio.id,
+      name: Studio.name,
+      isAnimationStudio: Studio.isAnimationStudio,
+    });
   }
 
   private async handleSaveAnimeById(anilistId: number) {
