@@ -1,5 +1,5 @@
 import { Field, Float, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, Index } from 'typeorm';
 import { BaseEntity } from './base-models';
 import { AnimeStreamingEpisode } from './sub-models/anime-sub-models/anime-streaming-episode.model';
 import { ExternalLinkType } from './sub-models/media-external-sub-models/media-external-link-type.enum';
@@ -19,6 +19,7 @@ export class MediaExternalLink extends BaseEntity {
   )
   animeStreamingEpisodes: AnimeStreamingEpisode[];
 
+  @Index({ unique: true })
   @Field({
     nullable: true,
     description: `The relative path leading to the details page of the anime`,
