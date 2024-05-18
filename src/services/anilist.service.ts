@@ -1352,7 +1352,7 @@ export class AnilistService implements IAnilistService {
         } else if (pageInfo.hasNextPage) {
           await this.handleSaveCharacterAnimeConnectionType(
             page + 1,
-            animePage,
+            1,
           );
         } else {
           this.logger.log(`Save character anime DONE!`);
@@ -1724,7 +1724,7 @@ export class AnilistService implements IAnilistService {
 
   private async handleModifyAnimeNodes(nodes: any) {
     if (Array.isArray(nodes)) {
-      nodes = unique(nodes, (n) => n.id);
+      nodes = unique(nodes, (n) => n.id).filter((n) => n?.type !== 'MANGA');
       for (const node of nodes) {
         const animeNode = await this.animeService.findAnimeByIdAnilist(node.id);
 
@@ -1747,7 +1747,9 @@ export class AnilistService implements IAnilistService {
   private async handleModifyAnimeEdges(edges: any) {
     if (Array.isArray(edges)) {
       // @ts-ignore make sure remove duplicate error
-      edges = unique(edges, (e) => e.node?.id);
+      edges = unique(edges, (e) => e.node?.id).filter(
+        (e) => e.node?.type !== 'MANGA',
+      );
 
       for (const edge of edges) {
         // modify node
