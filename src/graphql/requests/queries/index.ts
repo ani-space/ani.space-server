@@ -137,6 +137,7 @@ export const animeConnection = `
   edges {
     node {
       id
+      type
     }
     id
     relationType(version: 2)
@@ -162,6 +163,7 @@ export const animeConnection = `
   }
   nodes {
     id
+    type
   }
   pageInfo {
     hasNextPage
