@@ -74,4 +74,11 @@ export class MediaExternalLink extends BaseEntity {
   })
   @Column({ nullable: true })
   isDisabled?: boolean;
+
+  @Field({
+    nullable: true,
+    description: `"Serves the purpose of inspection and verification."`,
+  })
+  @Column({ nullable: true })
+  metaInfo?: string;
 }
