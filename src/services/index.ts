@@ -5,6 +5,7 @@ export * from './anilist.service';
 export * from './anime.service';
 export * from './anime-tag.service';
 export * from './anime-genre.service';
+export * from './animevsub.service';
 
 export * from './character.service';
 

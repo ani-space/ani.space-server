@@ -43,6 +43,7 @@ import {
   StaffService,
 } from '~/services';
 import { CharacterService } from '~/services/character.service';
+import { MediaExternalLink } from '../models/media-external-link.model';
 import {
   AnimeCoverImage,
   AnimeDescription,
@@ -147,6 +148,8 @@ const studioServiceProvider: Provider = {
       Studio,
       StudioEdge,
       StudioConnection,
+
+      MediaExternalLink,
     ]),
   ],
   providers: [
