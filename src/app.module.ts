@@ -9,11 +9,12 @@ import { envSchema } from '~/configs/env.schema';
 import { DatabaseConfig } from './configs/index';
 import {
   AnilistModule,
+  AnimeHayModule,
+  AnimevsubModule,
   LoggerModule,
   MediaModule,
   TriggerModule,
 } from './modules';
-import { AnimevsubModule } from './modules/animevsub.module';
 @Module({
   imports: [
     LoggerModule,
@@ -21,6 +22,7 @@ import { AnimevsubModule } from './modules/animevsub.module';
     TriggerModule,
     AnilistModule,
     AnimevsubModule,
+    AnimeHayModule,
 
     EventEmitterModule.forRoot({
       ignoreErrors: true,

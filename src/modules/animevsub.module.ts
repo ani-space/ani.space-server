@@ -3,9 +3,15 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { IAnimevsub } from '~/contracts/services';
 import { AnimevsubService } from '~/services';
+import { MediaModule } from './media.module';
+import { AnimeVsub } from '../configs/index';
 
 @Module({
   imports: [
+    MediaModule,
+
+    ConfigModule.forFeature(AnimeVsub),
+
     HttpModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

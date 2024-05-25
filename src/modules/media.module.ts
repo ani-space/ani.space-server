@@ -64,6 +64,8 @@ import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-na
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
 import { StudioService } from '../services/studio.service';
 import { LoggerModule } from './logger.module';
+import { MediaExternalLink } from '../models/media-external-link.model';
+import { MediaResolver } from '../graphql/resolvers/media.resolver';
 
 const animeRepoProvider: Provider = {
   provide: IAnimeRepository,
@@ -147,9 +149,13 @@ const studioServiceProvider: Provider = {
       Studio,
       StudioEdge,
       StudioConnection,
+
+      MediaExternalLink,
     ]),
   ],
   providers: [
+    MediaResolver,
+
     animeRepoProvider,
     animeServiceProvider,
     animeGenreRepoProvider,
