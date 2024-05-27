@@ -2049,6 +2049,9 @@ export class AnilistService implements IAnilistService {
   }
 
   private async handleSaveCharacterById(anilistId: number) {
+    // sleep 1s because rate limit
+    await new Promise((r) => setTimeout(r, 1000));
+
     const document = gql`
       {
         Character(id: ${anilistId}) {
@@ -2056,9 +2059,6 @@ export class AnilistService implements IAnilistService {
         }
       }    
     `;
-
-    // sleep 1s because rate limit
-    await new Promise((r) => setTimeout(r, 1000));
 
     // @ts-ignore
     const { Character } = await this.gqlClient.request(document);
