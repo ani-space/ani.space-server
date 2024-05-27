@@ -1,5 +1,5 @@
 import { Anime, AnimeEdge } from '~/models';
-import { IPaginateResult } from '../dtos';
+import { MediaExternalLink } from '~/models/media-external-link.model';
 import {
   AnimeConnection,
   AnimeCoverImage,
@@ -8,11 +8,28 @@ import {
   AnimeTitle,
   AnimeTrailer,
 } from '~/models/sub-models/anime-sub-models';
+import { AnimeByFuzzySearch, IPaginateResult } from '../dtos';
 
 export interface IAnimeService {
   saveAnime(anime: Partial<Anime>): Promise<Anime | null>;
 
   createManyNewAnime(animeList: Partial<Anime>[]): Promise<Anime[] | null>;
+
+  getMediaExternalLinkList(): Promise<MediaExternalLink[]>;
+
+  fuzzySearchAnimeByTitle(
+    title: string,
+    saveNotFoundLog?: boolean,
+  ): Promise<AnimeByFuzzySearch[]>;
+
+  findMediaExternalLink(
+    animePath: string,
+    saveNotFoundLog?: boolean,
+  ): Promise<MediaExternalLink | null>;
+
+  saveMediaExternalLink(
+    mediaExternalLink: Partial<MediaExternalLink>,
+  ): Promise<(Partial<MediaExternalLink> & MediaExternalLink) | null>;
 
   findAnimeByIdAnilist(
     idAnilist: number,

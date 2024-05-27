@@ -1,11 +1,17 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { IAnimevsub } from '~/contracts/services';
+import { IAnimevsubService } from '~/contracts/services';
 import { AnimevsubService } from '~/services';
+import { MediaModule } from './media.module';
+import { AnimeVsubConfig } from '../configs/index';
 
 @Module({
   imports: [
+    MediaModule,
+
+    ConfigModule.forFeature(AnimeVsubConfig),
+
     HttpModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -24,7 +30,7 @@ import { AnimevsubService } from '~/services';
   ],
   providers: [
     {
-      provide: IAnimevsub,
+      provide: IAnimevsubService,
       useClass: AnimevsubService,
     },
   ],

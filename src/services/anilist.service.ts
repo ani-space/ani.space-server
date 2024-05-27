@@ -831,7 +831,7 @@ export class AnilistService implements IAnilistService {
         if (staffMedia?.pageInfo?.hasNextPage) {
           await this.handleSaveStaffAnimeConnection(page, animePage + 1);
         } else if (pageInfo.hasNextPage) {
-          await this.handleSaveStaffAnimeConnection(page + 1, animePage);
+          await this.handleSaveStaffAnimeConnection(page + 1, 1);
         } else {
           this.logger.log(`Save staff anime DONE!`);
         }
@@ -861,8 +861,8 @@ export class AnilistService implements IAnilistService {
       try {
         const document = gql`
           {
-            Staff(id: 95001) {
-              characters(page: 1, perPage: 15) {
+            Staff(id: ${staff.idAnilist}) {
+              characters(page: ${characterPage}, perPage: 15) {
                 ${characterConnection}
               }
             }
@@ -1350,10 +1350,7 @@ export class AnilistService implements IAnilistService {
             animePage + 1,
           );
         } else if (pageInfo.hasNextPage) {
-          await this.handleSaveCharacterAnimeConnectionType(
-            page + 1,
-            1,
-          );
+          await this.handleSaveCharacterAnimeConnectionType(page + 1, 1);
         } else {
           this.logger.log(`Save character anime DONE!`);
         }
@@ -2052,6 +2049,9 @@ export class AnilistService implements IAnilistService {
   }
 
   private async handleSaveCharacterById(anilistId: number) {
+    // sleep 1s because rate limit
+    await new Promise((r) => setTimeout(r, 1000));
+
     const document = gql`
       {
         Character(id: ${anilistId}) {
@@ -2059,9 +2059,6 @@ export class AnilistService implements IAnilistService {
         }
       }    
     `;
-
-    // sleep 1s because rate limit
-    await new Promise((r) => setTimeout(r, 1000));
 
     // @ts-ignore
     const { Character } = await this.gqlClient.request(document);

@@ -1,14 +1,23 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  Inject,
+  Injectable,
+  Logger,
+  UseInterceptors,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { CreateLoggerDto } from '~/common/dtos';
 import { IAnimeRepository } from '~/contracts/repositories';
 import { IAnimeService } from '~/contracts/services';
 import { Anime } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
+import { getMethodName } from '~/utils/tools/functions';
 import { LOGGER_CREATED } from '../common/constants/index';
+import { AnimeByFuzzySearch } from '../contracts/dtos/fuzzy-search-anime-dto.interface';
 import { IPaginateResult } from '../contracts/dtos/paginate-result.interface';
+import { MediaExternalLink } from '../models/media-external-link.model';
 import {
   AnimeConnection,
   AnimeCoverImage,
@@ -17,7 +26,6 @@ import {
   AnimeTitle,
   AnimeTrailer,
 } from '../models/sub-models/anime-sub-models';
-import { getMethodName } from '~/utils/tools/functions';
 
 @Injectable()
 export class AnimeService implements IAnimeService {
@@ -27,6 +35,8 @@ export class AnimeService implements IAnimeService {
     @Inject(IAnimeRepository) private readonly animeRepo: IAnimeRepository,
     @InjectRepository(AnimeTitle)
     private readonly animeTitleRepo: Repository<AnimeTitle>,
+    @InjectRepository(MediaExternalLink)
+    private readonly mediaExternalLinkRepo: Repository<MediaExternalLink>,
     @InjectRepository(AnimeConnection)
     private readonly animeConnectionRepo: Repository<AnimeConnection>,
     @InjectRepository(AnimeSynonyms)
@@ -42,6 +52,24 @@ export class AnimeService implements IAnimeService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
+  public async getMediaExternalLinkList(): Promise<MediaExternalLink[]> {
+    return this.mediaExternalLinkRepo.find({
+      where: {
+        isMatching: false,
+        matchingScore: Not(0),
+      },
+      relations: {
+        anime: {
+          title: true,
+          synonyms: true,
+          startDate: true,
+          endDate: true,
+          coverImage: true,
+        },
+      },
+    });
+  }
+
   public async saveAnime(anime: Partial<Anime>): Promise<Anime | null> {
     try {
       return await this.animeRepo.save(anime);
@@ -52,6 +80,75 @@ export class AnimeService implements IAnimeService {
         `${AnimeService.name}.${getMethodName()}`,
       );
     }
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  public async fuzzySearchAnimeByTitle(
+    title: string,
+    saveNotFoundLog?: boolean,
+  ) {
+    const animeList = await this.animeRepo.fuzzySearchAnimeByTitle(title);
+
+    if (!animeList && saveNotFoundLog) {
+      this.eventEmitter.emit(LOGGER_CREATED, {
+        requestObject: JSON.stringify(title),
+        notes: `Anime not found with title: ${title}`,
+        tracePath: `${AnimeService.name}.${getMethodName()}`,
+      } as CreateLoggerDto);
+    }
+
+    return animeList.map(
+      (raw) =>
+        new AnimeByFuzzySearch({
+          id: raw.id,
+          idAnilist: raw.idAnilist,
+          maxScore: Math.max(
+            raw.englishmatchingscore,
+            raw.nativematchingscore,
+            raw.romajimatchingscore,
+            raw.userpreferredmatchingscore,
+          ),
+          englishMatchingScore: raw.englishmatchingscore,
+          nativeMatchingScore: raw.nativematchingscore,
+          romajiMatchingScore: raw.romajimatchingscore,
+          userPreferredMatchingScore: raw.userpreferredmatchingscore,
+        }),
+    );
+  }
+
+  public async saveMediaExternalLink(
+    mediaExternalLink: Partial<MediaExternalLink>,
+  ) {
+    try {
+      return await this.mediaExternalLinkRepo.save(mediaExternalLink);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        mediaExternalLink,
+        `${AnimeService.name}.${getMethodName()}`,
+      );
+    }
+  }
+
+  public async findMediaExternalLink(
+    animePath: string,
+    saveNotFoundLog?: boolean,
+  ) {
+    const mediaExternalLink = await this.mediaExternalLinkRepo.findOne({
+      where: {
+        animePath,
+      },
+    });
+
+    if (!mediaExternalLink && saveNotFoundLog) {
+      this.eventEmitter.emit(LOGGER_CREATED, {
+        requestObject: JSON.stringify(animePath),
+        notes: `MediaExternalLink not found with animePath: ${animePath}`,
+        tracePath: `${AnimeService.name}.${getMethodName()}`,
+      } as CreateLoggerDto);
+    }
+
+    return mediaExternalLink;
   }
 
   public saveAnimeConnection(
@@ -186,6 +283,9 @@ export class AnimeService implements IAnimeService {
       where: {
         idAnilist,
       },
+      relations: {
+        mediaExternalLink: true,
+      },
     });
 
     if (!anime && saveNotFoundLog) {
@@ -224,8 +324,9 @@ export class AnimeService implements IAnimeService {
       take: limit,
       skip: (page - 1) * limit,
       order: {
-        idAnilist: 'ASC',
+        createdAt: 'DESC',
       },
+      cache: true,
     });
 
     const lastPage = Math.ceil(count / limit);
