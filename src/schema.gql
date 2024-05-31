@@ -632,10 +632,39 @@ type AiringScheduleConnection {
   pageInfo: PageInfo!
 }
 
+type AnimeStreamingEpisodeFallBackUrl {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  animeStreamingEpisode: AnimeStreamingEpisode
+
+  """
+  The fallback url of the episode
+  """
+  fallbackUrl: String
+
+  """
+  Quality of the episode
+  """
+  quality: String
+
+  """
+  Check whether the source format is m3u8
+  """
+  isM3U8: Boolean!
+
+  """
+  The format of the video source
+  """
+  formatType: String
+}
+
 type AnimeStreamingEpisode {
   id: String!
   createdAt: DateTime!
   updatedAt: DateTime!
+  epId: String
+  epHash: String
   mediaExternalLink: MediaExternalLink!
   translationType: TranslationType
 
@@ -663,6 +692,11 @@ type AnimeStreamingEpisode {
   The url of the episode
   """
   url: String
+
+  """
+  The fallback urls of the episode
+  """
+  fallbackUrls: [AnimeStreamingEpisodeFallBackUrl!]
 
   """
   Quality of the episode
@@ -853,6 +887,7 @@ type Query {
 enum SynchronizedAnimeEnum {
   SEARCH_ANIMEVSUB
   SYNC_ANIMEVSUB
+  SYNC_ANIME_STREAMING_EPISODES
   SEARCH_ANIMEHAY
   ANIME_SCALAR_TYPE
   SAVE_ANIME_CHARACTERS_TYPE

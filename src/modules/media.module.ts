@@ -65,6 +65,8 @@ import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-na
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
 import { StudioService } from '../services/studio.service';
 import { LoggerModule } from './logger.module';
+import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
+import { AnimeStreamingEpisodeFallBackUrl } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-fallback-url.model';
 
 const animeRepoProvider: Provider = {
   provide: IAnimeRepository,
@@ -126,6 +128,8 @@ const studioServiceProvider: Provider = {
       AnimeTrailer,
       AnimeDescription,
       AnimeConnection,
+      AnimeStreamingEpisode,
+      AnimeStreamingEpisodeFallBackUrl,
 
       Character,
       CharacterEdge,
