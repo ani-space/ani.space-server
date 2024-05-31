@@ -29,7 +29,7 @@ export async function generateDocumentFromBrowser(url: string) {
 
   // And we will control the real browser from here:
   const page = await browser.newPage();
-  await page.goto(url);
+  await page.goto(url, { waitUntil: 'load', timeout: 0 });
 
   // @ts-ignore
   const data = await page.evaluate(

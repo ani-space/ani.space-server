@@ -13,6 +13,8 @@ import { IAnimeRepository } from '~/contracts/repositories';
 import { IAnimeService } from '~/contracts/services';
 import { Anime } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
+import { AnimeStreamingEpisodeFallBackUrl } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-fallback-url.model';
+import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
 import { getMethodName } from '~/utils/tools/functions';
 import { LOGGER_CREATED } from '../common/constants/index';
 import { AnimeByFuzzySearch } from '../contracts/dtos/fuzzy-search-anime-dto.interface';
@@ -32,25 +34,75 @@ export class AnimeService implements IAnimeService {
   private readonly logger = new Logger(AnimeService.name);
 
   constructor(
-    @Inject(IAnimeRepository) private readonly animeRepo: IAnimeRepository,
+    @Inject(IAnimeRepository)
+    private readonly animeRepo: IAnimeRepository,
+
     @InjectRepository(AnimeTitle)
     private readonly animeTitleRepo: Repository<AnimeTitle>,
+
     @InjectRepository(MediaExternalLink)
     private readonly mediaExternalLinkRepo: Repository<MediaExternalLink>,
+
     @InjectRepository(AnimeConnection)
     private readonly animeConnectionRepo: Repository<AnimeConnection>,
+
     @InjectRepository(AnimeSynonyms)
     private readonly animeSynonymsRepo: Repository<AnimeSynonyms>,
+
     @InjectRepository(AnimeCoverImage)
     private readonly animeCoverImageRepo: Repository<AnimeCoverImage>,
+
     @InjectRepository(AnimeEdge)
     private readonly animeEdgeRepo: Repository<AnimeEdge>,
+
     @InjectRepository(AnimeTrailer)
     private readonly animeTrailerRepo: Repository<AnimeTrailer>,
+
     @InjectRepository(AnimeDescription)
     private readonly animeDescRepo: Repository<AnimeDescription>,
+
+    @InjectRepository(AnimeStreamingEpisode)
+    private readonly animeStreamingEpisodeRepo: Repository<AnimeStreamingEpisode>,
+
+    @InjectRepository(AnimeStreamingEpisodeFallBackUrl)
+    private readonly animeStreamingEpisodeFallBackUrlRepo: Repository<AnimeStreamingEpisodeFallBackUrl>,
+
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  public async saveAnimeStreamingEpisode(
+    animeStreamingEpisode: Partial<AnimeStreamingEpisode>,
+  ): Promise<(Partial<AnimeStreamingEpisode> & AnimeStreamingEpisode) | null> {
+    try {
+      return await this.animeStreamingEpisodeRepo.save(animeStreamingEpisode);
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        animeStreamingEpisode,
+        `${AnimeService.name}.${getMethodName()}`,
+      );
+    }
+  }
+
+  public async saveAnimeStreamingEpisodeFallBackUrl(
+    animeStreamingEpisodeFallBackUrl: Partial<AnimeStreamingEpisodeFallBackUrl>,
+  ): Promise<
+    | (Partial<AnimeStreamingEpisodeFallBackUrl> &
+        AnimeStreamingEpisodeFallBackUrl)
+    | null
+  > {
+    try {
+      return await this.animeStreamingEpisodeFallBackUrlRepo.save(
+        animeStreamingEpisodeFallBackUrl,
+      );
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        animeStreamingEpisodeFallBackUrl,
+        `${AnimeService.name}.${getMethodName()}`,
+      );
+    }
+  }
 
   public async getMediaExternalLinkList(): Promise<MediaExternalLink[]> {
     return this.mediaExternalLinkRepo.find({
@@ -68,6 +120,40 @@ export class AnimeService implements IAnimeService {
         },
       },
     });
+  }
+
+  public async getMediaExternalLinkListV1(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<IPaginateResult<MediaExternalLink>> {
+    const [result, count] = await this.mediaExternalLinkRepo.findAndCount({
+      relations: {
+        anime: {
+          title: true,
+          description: true,
+        },
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      order: {
+        createdAt: 'DESC',
+      },
+      cache: true,
+    });
+
+    const lastPage = Math.ceil(count / limit);
+    const melResult: IPaginateResult<MediaExternalLink> = {
+      pageInfo: {
+        total: count,
+        perPage: limit,
+        currentPage: page,
+        lastPage,
+        hasNextPage: page < lastPage,
+      },
+      docs: result,
+    };
+
+    return melResult;
   }
 
   public async saveAnime(anime: Partial<Anime>): Promise<Anime | null> {
