@@ -102,7 +102,7 @@ export class AnimevsubService implements IAnimevsubService {
           isM3U8,
           quality,
           formatType,
-          serverName: 'du',
+          serverName: serverName,
           serverType: ServerType.PRIMARY,
           translationType: TranslationType.SUBBING_TRANSLATION,
           language: this.language,
