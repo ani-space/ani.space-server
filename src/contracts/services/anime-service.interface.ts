@@ -8,6 +8,8 @@ import {
   AnimeTitle,
   AnimeTrailer,
 } from '~/models/sub-models/anime-sub-models';
+import { AnimeStreamingEpisodeFallBackUrl } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-fallback-url.model';
+import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
 import { AnimeByFuzzySearch, IPaginateResult } from '../dtos';
 
 export interface IAnimeService {
@@ -16,6 +18,23 @@ export interface IAnimeService {
   createManyNewAnime(animeList: Partial<Anime>[]): Promise<Anime[] | null>;
 
   getMediaExternalLinkList(): Promise<MediaExternalLink[]>;
+
+  saveAnimeStreamingEpisode(
+    animeStreamingEpisode: Partial<AnimeStreamingEpisode>,
+  ): Promise<(Partial<AnimeStreamingEpisode> & AnimeStreamingEpisode) | null>;
+
+  saveAnimeStreamingEpisodeFallBackUrl(
+    animeStreamingEpisodeFallBackUrl: Partial<AnimeStreamingEpisodeFallBackUrl>,
+  ): Promise<
+    | (Partial<AnimeStreamingEpisodeFallBackUrl> &
+        AnimeStreamingEpisodeFallBackUrl)
+    | null
+  >;
+
+  getMediaExternalLinkListV1(
+    page?: number,
+    limit?: number,
+  ): Promise<IPaginateResult<MediaExternalLink>>;
 
   fuzzySearchAnimeByTitle(
     title: string,

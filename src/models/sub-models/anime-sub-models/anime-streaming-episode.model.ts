@@ -1,13 +1,22 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '~/models/base-models';
 import { MediaExternalLink } from '../../media-external-link.model';
 import { ServerType } from './anime-streaming-server-type.enum';
 import { TranslationType } from './anime-streaming-translation-type.enum';
+import { AnimeStreamingEpisodeFallBackUrl } from './anime-streaming-episode-fallback-url.model';
 
 @ObjectType()
 @Entity({ name: 'animeStreamingEpisodes' })
 export class AnimeStreamingEpisode extends BaseEntity {
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  epId?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  epHash?: string;
+
   @Field(() => MediaExternalLink)
   @ManyToOne(
     () => MediaExternalLink,
@@ -48,6 +57,20 @@ export class AnimeStreamingEpisode extends BaseEntity {
   @Field({ nullable: true, description: `The url of the episode` })
   @Column({ nullable: true })
   url?: string;
+
+  @Field(() => [AnimeStreamingEpisodeFallBackUrl], {
+    nullable: true,
+    description: `The fallback urls of the episode`,
+  })
+  @OneToMany(
+    () => AnimeStreamingEpisodeFallBackUrl,
+    (fallbackUrls) => fallbackUrls.animeStreamingEpisode,
+    {
+      nullable: true,
+      onDelete: 'CASCADE',
+    },
+  )
+  fallbackUrls?: AnimeStreamingEpisodeFallBackUrl[];
 
   @Field({ nullable: true, description: `Quality of the episode` })
   @Column({ nullable: true })
