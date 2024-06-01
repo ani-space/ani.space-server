@@ -69,16 +69,28 @@ export class AnilistService implements IAnilistService {
   constructor(
     @Inject(IAnimeGenreService)
     private readonly animeGenreService: IAnimeGenreService,
-    @Inject(IStudioService) private readonly studioService: IStudioService,
+
+    @Inject(IStudioService)
+    private readonly studioService: IStudioService,
+
     @Inject(IAnimeTagService)
     private readonly animeTagService: IAnimeTagService,
-    @Inject(IAnimeService) private readonly animeService: IAnimeService,
+
+    @Inject(IAnimeService)
+    private readonly animeService: IAnimeService,
+
     @Inject(ICharacterService)
     private readonly characterService: ICharacterService,
-    @Inject(IStaffService) private readonly staffService: IStaffService,
+
+    @Inject(IStaffService)
+    private readonly staffService: IStaffService,
+
     @InjectRepository(FuzzyDateInt)
     private readonly fuzzDateRepo: Repository<FuzzyDateInt>,
-    @InjectGraphQLClient() private readonly gqlClient: GraphQLClient,
+
+    @InjectGraphQLClient()
+    private readonly gqlClient: GraphQLClient,
+
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -1508,7 +1520,7 @@ export class AnilistService implements IAnilistService {
         if (media?.pageInfo?.hasNextPage) {
           await this.handleSaveStudioAnimeConnection(page, animePage + 1);
         } else if (pageInfo.hasNextPage) {
-          await this.handleSaveStudioAnimeConnection(page + 1, animePage);
+          await this.handleSaveStudioAnimeConnection(page + 1, 1);
         } else {
           this.logger.log(`Save studio anime DONE!`);
         }

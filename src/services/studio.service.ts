@@ -109,6 +109,7 @@ export class StudioService implements IStudioService {
       order: {
         idAnilist: 'ASC',
       },
+      cache: true,
     });
 
     const lastPage = Math.ceil(count / limit);
