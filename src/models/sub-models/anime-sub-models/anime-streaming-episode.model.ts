@@ -109,4 +109,37 @@ export class AnimeStreamingEpisode extends BaseEntity {
   @Field({ nullable: true })
   @Column({ nullable: true })
   cachedProxy?: string;
+
+  static createAnimeStreamingEpisode(params: {
+    mediaExternalLink: MediaExternalLink;
+    url: string;
+    epId: string;
+    title: string;
+    site: string;
+    isM3U8: boolean;
+    serverType: ServerType;
+    translationType: TranslationType;
+    language: string;
+
+    epHash?: string;
+    quality?: string;
+    formatType?: string;
+    serverName?: string;
+  }) {
+    return {
+      mediaExternalLink: params.mediaExternalLink,
+      url: params.url,
+      epId: params.epId,
+      title: params.title,
+      site: params.site,
+      isM3U8: params.isM3U8,
+      formatType: params.formatType,
+      serverType: params.serverType,
+      language: params.language,
+
+      epHash: params.epHash,
+      quality: params.quality,
+      serverName: params.serverName,
+    } as AnimeStreamingEpisode;
+  }
 }

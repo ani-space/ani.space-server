@@ -67,6 +67,7 @@ import { StudioService } from '../services/studio.service';
 import { LoggerModule } from './logger.module';
 import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
 import { AnimeStreamingEpisodeFallBackUrl } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-fallback-url.model';
+import { MediaResolver } from '~/graphql/resolvers/media.resolver';
 
 const animeRepoProvider: Provider = {
   provide: IAnimeRepository,
@@ -157,6 +158,8 @@ const studioServiceProvider: Provider = {
     ]),
   ],
   providers: [
+    MediaResolver,
+
     animeRepoProvider,
     animeServiceProvider,
     animeGenreRepoProvider,

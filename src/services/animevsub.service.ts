@@ -41,13 +41,13 @@ export class AnimevsubService implements IAnimevsubService {
     private readonly httpService: HttpService,
   ) {}
 
-  @OnEvent(SynchronizedAnimeEnum.SYNC_ANIME_STREAMING_EPISODES)
+  @OnEvent(SynchronizedAnimeEnum.SYNC_ANIMEVSUB_STREAMING_EPISODES)
   public async handleSyncAnimeStreamingEpisodes(
     page: number = 1,
     tryTimes: number = 1,
   ) {
     const { docs, pageInfo } =
-      await this.animeService.getMediaExternalLinkListV1(page, 1);
+      await this.animeService.getMediaExternalLinkListV1(page, 1, this.site);
     const mel = docs[0];
 
     try {
@@ -161,7 +161,7 @@ export class AnimevsubService implements IAnimevsubService {
   }
 
   @OnEvent(SynchronizedAnimeEnum.SYNC_ANIMEVSUB)
-  public async scrapAllLib() {
+  public async handleSyncAllAnime() {
     const lib = [
       {
         page: '0-9',

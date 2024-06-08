@@ -1,4 +1,4 @@
-import { Anime, AnimeEdge } from '~/models';
+import { Anime, AnimeEdge, AniSpaceLog } from '~/models';
 import { MediaExternalLink } from '~/models/media-external-link.model';
 import {
   AnimeConnection,
@@ -13,6 +13,21 @@ import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anim
 import { AnimeByFuzzySearch, IPaginateResult } from '../dtos';
 
 export interface IAnimeService {
+  //TODO: remove after test
+  getMediaExternalLinkListFromLog(): Promise<AniSpaceLog[]>;
+
+  //TODO: remove after test
+  mutateMediaExternalLink(
+    action: string,
+    mid: string,
+    actualLink?: string,
+    idAnilist?: string,
+    animePath?: string,
+  ): Promise<void>;
+
+  //TODO: remove after test
+  getMediaExternalLinkList(): Promise<MediaExternalLink[]>;
+
   saveAnime(anime: Partial<Anime>): Promise<Anime | null>;
 
   createManyNewAnime(animeList: Partial<Anime>[]): Promise<Anime[] | null>;
@@ -34,6 +49,7 @@ export interface IAnimeService {
   getMediaExternalLinkListV1(
     page?: number,
     limit?: number,
+    site?: string,
   ): Promise<IPaginateResult<MediaExternalLink>>;
 
   fuzzySearchAnimeByTitle(

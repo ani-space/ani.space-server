@@ -877,6 +877,7 @@ enum AnimeSource {
 }
 
 type Query {
+  GetMediaExternalLinkList: [MediaExternalLink!]!
   trigger(
     animeSynchronization: SynchronizedAnimeEnum
     page: Int! = 1
@@ -887,8 +888,10 @@ type Query {
 enum SynchronizedAnimeEnum {
   SEARCH_ANIMEVSUB
   SYNC_ANIMEVSUB
-  SYNC_ANIME_STREAMING_EPISODES
+  SYNC_ANIMEVSUB_STREAMING_EPISODES
   SEARCH_ANIMEHAY
+  SYNC_ANIMEHAY
+  SYNC_ANIMEHAY_STREAMING_EPISODES
   ANIME_SCALAR_TYPE
   SAVE_ANIME_CHARACTERS_TYPE
   SAVE_ANIME_RELATIONS_TYPE
@@ -901,4 +904,16 @@ enum SynchronizedAnimeEnum {
   SAVE_STAFF_CHARACTER_TYPE
   SAVE_STUDIO_TYPE
   SAVE_STUDIO_ANIME_TYPE
+}
+
+type Mutation {
+  MutateMediaExternalLink(input: MutateMedia!): String!
+}
+
+input MutateMedia {
+  action: String!
+  mid: String
+  actualLink: String
+  idAnilist: String
+  animePath: String
 }
