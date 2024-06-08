@@ -4,6 +4,10 @@ export const AnimeVsubConfig = registerAs('animevsub', () => ({
   endpoint: process.env.ANIMEVSUB_ENDPOINT,
 }));
 
+export const AnimeHayConfig = registerAs('animehay', () => ({
+  endpoint: process.env.ANIMEHAY_ENDPOINT,
+}));
+
 export const TriggerConfig = registerAs('trigger', () => ({
   secret: process.env.TRIGGER_SECRET_KEY,
 }));

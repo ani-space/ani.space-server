@@ -3,9 +3,15 @@ import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { IAnimeHayService } from '~/contracts/services';
 import { AnimeHayService } from '~/services/animehay.service';
+import { MediaModule } from './media.module';
+import { AnimeHayConfig } from '~/configs';
 
 @Module({
   imports: [
+    MediaModule,
+
+    ConfigModule.forFeature(AnimeHayConfig),
+
     HttpModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

@@ -1,6 +1,6 @@
 import Fuse, { IFuseOptions } from 'fuse.js';
 import { parse } from 'node-html-parser';
-import puppeteer from 'puppeteer';
+import puppeteer, { HTTPRequest } from 'puppeteer';
 
 export function getMethodName() {
   const err = new Error();
@@ -41,4 +41,23 @@ export async function generateDocumentFromBrowser(url: string) {
 
   await page.close();
   return document;
+}
+
+/*
+  Always close the page when finished using it to avoid memory leaks and browser crashes
+*/
+export async function getPageFromBrowser(url: string) {
+  const browserURL = 'http://127.0.0.1:9222';
+  /*
+    Use existing browser on OS (Chrome, Edge, Opera, CocCoc, Brave,...)
+    and add to "target" in shortcut arg '--remote-debugging-port=9222'
+    For example: "C:\Program Files\CocCoc\Browser\Application\browser.exe" --remote-debugging-port=9222
+  */
+  const browser = await puppeteer.connect({ browserURL });
+
+  // And we will control the real browser from here:
+  const page = await browser.newPage();
+  await page.goto(url, { waitUntil: 'load', timeout: 0 });
+
+  return page;
 }
