@@ -26,4 +26,23 @@ export class AnimeStreamingEpisodeSource extends BaseEntity {
   })
   @Column({ default: false })
   isM3U8: boolean;
+
+  static createSource({
+    animeStreamingEpisode,
+    url,
+    quality,
+    isM3U8,
+  }: {
+    animeStreamingEpisode: AnimeStreamingEpisode;
+    url: string;
+    quality: string;
+    isM3U8: boolean;
+  }) {
+    return {
+      animeStreamingEpisode,
+      url,
+      quality,
+      isM3U8,
+    } as AnimeStreamingEpisodeSource;
+  }
 }

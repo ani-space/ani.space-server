@@ -8,19 +8,29 @@ type AiringSchedule {
   updatedAt: DateTime!
   idAnilist: Int!
 
-  """The time the episode airs at"""
+  """
+  The time the episode airs at
+  """
   airingAt: Int!
 
-  """Seconds until episode starts airing"""
+  """
+  Seconds until episode starts airing
+  """
   timeUntilAiring: Int!
 
-  """The airing episode number"""
+  """
+  The airing episode number
+  """
   episode: Int!
 
-  """The associate media id of the airing episode"""
+  """
+  The associate media id of the airing episode
+  """
   mediaId: Int!
 
-  """The associate media of the airing episode"""
+  """
+  The associate media of the airing episode
+  """
   anime: Anime!
 }
 
@@ -106,17 +116,23 @@ type AnimeRank {
   updatedAt: DateTime!
   idAnilist: Int!
 
-  """The numerical rank of the media"""
+  """
+  The numerical rank of the media
+  """
   rank: Int!
   type: AnimeRankType!
   format: AnimeFormat!
   year: Int
   season: AnimeSeason
 
-  """If the ranking is based on all time instead of a season/year"""
+  """
+  If the ranking is based on all time instead of a season/year
+  """
   allTime: Boolean!
 
-  """String that gives context to the ranking type and time span"""
+  """
+  String that gives context to the ranking type and time span
+  """
   context: String!
 }
 
@@ -232,13 +248,19 @@ type Staff {
   homeTown: String
   bloodType: String
 
-  """Characters voiced by the actor"""
+  """
+  Characters voiced by the actor
+  """
   characters: CharacterConnection
 
-  """Media where the staff member has a production role"""
+  """
+  Media where the staff member has a production role
+  """
   staffAnime: AnimeConnection
 
-  """The amount of user's who have favourited the staff member"""
+  """
+  The amount of user's who have favourited the staff member
+  """
   favorites: Int
 }
 
@@ -247,10 +269,14 @@ type StaffRoleType {
   createdAt: DateTime!
   updatedAt: DateTime!
 
-  """The voice actors of the character"""
+  """
+  The voice actors of the character
+  """
   voiceActor: Staff
 
-  """Notes regarding the VA's role for the character"""
+  """
+  Notes regarding the VA's role for the character
+  """
   roleNotes: String!
 
   """
@@ -268,10 +294,14 @@ type CharacterEdge {
   role: CharacterRole
   name: String
 
-  """The voice actors of the character"""
+  """
+  The voice actors of the character
+  """
   voiceActors: [Staff!]
 
-  """The voice actors of the character with role date"""
+  """
+  The voice actors of the character with role date
+  """
   voiceActorRoles: [StaffRoleType!]
   anime: [Anime!]
 }
@@ -321,7 +351,9 @@ type AnimeEdge {
   idAnilist: Int!
   node: Anime
 
-  """The type of relation to the parent model"""
+  """
+  The type of relation to the parent model
+  """
   relationType: AnimeRelation
 
   """
@@ -329,16 +361,24 @@ type AnimeEdge {
   """
   isMainStudio: Boolean!
 
-  """The characters in the media voiced by the parent actor"""
+  """
+  The characters in the media voiced by the parent actor
+  """
   characters: [Character!]
 
-  """The characters role in the media"""
+  """
+  The characters role in the media
+  """
   characterRole: CharacterRole
 
-  """Media specific character name"""
+  """
+  Media specific character name
+  """
   characterName: String
 
-  """Notes regarding the VA's role for the character"""
+  """
+  Notes regarding the VA's role for the character
+  """
   roleNotes: String
 
   """
@@ -346,52 +386,84 @@ type AnimeEdge {
   """
   dubGroup: String
 
-  """The role of the staff member in the production of the media"""
+  """
+  The role of the staff member in the production of the media
+  """
   staffRole: String
 
-  """The voice actors of the character"""
+  """
+  The voice actors of the character
+  """
   voiceActors: [Staff!]
 
-  """The voice actors of the character with role date"""
+  """
+  The voice actors of the character with role date
+  """
   voiceActorRoles: [StaffRoleType!]
 
-  """The order the media should be displayed from the users favourites"""
+  """
+  The order the media should be displayed from the users favourites
+  """
   favouriteOrder: Int
 }
 
-"""Type of relation media has to its parent."""
+"""
+Type of relation media has to its parent.
+"""
 enum AnimeRelation {
-  """An adaption of this media into a different format"""
+  """
+  An adaption of this media into a different format
+  """
   ADAPTATION
 
-  """Released before the relation"""
+  """
+  Released before the relation
+  """
   PREQUEL
 
-  """Released after the relation"""
+  """
+  Released after the relation
+  """
   SEQUEL
 
-  """The media a side story is from"""
+  """
+  The media a side story is from
+  """
   PARENT
 
-  """A side story of the parent media"""
+  """
+  A side story of the parent media
+  """
   SIDE_STORY
 
-  """Shares at least 1 character"""
+  """
+  Shares at least 1 character
+  """
   CHARACTER
 
-  """A shortened and summarized version"""
+  """
+  A shortened and summarized version
+  """
   SUMMARY
 
-  """An alternative version of the same media"""
+  """
+  An alternative version of the same media
+  """
   ALTERNATIVE
 
-  """An alternative version of the media with a different primary focus"""
+  """
+  An alternative version of the media with a different primary focus
+  """
   SPIN_OFF
 
-  """Other"""
+  """
+  Other
+  """
   OTHER
 
-  """The source material the media was adapted from"""
+  """
+  The source material the media was adapted from
+  """
   SOURCE
   COMPILATION
   CONTAINS
@@ -412,28 +484,44 @@ type AnimeTrend {
   updatedAt: DateTime!
   mediaId: Int!
 
-  """The day the data was recorded (timestamp)"""
+  """
+  The day the data was recorded (timestamp)
+  """
   date: Int!
 
-  """The amount of media activity on the day"""
+  """
+  The amount of media activity on the day
+  """
   trending: Int!
 
-  """A weighted average score of all the user's scores of the media"""
+  """
+  A weighted average score of all the user's scores of the media
+  """
   averageScore: Int
 
-  """The number of users with the media on their list"""
+  """
+  The number of users with the media on their list
+  """
   popularity: Int
 
-  """The number of users with watching/reading the media"""
+  """
+  The number of users with watching/reading the media
+  """
   inProgress: Int
 
-  """If the media was being released at this time"""
+  """
+  If the media was being released at this time
+  """
   releasing: Boolean!
 
-  """The episode number of the anime released on this day"""
+  """
+  The episode number of the anime released on this day
+  """
   episode: Int
 
-  """The related media"""
+  """
+  The related media
+  """
   anime: Anime!
 }
 
@@ -460,10 +548,14 @@ type StaffEdge {
   idAnilist: Int!
   node: Staff
 
-  """The role of the staff member in the production of the media"""
+  """
+  The role of the staff member in the production of the media
+  """
   role: String
 
-  """The order the staff should be displayed from the users favourites"""
+  """
+  The order the staff should be displayed from the users favourites
+  """
   favouriteOrder: Int
 }
 
@@ -483,14 +575,20 @@ type Studio {
   idAnilist: Int!
   name: String!
 
-  """If the studio is an animation studio or a different kind of company"""
+  """
+  If the studio is an animation studio or a different kind of company
+  """
   isAnimationStudio: Boolean!
 
-  """The media the studio has worked on"""
+  """
+  The media the studio has worked on
+  """
   anime: AnimeConnection
   siteUrl: String
 
-  """The amount of user's who have favourited the studio"""
+  """
+  The amount of user's who have favourited the studio
+  """
   favorites: Int
 }
 
@@ -501,7 +599,9 @@ type StudioEdge {
   idAnilist: Int!
   node: Studio
 
-  """If the studio is the main animation studio of the anime"""
+  """
+  If the studio is the main animation studio of the anime
+  """
   isMain: Boolean!
   favouriteOrder: Int
 }
@@ -538,13 +638,19 @@ type AnimeStreamingEpisodeSource {
   updatedAt: DateTime!
   animeStreamingEpisode: AnimeStreamingEpisode
 
-  """url of the episode"""
+  """
+  url of the episode
+  """
   url: String
 
-  """quality of the episode"""
+  """
+  quality of the episode
+  """
   quality: String
 
-  """check whether the source format is m3u8"""
+  """
+  check whether the source format is m3u8
+  """
   isM3U8: Boolean!
 }
 
@@ -557,25 +663,39 @@ type AnimeStreamingEpisode {
   mediaExternalLink: MediaExternalLink!
   translationType: TranslationType
 
-  """The language of the episode is dubbed (not the original language)."""
+  """
+  The language of the episode is dubbed (not the original language).
+  """
   language: String
 
-  """The url of the external link or base url of link source"""
+  """
+  The url of the external link or base url of link source
+  """
   site: String
 
-  """Title of the episode"""
+  """
+  Title of the episode
+  """
   title: String
 
-  """Url of episode image thumbnail"""
+  """
+  Url of episode image thumbnail
+  """
   thumbnail: String
 
-  """The fallback urls of the episode"""
+  """
+  The fallback urls of the episode
+  """
   sources: [AnimeStreamingEpisodeSource!]
 
-  """The format of the video source"""
+  """
+  The format of the video source
+  """
   formatType: String
 
-  """The name server of the episode"""
+  """
+  The name server of the episode
+  """
   serverName: String
   serverType: ServerType
   fallbackServer: AnimeStreamingEpisode
@@ -601,10 +721,14 @@ type MediaExternalLink {
   anime: Anime!
   animeStreamingEpisodes: [AnimeStreamingEpisode!]
 
-  """The relative path leading to the details page of the anime"""
+  """
+  The relative path leading to the details page of the anime
+  """
   animePath: String
 
-  """The url of the external link or name of link source"""
+  """
+  The url of the external link or name of link source
+  """
   site: String
 
   """
@@ -618,7 +742,9 @@ type MediaExternalLink {
   matchingScore: Float
   type: ExternalLinkType
 
-  """Language the site content is in. See Staff language field for values."""
+  """
+  Language the site content is in. See Staff language field for values.
+  """
   language: String
   notes: String
   isDisabled: Boolean
@@ -669,23 +795,35 @@ type Anime {
   relations: AnimeConnection
   characters: CharacterConnection
 
-  """The staff who produced the media"""
+  """
+  The staff who produced the media
+  """
   staff: StaffConnection
 
-  """The companies who produced the media"""
+  """
+  The companies who produced the media
+  """
   studios: StudioConnection
   isAdult: Boolean
 
-  """The media's next episode airing schedule"""
+  """
+  The media's next episode airing schedule
+  """
   nextAiringEpisode: AiringSchedule
 
-  """The media's entire airing schedule"""
+  """
+  The media's entire airing schedule
+  """
   airingSchedule: AiringScheduleConnection
 
-  """The media's daily trend stats"""
+  """
+  The media's daily trend stats
+  """
   trends: AnimeTrendConnection
 
-  """On-demand streaming sources (May not be official!)"""
+  """
+  On-demand streaming sources (May not be official!)
+  """
   mediaExternalLink: MediaExternalLink
 
   """
@@ -722,7 +860,11 @@ enum AnimeSource {
 
 type Query {
   GetMediaExternalLinkList: [MediaExternalLink!]!
-  trigger(animeSynchronization: SynchronizedAnimeEnum, page: Int! = 1, nestedPage: Int! = 1): String!
+  trigger(
+    animeSynchronization: SynchronizedAnimeEnum
+    page: Int! = 1
+    nestedPage: Int! = 1
+  ): String!
 }
 
 enum SynchronizedAnimeEnum {
@@ -731,6 +873,7 @@ enum SynchronizedAnimeEnum {
   SYNC_GOGOANIME
   SYNC_ANIMEVSUB_STREAMING_EPISODES
   SYNC_ANIMEHAY_STREAMING_EPISODES
+  SYNC_GOGOANIME_STREAMING_EPISODES
   ANIME_SCALAR_TYPE
   SAVE_ANIME_CHARACTERS_TYPE
   SAVE_ANIME_RELATIONS_TYPE
