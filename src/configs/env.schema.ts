@@ -16,5 +16,8 @@ export const envSchema = Joi.object({
 
   // animevsub endpoint
   ANIMEVSUB_ENDPOINT: Joi.string().default('https://animevietsub.fun'),
+  // animehay endpoint
   ANIMEHAY_ENDPOINT: Joi.string().default('https://animehay.video'),
+  // gogoanime endpoint
+  GOGOANIME_ENDPOINT: Joi.string().default('https://gogoanime3.co'),
 });

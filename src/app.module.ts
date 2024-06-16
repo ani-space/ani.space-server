@@ -15,6 +15,7 @@ import {
   MediaModule,
   TriggerModule,
 } from './modules';
+import { GogoAnimeModule } from './modules/gogoanime.module';
 @Module({
   imports: [
     LoggerModule,
@@ -23,6 +24,7 @@ import {
     AnilistModule,
     AnimevsubModule,
     AnimeHayModule,
+    GogoAnimeModule,
 
     EventEmitterModule.forRoot({
       ignoreErrors: true,
@@ -70,7 +72,5 @@ import {
       },
     }),
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}
