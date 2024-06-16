@@ -4,3 +4,4 @@ export * from './trigger.module';
 export * from './anilist.module';
 export * from './animehay.module';
 export * from './animevsub.module';
+export * from './gogoanime.module';

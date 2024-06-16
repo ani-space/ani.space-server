@@ -8,7 +8,7 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GraphQLError } from 'graphql';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { CreateLoggerDto } from '~/common/dtos';
 import {
   IAnimeRepository,
@@ -17,7 +17,6 @@ import {
 import { IAnimeService } from '~/contracts/services';
 import { Anime } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
-import { AnimeStreamingEpisodeFallBackUrl } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-fallback-url.model';
 import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
 import { ExternalLinkType } from '~/models/sub-models/media-external-sub-models/media-external-link-type.enum';
 import { getMethodName } from '~/utils/tools/functions';
@@ -33,6 +32,7 @@ import {
   AnimeTitle,
   AnimeTrailer,
 } from '../models/sub-models/anime-sub-models';
+import { AnimeStreamingEpisodeSource } from '../models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
 
 @Injectable()
 export class AnimeService implements IAnimeService {
@@ -69,8 +69,8 @@ export class AnimeService implements IAnimeService {
     @InjectRepository(AnimeStreamingEpisode)
     private readonly animeStreamingEpisodeRepo: Repository<AnimeStreamingEpisode>,
 
-    @InjectRepository(AnimeStreamingEpisodeFallBackUrl)
-    private readonly animeStreamingEpisodeFallBackUrlRepo: Repository<AnimeStreamingEpisodeFallBackUrl>,
+    @InjectRepository(AnimeStreamingEpisodeSource)
+    private readonly animeStreamingEpisodeSourceRepo: Repository<AnimeStreamingEpisodeSource>,
 
     @Inject(IAniSpaceLogRepository)
     private readonly aniSpaceLogger: IAniSpaceLogRepository,
@@ -192,55 +192,57 @@ export class AnimeService implements IAnimeService {
 
   //TODO: Remove after test
   public async getMediaExternalLinkList() {
-    try {
-      const logs = await this.getMediaExternalLinkListFromLog();
+    // try {
+    //   const logs = await this.getMediaExternalLinkListFromLog();
 
-      const animeList = await Promise.all(
-        logs.map(async (l) => {
-          const aObj = JSON.parse(l.requestObject!);
-          return this.animeRepo.findByCondition({
-            where: {
-              id: aObj.id,
-            },
-            relations: {
-              title: true,
-              synonyms: true,
-              startDate: true,
-              endDate: true,
-              coverImage: true,
-            },
-          });
-        }),
-      );
+    //   const animeList = await Promise.all(
+    //     logs.map(async (l) => {
+    //       const aObj = JSON.parse(l.requestObject!);
+    //       return this.animeRepo.findByCondition({
+    //         where: {
+    //           id: aObj.id,
+    //         },
+    //         relations: {
+    //           title: true,
+    //           synonyms: true,
+    //           startDate: true,
+    //           endDate: true,
+    //           coverImage: true,
+    //         },
+    //       });
+    //     }),
+    //   );
 
-      return animeList.map((a, idx) => {
-        return {
-          id: logs[idx].id,
-          anime: a,
-          animePath: JSON.parse(logs[idx].notes!).animePath as string,
-          metaInfo: logs[idx].notes,
-        } as MediaExternalLink;
-      });
-    } catch (error) {
-      console.log('error: ', error);
-      return [];
-    }
+    //   return animeList.map((a, idx) => {
+    //     return {
+    //       id: logs[idx].id,
+    //       anime: a,
+    //       animePath: JSON.parse(logs[idx].notes!).animePath as string,
+    //       metaInfo: logs[idx].notes,
+    //     } as MediaExternalLink;
+    //   });
+    // } catch (error) {
+    //   console.log('error: ', error);
+    //   return [];
+    // }
 
-    // return this.mediaExternalLinkRepo.find({
-    //   where: {
-    //     isMatching: false,
-    //     matchingScore: Not(0),
-    //   },
-    //   relations: {
-    //     anime: {
-    //       title: true,
-    //       synonyms: true,
-    //       startDate: true,
-    //       endDate: true,
-    //       coverImage: true,
-    //     },
-    //   },
-    // });
+    return this.mediaExternalLinkRepo.find({
+      where: {
+        isMatching: false,
+        matchingScore: Not(0),
+        site: 'GogoAnime',
+      },
+      relations: {
+        anime: {
+          title: true,
+          synonyms: true,
+          startDate: true,
+          endDate: true,
+          coverImage: true,
+        },
+      },
+      take: 10,
+    });
   }
 
   public async saveAnimeStreamingEpisode(
@@ -257,21 +259,66 @@ export class AnimeService implements IAnimeService {
     }
   }
 
-  public async saveAnimeStreamingEpisodeFallBackUrl(
-    animeStreamingEpisodeFallBackUrl: Partial<AnimeStreamingEpisodeFallBackUrl>,
+  public async getAnimeStreamingEpisodePageV1(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<IPaginateResult<AnimeStreamingEpisode>> {
+    const [result, count] = await this.animeStreamingEpisodeRepo.findAndCount({
+      take: limit,
+      skip: (page - 1) * limit,
+      order: {
+        createdAt: 'DESC',
+      },
+      cache: true,
+    });
+
+    const lastPage = Math.ceil(count / limit);
+    const animeStreamingEpsPage: IPaginateResult<AnimeStreamingEpisode> = {
+      pageInfo: {
+        total: count,
+        perPage: limit,
+        currentPage: page,
+        lastPage,
+        hasNextPage: page < lastPage,
+      },
+      docs: result,
+    };
+
+    return animeStreamingEpsPage;
+  }
+
+  public async saveManyAnimeStreamingEpisodeSource(
+    animeStreamingEpisodeSources: Array<Partial<AnimeStreamingEpisodeSource>>,
   ): Promise<
-    | (Partial<AnimeStreamingEpisodeFallBackUrl> &
-        AnimeStreamingEpisodeFallBackUrl)
+    | (Partial<AnimeStreamingEpisodeSource> & AnimeStreamingEpisodeSource)[]
     | null
   > {
     try {
-      return await this.animeStreamingEpisodeFallBackUrlRepo.save(
-        animeStreamingEpisodeFallBackUrl,
+      return await this.animeStreamingEpisodeSourceRepo.save(
+        animeStreamingEpisodeSources,
       );
     } catch (error) {
       return this.handleServiceErrors(
         error,
-        animeStreamingEpisodeFallBackUrl,
+        animeStreamingEpisodeSources,
+        `${AnimeService.name}.${getMethodName()}`,
+      );
+    }
+  }
+
+  public async saveAnimeStreamingEpisodeSource(
+    animeStreamingEpisodeSource: Partial<AnimeStreamingEpisodeSource>,
+  ): Promise<
+    (Partial<AnimeStreamingEpisodeSource> & AnimeStreamingEpisodeSource) | null
+  > {
+    try {
+      return await this.animeStreamingEpisodeSourceRepo.save(
+        animeStreamingEpisodeSource,
+      );
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        animeStreamingEpisodeSource,
         `${AnimeService.name}.${getMethodName()}`,
       );
     }

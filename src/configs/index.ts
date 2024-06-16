@@ -1,5 +1,9 @@
 import { registerAs } from '@nestjs/config';
 
+export const GogoAnimeConfig = registerAs('gogoAnime', () => ({
+  endpoint: process.env.GOGOANIME_ENDPOINT,
+}));
+
 export const AnimeVsubConfig = registerAs('animevsub', () => ({
   endpoint: process.env.ANIMEVSUB_ENDPOINT,
 }));

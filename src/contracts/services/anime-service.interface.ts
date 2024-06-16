@@ -8,9 +8,9 @@ import {
   AnimeTitle,
   AnimeTrailer,
 } from '~/models/sub-models/anime-sub-models';
-import { AnimeStreamingEpisodeFallBackUrl } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-fallback-url.model';
 import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
 import { AnimeByFuzzySearch, IPaginateResult } from '../dtos';
+import { AnimeStreamingEpisodeSource } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
 
 export interface IAnimeService {
   //TODO: remove after test
@@ -28,6 +28,24 @@ export interface IAnimeService {
   //TODO: remove after test
   getMediaExternalLinkList(): Promise<MediaExternalLink[]>;
 
+  getAnimeStreamingEpisodePageV1(
+    page?: number,
+    limit?: number,
+  ): Promise<IPaginateResult<AnimeStreamingEpisode>>;
+
+  saveManyAnimeStreamingEpisodeSource(
+    animeStreamingEpisodeSources: Array<Partial<AnimeStreamingEpisodeSource>>,
+  ): Promise<
+    | (Partial<AnimeStreamingEpisodeSource> & AnimeStreamingEpisodeSource)[]
+    | null
+  >;
+
+  saveAnimeStreamingEpisodeSource(
+    animeStreamingEpisodeSource: Partial<AnimeStreamingEpisodeSource>,
+  ): Promise<
+    (Partial<AnimeStreamingEpisodeSource> & AnimeStreamingEpisodeSource) | null
+  >;
+
   saveAnime(anime: Partial<Anime>): Promise<Anime | null>;
 
   createManyNewAnime(animeList: Partial<Anime>[]): Promise<Anime[] | null>;
@@ -37,14 +55,6 @@ export interface IAnimeService {
   saveAnimeStreamingEpisode(
     animeStreamingEpisode: Partial<AnimeStreamingEpisode>,
   ): Promise<(Partial<AnimeStreamingEpisode> & AnimeStreamingEpisode) | null>;
-
-  saveAnimeStreamingEpisodeFallBackUrl(
-    animeStreamingEpisodeFallBackUrl: Partial<AnimeStreamingEpisodeFallBackUrl>,
-  ): Promise<
-    | (Partial<AnimeStreamingEpisodeFallBackUrl> &
-        AnimeStreamingEpisodeFallBackUrl)
-    | null
-  >;
 
   getMediaExternalLinkListV1(
     page?: number,

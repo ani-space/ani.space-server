@@ -66,8 +66,8 @@ import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-yea
 import { StudioService } from '../services/studio.service';
 import { LoggerModule } from './logger.module';
 import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
-import { AnimeStreamingEpisodeFallBackUrl } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-fallback-url.model';
 import { MediaResolver } from '~/graphql/resolvers/media.resolver';
+import { AnimeStreamingEpisodeSource } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
 
 const animeRepoProvider: Provider = {
   provide: IAnimeRepository,
@@ -130,7 +130,7 @@ const studioServiceProvider: Provider = {
       AnimeDescription,
       AnimeConnection,
       AnimeStreamingEpisode,
-      AnimeStreamingEpisodeFallBackUrl,
+      AnimeStreamingEpisodeSource,
 
       Character,
       CharacterEdge,
