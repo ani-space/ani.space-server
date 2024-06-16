@@ -2,9 +2,9 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '~/models/base-models';
 import { MediaExternalLink } from '../../media-external-link.model';
+import { AnimeStreamingEpisodeSource } from './anime-streaming-episode-sources.model';
 import { ServerType } from './anime-streaming-server-type.enum';
 import { TranslationType } from './anime-streaming-translation-type.enum';
-import { AnimeStreamingEpisodeFallBackUrl } from './anime-streaming-episode-fallback-url.model';
 
 @ObjectType()
 @Entity({ name: 'animeStreamingEpisodes' })
@@ -54,33 +54,19 @@ export class AnimeStreamingEpisode extends BaseEntity {
   @Column({ nullable: true })
   thumbnail?: string;
 
-  @Field({ nullable: true, description: `The url of the episode` })
-  @Column({ nullable: true })
-  url?: string;
-
-  @Field(() => [AnimeStreamingEpisodeFallBackUrl], {
+  @Field(() => [AnimeStreamingEpisodeSource], {
     nullable: true,
     description: `The fallback urls of the episode`,
   })
   @OneToMany(
-    () => AnimeStreamingEpisodeFallBackUrl,
-    (fallbackUrls) => fallbackUrls.animeStreamingEpisode,
+    () => AnimeStreamingEpisodeSource,
+    (sources) => sources.animeStreamingEpisode,
     {
       nullable: true,
       onDelete: 'CASCADE',
     },
   )
-  fallbackUrls?: AnimeStreamingEpisodeFallBackUrl[];
-
-  @Field({ nullable: true, description: `Quality of the episode` })
-  @Column({ nullable: true })
-  quality?: string;
-
-  @Field({
-    description: `Check whether the source format is m3u8`,
-  })
-  @Column({ default: false })
-  isM3U8: boolean;
+  sources?: AnimeStreamingEpisodeSource[];
 
   @Field({
     nullable: true,
@@ -110,35 +96,37 @@ export class AnimeStreamingEpisode extends BaseEntity {
   @Column({ nullable: true })
   cachedProxy?: string;
 
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  referer?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  download?: string;
+
   static createAnimeStreamingEpisode(params: {
     mediaExternalLink: MediaExternalLink;
-    url: string;
     epId: string;
     title: string;
     site: string;
-    isM3U8: boolean;
     serverType: ServerType;
     translationType: TranslationType;
     language: string;
 
     epHash?: string;
-    quality?: string;
     formatType?: string;
     serverName?: string;
   }) {
     return {
       mediaExternalLink: params.mediaExternalLink,
-      url: params.url,
       epId: params.epId,
       title: params.title,
       site: params.site,
-      isM3U8: params.isM3U8,
       formatType: params.formatType,
       serverType: params.serverType,
       language: params.language,
 
       epHash: params.epHash,
-      quality: params.quality,
       serverName: params.serverName,
     } as AnimeStreamingEpisode;
   }

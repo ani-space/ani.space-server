@@ -94,13 +94,13 @@ export class AnimevsubService implements IAnimevsubService {
           epStreamingResult;
         const animeStreamingEpisodeRaw: Partial<AnimeStreamingEpisode> = {
           mediaExternalLink: mel, // important field
-          url, // important field (the streaming url source)
+          // url, // important field (the streaming url source)
           epId, // important field (the order of episode)
           title,
           site,
           epHash,
-          isM3U8,
-          quality,
+          // isM3U8,
+          // quality,
           formatType,
           serverName: serverName,
           serverType: ServerType.PRIMARY,
@@ -121,14 +121,11 @@ export class AnimevsubService implements IAnimevsubService {
           if (Array.isArray(fallbackUrls) && fallbackUrls.length > 0) {
             await Promise.allSettled(
               fallbackUrls.map(async (e) => {
-                return await this.animeService.saveAnimeStreamingEpisodeFallBackUrl(
-                  {
-                    fallbackUrl: e.fallbackUrl,
-                    formatType: e?.type,
-                    quality: e?.label,
-                    isM3U8: e?.type === 'hls',
-                  },
-                );
+                return await this.animeService.saveAnimeStreamingEpisodeSource({
+                  url: e.fallbackUrl,
+                  quality: e?.label,
+                  isM3U8: e?.type === 'hls',
+                });
               }),
             );
           }
@@ -275,72 +272,6 @@ export class AnimevsubService implements IAnimevsubService {
 
     for await (const item of lib) {
       await this.syncAnimeVsub(1, item.total, item.page);
-    }
-  }
-
-  @OnEvent(SynchronizedAnimeEnum.SEARCH_ANIMEVSUB)
-  public async searchAnime(page: number = 1) {
-    const { docs, pageInfo } = await this.animeService.getAnimeListV1(page, 1);
-    const anime = docs[0];
-
-    try {
-      const searchKeyword = anime.title?.english || anime.title?.native || '';
-
-      let animeList: Array<any> = await this.searchKeywordByPage(searchKeyword);
-
-      const searchResult = fuzzySearch(searchKeyword, animeList, {
-        keys: ['title'],
-        includeScore: true,
-        shouldSort: true,
-      });
-
-      if (searchResult.length > 0) {
-        const resultMatch = searchResult[0];
-
-        const mediaExternalLinkRaw: Partial<MediaExternalLink> = {
-          anime,
-          animePath: resultMatch.item.animePath,
-          site: this.site,
-          // "If there are more than 1 result, this is not a perfect match yet."
-          isMatching: !(searchResult.length > 1),
-          matchingScore: parseFloat(
-            parseFloat(`${resultMatch?.score}`).toFixed(10),
-          ),
-          type: this.type,
-          language: this.language,
-        };
-
-        if (
-          await this.animeService.saveMediaExternalLink(mediaExternalLinkRaw)
-        ) {
-          this.logger.log(
-            `Successfully saved ${searchKeyword} mediaExternalLink ${anime.idAnilist} page: ${page}`,
-          );
-        }
-      } else {
-        this.logger.warn(
-          `Can not find anime ${searchKeyword} on AnimeVSub page: ${page}`,
-        );
-
-        this.eventEmitter.emit(LOGGER_CREATED, {
-          requestObject: JSON.stringify(anime),
-          notes: `Can not find anime ${searchKeyword} on AnimeVSub`,
-          tracePath: `${AnimevsubService.name}.${getMethodName()}V2`,
-        } as CreateLoggerDto);
-      }
-
-      if (pageInfo.hasNextPage) {
-        this.searchAnime(page + 1);
-      }
-    } catch (error) {
-      this.eventEmitter.emit(LOGGER_CREATED, {
-        requestObject: JSON.stringify(anime),
-        errorMessage: JSON.stringify(error),
-        notes: `Fetch error page: ${page}`,
-        tracePath: `${AnimevsubService.name}.${getMethodName()}`,
-      } as CreateLoggerDto);
-
-      this.searchAnime(page + 1);
     }
   }
 

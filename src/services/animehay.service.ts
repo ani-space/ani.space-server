@@ -1,4 +1,3 @@
-import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
@@ -27,16 +26,12 @@ export class AnimeHayService implements IAnimeHayService {
   private readonly animeHayEndpoint?: string;
 
   constructor(
-    private readonly animeHayClient: HttpService,
-
     private readonly eventEmitter: EventEmitter2,
 
     @Inject(IAnimeService) private readonly animeService: IAnimeService,
 
     @Inject(AnimeHayConfig.KEY)
     private readonly animeHayConfig: ConfigType<typeof AnimeHayConfig>,
-
-    private readonly httpService: HttpService,
   ) {
     this.animeHayEndpoint = animeHayConfig.endpoint;
   }
@@ -118,15 +113,15 @@ export class AnimeHayService implements IAnimeHayService {
                 AnimeStreamingEpisode.createAnimeStreamingEpisode({
                   mediaExternalLink: mel, // important field
                   epId: e.url.split('-').slice(-1)[0].replace(/\D/g, ''), // important field (the order of episode)
-                  url: `${videoUrl}`, // important field
+                  // url: `${videoUrl}`, // important field
                   site: this.site, // important field
                   title: e.title,
-                  isM3U8: `${videoUrl}`.includes('m3u8'),
+                  // isM3U8: `${videoUrl}`.includes('m3u8'),
                   translationType: TranslationType.SUBBING_TRANSLATION,
                   language: this.language,
 
                   serverType: ServerType.PRIMARY,
-                  quality: 'HD',
+                  // quality: 'HD',
                   serverName: currentServer,
                 });
 
@@ -169,30 +164,6 @@ export class AnimeHayService implements IAnimeHayService {
         await this.handleSyncAnimeStreamingEpisodes(page + 1, 1);
       }
     }
-  }
-
-  @OnEvent(SynchronizedAnimeEnum.SEARCH_ANIMEHAY)
-  public async searchAnime() {
-    const { data } = await this.animeHayClient.axiosRef.get(
-      `/tim-kiem/${encodeURI('Cowboy Bebop')}.html`,
-      {
-        headers: {
-          'Content-Type':
-            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        },
-      },
-    );
-
-    const document = parse(data);
-    const animeItems = document.querySelectorAll('.movie-item a');
-    const animeResult = animeItems.map((e) => {
-      return {
-        title: e.textContent.trim(),
-        animePath: e.getAttribute('href'),
-      };
-    });
-
-    console.log('animeItem: ', animeResult);
   }
 
   private async syncAnimehay(page: number) {
