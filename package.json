@@ -27,6 +27,9 @@
   },
   "dependencies": {
     "@apollo/server": "^4.10.4",
+    "@automapper/classes": "^8.8.1",
+    "@automapper/core": "^8.8.1",
+    "@automapper/nestjs": "^8.8.1",
     "@golevelup/nestjs-graphql-request": "^0.2.2",
     "@graphql-yoga/nestjs": "^3.3.0",
     "@nestjs/apollo": "^12.1.0",
