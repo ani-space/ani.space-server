@@ -152,24 +152,6 @@ export class AnimeService implements IAnimeService {
     }
   }
 
-  // public async getMediaExternalLinkList(): Promise<MediaExternalLink[]> {
-  //   return this.mediaExternalLinkRepo.find({
-  //     where: {
-  //       isMatching: false,
-  //       matchingScore: Not(0),
-  //     },
-  //     relations: {
-  //       anime: {
-  //         title: true,
-  //         synonyms: true,
-  //         startDate: true,
-  //         endDate: true,
-  //         coverImage: true,
-  //       },
-  //     },
-  //   });
-  // }
-
   public async getMediaExternalLinkListV1(
     page: number = 1,
     limit: number = 10,

@@ -2,7 +2,6 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import {
   Column,
   Entity,
-  Index,
   JoinColumn,
   JoinTable,
   ManyToMany,
@@ -12,6 +11,8 @@ import {
 } from 'typeorm';
 import { AiringSchedule } from './airing-schedule.model';
 import { BaseAnilistEntity } from './base-models/base-anilist.model';
+import { MediaExternalLink } from './media-external-link.model';
+import { AiringScheduleConnection } from './sub-models/airing-schedule-sub-models/airing-schedule-connection.model';
 import {
   AnimeConnection,
   AnimeCoverImage,
@@ -32,8 +33,6 @@ import { CharacterConnection } from './sub-models/character-sub-models';
 import { FuzzyDateInt } from './sub-models/common-sub-models';
 import { StaffConnection } from './sub-models/staff-sub-models/staff-connection.model';
 import { StudioConnection } from './sub-models/studio-sub-models/studio-connection.model';
-import { AiringScheduleConnection } from './sub-models/airing-schedule-sub-models/airing-schedule-connection.model';
-import { MediaExternalLink } from './media-external-link.model';
 
 @ObjectType()
 @Entity({ name: 'anime' })

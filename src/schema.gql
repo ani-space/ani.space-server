@@ -39,6 +39,160 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type AnimeStreamingEpisodeSource {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  animeStreamingEpisode: AnimeStreamingEpisode
+
+  """
+  url of the episode
+  """
+  url: String
+
+  """
+  quality of the episode
+  """
+  quality: String
+
+  """
+  check whether the source format is m3u8
+  """
+  isM3U8: Boolean!
+}
+
+type AnimeStreamingEpisode {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  epId: String
+  epHash: String
+  mediaExternalLink: MediaExternalLink!
+  translationType: TranslationType
+
+  """
+  The language of the episode is dubbed (not the original language).
+  """
+  language: String
+
+  """
+  The url of the external link or base url of link source
+  """
+  site: String
+
+  """
+  Title of the episode
+  """
+  title: String
+
+  """
+  Url of episode image thumbnail
+  """
+  thumbnail: String
+
+  """
+  The fallback urls of the episode
+  """
+  sources: [AnimeStreamingEpisodeSource!]
+
+  """
+  The format of the video source
+  """
+  formatType: String
+
+  """
+  The name server of the episode
+  """
+  serverName: String
+  serverType: ServerType
+  fallbackServer: AnimeStreamingEpisode
+  cachedProxy: String
+  referer: String
+  download: String
+}
+
+enum TranslationType {
+  DUBBING_TRANSLATION
+  SUBBING_TRANSLATION
+}
+
+enum ServerType {
+  PRIMARY
+  FALLBACK
+}
+
+type MediaExternalLink {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  anime: Anime!
+  animeStreamingEpisodes: [AnimeStreamingEpisode!]
+
+  """
+  The relative path leading to the details page of the anime
+  """
+  animePath: String
+
+  """
+  The url of the external link or name of link source
+  """
+  site: String
+
+  """
+  Determine if the mapping to an external source truly matches during synchronization.
+  """
+  isMatching: Boolean
+
+  """
+  Determine the number of matching points in the fuzzy search process, the closer to 0, the more accurate
+  """
+  matchingScore: Float
+  type: ExternalLinkType
+
+  """
+  Language the site content is in. See Staff language field for values.
+  """
+  language: String
+  notes: String
+  isDisabled: Boolean
+
+  """
+  "Serves the purpose of inspection and verification."
+  """
+  metaInfo: String
+}
+
+enum ExternalLinkType {
+  INFO
+  STREAMING
+  SOCIAL
+}
+
+type AiringScheduleEdge {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  idAnilist: Int!
+  node: AiringSchedule
+}
+
+type PageInfo {
+  total: Int!
+  perPage: Int!
+  currentPage: Int!
+  lastPage: Int!
+  hasNextPage: Boolean!
+}
+
+type AiringScheduleConnection {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  edges: [AiringScheduleEdge!]
+  nodes: [AiringSchedule!]
+  pageInfo: PageInfo!
+}
+
 type AnimeTitle {
   id: String!
   createdAt: DateTime!
@@ -310,14 +464,6 @@ enum CharacterRole {
   MAIN
   SUPPORTING
   BACKGROUND
-}
-
-type PageInfo {
-  total: Int!
-  perPage: Int!
-  currentPage: Int!
-  lastPage: Int!
-  hasNextPage: Boolean!
 }
 
 type CharacterConnection {
@@ -615,152 +761,6 @@ type StudioConnection {
   pageInfo: PageInfo!
 }
 
-type AiringScheduleEdge {
-  id: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  idAnilist: Int!
-  node: AiringSchedule
-}
-
-type AiringScheduleConnection {
-  id: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  edges: [AiringScheduleEdge!]
-  nodes: [AiringSchedule!]
-  pageInfo: PageInfo!
-}
-
-type AnimeStreamingEpisodeSource {
-  id: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  animeStreamingEpisode: AnimeStreamingEpisode
-
-  """
-  url of the episode
-  """
-  url: String
-
-  """
-  quality of the episode
-  """
-  quality: String
-
-  """
-  check whether the source format is m3u8
-  """
-  isM3U8: Boolean!
-}
-
-type AnimeStreamingEpisode {
-  id: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  epId: String
-  epHash: String
-  mediaExternalLink: MediaExternalLink!
-  translationType: TranslationType
-
-  """
-  The language of the episode is dubbed (not the original language).
-  """
-  language: String
-
-  """
-  The url of the external link or base url of link source
-  """
-  site: String
-
-  """
-  Title of the episode
-  """
-  title: String
-
-  """
-  Url of episode image thumbnail
-  """
-  thumbnail: String
-
-  """
-  The fallback urls of the episode
-  """
-  sources: [AnimeStreamingEpisodeSource!]
-
-  """
-  The format of the video source
-  """
-  formatType: String
-
-  """
-  The name server of the episode
-  """
-  serverName: String
-  serverType: ServerType
-  fallbackServer: AnimeStreamingEpisode
-  cachedProxy: String
-  referer: String
-  download: String
-}
-
-enum TranslationType {
-  DUBBING_TRANSLATION
-  SUBBING_TRANSLATION
-}
-
-enum ServerType {
-  PRIMARY
-  FALLBACK
-}
-
-type MediaExternalLink {
-  id: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  anime: Anime!
-  animeStreamingEpisodes: [AnimeStreamingEpisode!]
-
-  """
-  The relative path leading to the details page of the anime
-  """
-  animePath: String
-
-  """
-  The url of the external link or name of link source
-  """
-  site: String
-
-  """
-  Determine if the mapping to an external source truly matches during synchronization.
-  """
-  isMatching: Boolean
-
-  """
-  Determine the number of matching points in the fuzzy search process, the closer to 0, the more accurate
-  """
-  matchingScore: Float
-  type: ExternalLinkType
-
-  """
-  Language the site content is in. See Staff language field for values.
-  """
-  language: String
-  notes: String
-  isDisabled: Boolean
-
-  """
-  "Serves the purpose of inspection and verification."
-  """
-  metaInfo: String
-}
-
-enum ExternalLinkType {
-  INFO
-  STREAMING
-  SOCIAL
-}
-
 type Anime {
   id: String!
   createdAt: DateTime!
@@ -858,8 +858,334 @@ enum AnimeSource {
   PICTURE_BOOK
 }
 
+type AiringScheduleDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  idAnilist: Int!
+
+  """
+  The time the episode airs at
+  """
+  airingAt: Int!
+
+  """
+  Seconds until episode starts airing
+  """
+  timeUntilAiring: Int!
+
+  """
+  The airing episode number
+  """
+  episode: Int!
+
+  """
+  The associate media id of the airing episode
+  """
+  mediaId: Int!
+
+  """
+  The associate media of the airing episode
+  """
+  anime: AnimeDto!
+}
+
+type AiringScheduleEdgeDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  idAnilist: Int!
+  node: AiringScheduleDto
+}
+
+type AiringScheduleConnectionDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  edges: [AiringScheduleEdgeDto!]
+  nodes: [AiringScheduleDto!]
+  pageInfo: PageInfo!
+}
+
+type FuzzyDateIntDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  year: Int
+  month: Int
+  day: Int
+}
+
+type AnimeEdgeDto {
+  idAnilist: Int!
+  node: AnimeDto
+
+  """
+  The type of relation to the parent model
+  """
+  relationType: AnimeRelation
+
+  """
+  If the studio is the main animation studio of the media (For Studio->MediaConnection field only)
+  """
+  isMainStudio: Boolean!
+
+  """
+  The characters role in the media
+  """
+  characterRole: CharacterRole
+
+  """
+  Media specific character name
+  """
+  characterName: String
+
+  """
+  Notes regarding the VA's role for the character
+  """
+  roleNotes: String
+
+  """
+  Used for grouping roles where multiple dubs exist for the same language. Either dubbing company name or language variant.
+  """
+  dubGroup: String
+
+  """
+  The role of the staff member in the production of the media
+  """
+  staffRole: String
+
+  """
+  The order the media should be displayed from the users favourites
+  """
+  favouriteOrder: Int
+}
+
+type AnimeConnectionDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  edges: [AnimeEdgeDto!]
+  nodes: [AnimeDto!]
+  pageInfo: PageInfo!
+}
+
+type AnimeCoverImageDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  extraLarge: String
+  large: String
+  medium: String
+  color: String
+}
+
+type AnimeDescriptionDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  english: String
+  englishAIGenerate: String
+  vietnamese: String
+  vietnameseAIGenerate: String
+}
+
+type AnimeGenresDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  genre: String!
+  description: String
+}
+
+type AnimeRankDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  idAnilist: Int!
+
+  """
+  The numerical rank of the media
+  """
+  rank: Int!
+  type: AnimeRankType!
+  format: AnimeFormat!
+  year: Int
+  season: AnimeSeason
+
+  """
+  If the ranking is based on all time instead of a season/year
+  """
+  allTime: Boolean!
+
+  """
+  String that gives context to the ranking type and time span
+  """
+  context: String!
+}
+
+type AnimeSynonymsDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  synonym: String
+  anime: AnimeDto
+}
+
+type AnimeTagDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  descriptionEn: String
+  descriptionVi: String
+  category: String
+  rank: Int
+  isGeneralSpoiler: Boolean
+  isMediaSpoiler: Boolean
+  isAdult: Boolean
+}
+
+type AnimeTitleDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  romaji: String
+  english: String
+  vietnamese: String
+  native: String
+  userPreferred: String
+}
+
+type AnimeTrailerDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  _id: String
+  site: String
+  thumbnail: String
+}
+
+type AnimeTrendDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  mediaId: Int!
+
+  """
+  The day the data was recorded (timestamp)
+  """
+  date: Int!
+
+  """
+  The amount of media activity on the day
+  """
+  trending: Int!
+
+  """
+  A weighted average score of all the user's scores of the media
+  """
+  averageScore: Int
+
+  """
+  The number of users with the media on their list
+  """
+  popularity: Int
+
+  """
+  The number of users with watching/reading the media
+  """
+  inProgress: Int
+
+  """
+  If the media was being released at this time
+  """
+  releasing: Boolean!
+
+  """
+  The episode number of the anime released on this day
+  """
+  episode: Int
+
+  """
+  The related media
+  """
+  anime: AnimeDto!
+}
+
+type AnimeTrendEdgeDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  node: AnimeTrendDto
+}
+
+type AnimeTrendConnectionDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  edges: [AnimeTrendEdgeDto!]
+  nodes: [AnimeTrendDto!]
+  pageInfo: PageInfo!
+}
+
+type AnimeDto {
+  id: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  idAnilist: Int!
+  idMal: Int
+  startDate: FuzzyDateIntDto
+  endDate: FuzzyDateIntDto
+  title: AnimeTitleDto
+  format: AnimeFormat
+  status: AnimeStatus
+  description: AnimeDescriptionDto
+  season: AnimeSeason
+  seasonYear: Int
+  seasonInt: Int
+  episodes: Int
+  duration: Int
+  countryOfOrigin: String
+  isLicensed: Boolean
+  source: AnimeSource
+  hashtag: String
+  trailer: AnimeTrailerDto
+  updateAt: Int
+  coverImage: AnimeCoverImageDto
+  bannerImage: String
+  genres: [AnimeGenresDto!]
+  synonyms: [AnimeSynonymsDto!]
+  averageScore: Int
+  meanScore: Int
+  popularity: Int
+  tags: [AnimeTagDto!]
+  relations: AnimeConnectionDto
+  isAdult: Boolean
+
+  """
+  The media's next episode airing schedule
+  """
+  nextAiringEpisode: AiringScheduleDto
+
+  """
+  The media's entire airing schedule
+  """
+  airingSchedule: AiringScheduleConnectionDto
+
+  """
+  The media's daily trend stats
+  """
+  trends: AnimeTrendConnectionDto
+
+  """
+  The ranking of the media in a particular time span and format compared to other media
+  """
+  rankings: [AnimeRankDto!]
+}
+
 type Query {
-  GetMediaExternalLinkList: [MediaExternalLink!]!
+  Anime: AnimeDto!
   trigger(
     animeSynchronization: SynchronizedAnimeEnum
     page: Int! = 1
@@ -886,16 +1212,4 @@ enum SynchronizedAnimeEnum {
   SAVE_STAFF_CHARACTER_TYPE
   SAVE_STUDIO_TYPE
   SAVE_STUDIO_ANIME_TYPE
-}
-
-type Mutation {
-  MutateMediaExternalLink(input: MutateMedia!): String!
-}
-
-input MutateMedia {
-  action: String!
-  mid: String
-  actualLink: String
-  idAnilist: String
-  animePath: String
 }
