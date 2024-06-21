@@ -7,8 +7,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { GraphQLError } from 'graphql';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateLoggerDto } from '~/common/dtos';
 import {
   IAnimeRepository,
@@ -18,7 +17,6 @@ import { IAnimeService } from '~/contracts/services';
 import { Anime } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
 import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
-import { ExternalLinkType } from '~/models/sub-models/media-external-sub-models/media-external-link-type.enum';
 import { getMethodName } from '~/utils/tools/functions';
 import { LOGGER_CREATED } from '../common/constants/index';
 import { AnimeByFuzzySearch } from '../contracts/dtos/fuzzy-search-anime-dto.interface';
@@ -72,178 +70,8 @@ export class AnimeService implements IAnimeService {
     @InjectRepository(AnimeStreamingEpisodeSource)
     private readonly animeStreamingEpisodeSourceRepo: Repository<AnimeStreamingEpisodeSource>,
 
-    @Inject(IAniSpaceLogRepository)
-    private readonly aniSpaceLogger: IAniSpaceLogRepository,
-
     private readonly eventEmitter: EventEmitter2,
   ) {}
-
-  //TODO: remove after test
-  public async getMediaExternalLinkListFromLog() {
-    try {
-      return await this.aniSpaceLogger.findAll({
-        where: {
-          tracePath: 'AnimeHayService.syncAnimehay',
-        },
-      });
-    } catch (error) {
-      console.log('error', error);
-      return [];
-    }
-  }
-
-  //TODO: remove after test
-  public async mutateMediaExternalLink(
-    action: string,
-    mid: string,
-    actualLink?: string,
-    idAnilist?: string,
-    animePath?: string,
-  ) {
-    if (action === 'create' && idAnilist) {
-      const anime = await this.findAnimeByIdAnilist(Number(idAnilist));
-
-      if (anime) {
-        const oldMel = await this.mediaExternalLinkRepo.findOne({
-          where: {
-            anime,
-          },
-        });
-        if (oldMel) {
-          await this.mediaExternalLinkRepo.remove(oldMel);
-        }
-
-        const mediaExternalLinkRaw: Partial<MediaExternalLink> = {
-          anime,
-          animePath: animePath,
-          site: 'AnimeHay',
-          isMatching: true,
-          matchingScore: 0,
-          type: ExternalLinkType.STREAMING,
-          language: 'Vietnamese',
-        };
-
-        await this.saveMediaExternalLink(mediaExternalLinkRaw);
-        const l = await this.aniSpaceLogger.findByCondition({
-          where: { id: mid },
-        });
-        if (l) {
-          await this.aniSpaceLogger.remove(l);
-        }
-      }
-
-      return;
-    }
-
-    const media = await this.mediaExternalLinkRepo.findOne({
-      where: { id: mid },
-    });
-
-    if (action === 'remove') {
-      if (media) await this.mediaExternalLinkRepo.remove(media);
-      const l = await this.aniSpaceLogger.findByCondition({
-        where: { id: mid },
-      });
-      if (l) {
-        await this.aniSpaceLogger.remove(l);
-      }
-      return;
-    }
-
-    if (!media) {
-      throw new GraphQLError('media not found');
-    }
-
-    if (action === 'approve') {
-      media.isMatching = true;
-      media.matchingScore = 0;
-
-      if (actualLink) {
-        media.animePath = actualLink;
-      }
-
-      await this.mediaExternalLinkRepo.save(media);
-    }
-
-    if (action === 'update' && idAnilist) {
-      const anime = await this.findAnimeByIdAnilist(Number(idAnilist));
-      const animePath = media.animePath;
-
-      if (anime) {
-        const mediaExternalLinkRaw: Partial<MediaExternalLink> = {
-          anime,
-          animePath: animePath,
-          site: 'AnimeHay',
-          // "If there are more than 1 result, this is not a perfect match yet."
-          isMatching: true,
-          matchingScore: 0,
-          type: ExternalLinkType.STREAMING,
-          language: 'Vietnamese',
-        };
-
-        await this.mediaExternalLinkRepo.remove(media);
-
-        await this.saveMediaExternalLink(mediaExternalLinkRaw);
-      } else {
-        console.log('fail');
-      }
-    }
-  }
-
-  //TODO: Remove after test
-  public async getMediaExternalLinkList() {
-    // try {
-    //   const logs = await this.getMediaExternalLinkListFromLog();
-
-    //   const animeList = await Promise.all(
-    //     logs.map(async (l) => {
-    //       const aObj = JSON.parse(l.requestObject!);
-    //       return this.animeRepo.findByCondition({
-    //         where: {
-    //           id: aObj.id,
-    //         },
-    //         relations: {
-    //           title: true,
-    //           synonyms: true,
-    //           startDate: true,
-    //           endDate: true,
-    //           coverImage: true,
-    //         },
-    //       });
-    //     }),
-    //   );
-
-    //   return animeList.map((a, idx) => {
-    //     return {
-    //       id: logs[idx].id,
-    //       anime: a,
-    //       animePath: JSON.parse(logs[idx].notes!).animePath as string,
-    //       metaInfo: logs[idx].notes,
-    //     } as MediaExternalLink;
-    //   });
-    // } catch (error) {
-    //   console.log('error: ', error);
-    //   return [];
-    // }
-
-    return this.mediaExternalLinkRepo.find({
-      where: {
-        isMatching: false,
-        matchingScore: Not(0),
-        site: 'GogoAnime',
-      },
-      relations: {
-        anime: {
-          title: true,
-          synonyms: true,
-          startDate: true,
-          endDate: true,
-          coverImage: true,
-        },
-      },
-      take: 10,
-    });
-  }
 
   public async saveAnimeStreamingEpisode(
     animeStreamingEpisode: Partial<AnimeStreamingEpisode>,
