@@ -1,4 +1,4 @@
-import { Anime, AnimeEdge, AniSpaceLog } from '~/models';
+import { Anime, AnimeEdge } from '~/models';
 import { MediaExternalLink } from '~/models/media-external-link.model';
 import {
   AnimeConnection,
@@ -8,26 +8,11 @@ import {
   AnimeTitle,
   AnimeTrailer,
 } from '~/models/sub-models/anime-sub-models';
+import { AnimeStreamingEpisodeSource } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
 import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
 import { AnimeByFuzzySearch, IPaginateResult } from '../dtos';
-import { AnimeStreamingEpisodeSource } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
 
 export interface IAnimeService {
-  //TODO: remove after test
-  getMediaExternalLinkListFromLog(): Promise<AniSpaceLog[]>;
-
-  //TODO: remove after test
-  mutateMediaExternalLink(
-    action: string,
-    mid: string,
-    actualLink?: string,
-    idAnilist?: string,
-    animePath?: string,
-  ): Promise<void>;
-
-  //TODO: remove after test
-  getMediaExternalLinkList(): Promise<MediaExternalLink[]>;
-
   getAnimeStreamingEpisodePageV1(
     page?: number,
     limit?: number,
@@ -49,8 +34,6 @@ export interface IAnimeService {
   saveAnime(anime: Partial<Anime>): Promise<Anime | null>;
 
   createManyNewAnime(animeList: Partial<Anime>[]): Promise<Anime[] | null>;
-
-  getMediaExternalLinkList(): Promise<MediaExternalLink[]>;
 
   saveAnimeStreamingEpisode(
     animeStreamingEpisode: Partial<AnimeStreamingEpisode>,
