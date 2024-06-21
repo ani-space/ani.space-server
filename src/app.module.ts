@@ -16,6 +16,9 @@ import {
   TriggerModule,
 } from './modules';
 import { GogoAnimeModule } from './modules/gogoanime.module';
+import { AutomapperModule } from '@automapper/nestjs';
+import { classes } from '@automapper/classes';
+
 @Module({
   imports: [
     LoggerModule,
@@ -25,6 +28,10 @@ import { GogoAnimeModule } from './modules/gogoanime.module';
     AnimevsubModule,
     AnimeHayModule,
     GogoAnimeModule,
+
+    AutomapperModule.forRoot({
+      strategyInitializer: classes(),
+    }),
 
     EventEmitterModule.forRoot({
       ignoreErrors: true,
