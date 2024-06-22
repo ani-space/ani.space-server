@@ -23,55 +23,56 @@ import { AnimeTagDto } from './anime-tag.dto';
 import { AnimeTitleDto } from './anime-title.dto';
 import { AnimeTrailerDto } from './anime-trailer.dto';
 import { AnimeTrendConnectionDto } from './anime-trend-connection.dto';
+import { MediaExternalLinkDto } from './media-external-link.dto';
 
 @ObjectType()
 export class AnimeDto extends BaseAnilistDto {
   @AutoMap()
-  @Field((type) => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   idMal: number;
 
   @AutoMap(() => FuzzyDateIntDto)
-  @Field((type) => FuzzyDateIntDto, { nullable: true })
+  @Field(() => FuzzyDateIntDto, { nullable: true })
   startDate?: FuzzyDateIntDto;
 
   @AutoMap(() => FuzzyDateIntDto)
-  @Field((type) => FuzzyDateIntDto, { nullable: true })
+  @Field(() => FuzzyDateIntDto, { nullable: true })
   endDate?: FuzzyDateIntDto;
 
   @AutoMap(() => AnimeTitleDto)
-  @Field((type) => AnimeTitleDto, { nullable: true })
+  @Field(() => AnimeTitleDto, { nullable: true })
   title?: AnimeTitleDto;
 
   @AutoMap()
-  @Field((type) => AnimeFormat, { nullable: true })
+  @Field(() => AnimeFormat, { nullable: true })
   format?: string;
 
   @AutoMap()
-  @Field((type) => AnimeStatus, { nullable: true })
+  @Field(() => AnimeStatus, { nullable: true })
   status?: string;
 
   @AutoMap(() => AnimeDescriptionDto)
-  @Field((type) => AnimeDescriptionDto, { nullable: true })
+  @Field(() => AnimeDescriptionDto, { nullable: true })
   description?: AnimeDescriptionDto;
 
   @AutoMap()
-  @Field((type) => AnimeSeason, { nullable: true })
+  @Field(() => AnimeSeason, { nullable: true })
   season?: string;
 
   @AutoMap()
-  @Field((type) => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   seasonYear?: number;
 
   @AutoMap()
-  @Field((type) => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   seasonInt?: number;
 
   @AutoMap()
-  @Field((type) => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   episodes?: number;
 
   @AutoMap()
-  @Field((type) => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   duration?: number;
 
   @AutoMap()
@@ -83,7 +84,7 @@ export class AnimeDto extends BaseAnilistDto {
   isLicensed?: boolean;
 
   @AutoMap()
-  @Field((type) => AnimeSource, { nullable: true })
+  @Field(() => AnimeSource, { nullable: true })
   source?: string;
 
   @AutoMap()
@@ -91,15 +92,15 @@ export class AnimeDto extends BaseAnilistDto {
   hashtag?: string;
 
   @AutoMap(() => AnimeTrailerDto)
-  @Field((type) => AnimeTrailerDto, { nullable: true })
+  @Field(() => AnimeTrailerDto, { nullable: true })
   trailer?: AnimeTrailerDto;
 
   @AutoMap()
-  @Field((type) => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   updateAt?: number;
 
   @AutoMap(() => AnimeCoverImageDto)
-  @Field((type) => AnimeCoverImageDto, { nullable: true })
+  @Field(() => AnimeCoverImageDto, { nullable: true })
   coverImage?: AnimeCoverImageDto;
 
   @AutoMap()
@@ -107,27 +108,27 @@ export class AnimeDto extends BaseAnilistDto {
   bannerImage?: string;
 
   @AutoMap(() => [AnimeGenresDto])
-  @Field((type) => [AnimeGenresDto], { nullable: true })
+  @Field(() => [AnimeGenresDto], { nullable: true })
   genres?: AnimeGenresDto[];
 
   @AutoMap(() => [AnimeSynonymsDto])
-  @Field((type) => [AnimeSynonymsDto], { nullable: true })
+  @Field(() => [AnimeSynonymsDto], { nullable: true })
   synonyms?: AnimeSynonymsDto[];
 
   @AutoMap()
-  @Field((type) => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   averageScore?: number;
 
   @AutoMap()
-  @Field((type) => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   meanScore?: number;
 
   @AutoMap()
-  @Field((type) => Int, { nullable: true })
+  @Field(() => Int, { nullable: true })
   popularity?: number;
 
   @AutoMap(() => [AnimeTagDto])
-  @Field((type) => [AnimeTagDto], { nullable: true })
+  @Field(() => [AnimeTagDto], { nullable: true })
   tags?: AnimeTagDto[];
 
   @AutoMap(() => AnimeConnectionDto)
@@ -157,30 +158,35 @@ export class AnimeDto extends BaseAnilistDto {
   isAdult?: boolean;
 
   @AutoMap(() => AiringScheduleDto)
-  @Field((type) => AiringScheduleDto, {
+  @Field(() => AiringScheduleDto, {
     nullable: true,
     description: `The media's next episode airing schedule`,
   })
   nextAiringEpisode?: AiringScheduleDto;
 
   @AutoMap(() => AiringScheduleConnectionDto)
-  @Field((type) => AiringScheduleConnectionDto, {
+  @Field(() => AiringScheduleConnectionDto, {
     nullable: true,
     description: `The media's entire airing schedule`,
   })
   airingSchedule?: AiringScheduleConnectionDto;
 
   @AutoMap(() => AnimeTrendConnectionDto)
-  @Field((type) => AnimeTrendConnectionDto, {
+  @Field(() => AnimeTrendConnectionDto, {
     nullable: true,
     description: `The media's daily trend stats`,
   })
   trends?: AnimeTrendConnectionDto;
 
-  // TODO: define mediaExternalLink?: MediaExternalLink[];
+  @AutoMap(() => MediaExternalLinkDto)
+  @Field(() => MediaExternalLinkDto, {
+    nullable: true,
+    description: `On-demand streaming sources (May not be official!)`,
+  })
+  mediaExternalLink?: MediaExternalLinkDto[];
 
   @AutoMap(() => [AnimeRankDto])
-  @Field((type) => [AnimeRankDto], {
+  @Field(() => [AnimeRankDto], {
     nullable: true,
     description: `The ranking of the media in a particular time span and format compared to other media`,
   })
