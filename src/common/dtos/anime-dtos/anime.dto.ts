@@ -12,6 +12,7 @@ import { BaseAnilistDto } from '../base-dtos/base-anilist.dto';
 import { CharacterConnectionDto } from '../character-dtos/character-connection.dto';
 import { FuzzyDateIntDto } from '../common-dtos/fuzzy-date-int.dto';
 import { StaffConnectionDto } from '../staff-dtos/staff-connection.dto';
+import { StudioConnectionDto } from '../studio-dtos/studio-connection.dto';
 import { AnimeConnectionDto } from './anime-connection.dto';
 import { AnimeCoverImageDto } from './anime-cover-image.dto';
 import { AnimeDescriptionDto } from './anime-description.dto';
@@ -144,7 +145,12 @@ export class AnimeDto extends BaseAnilistDto {
   })
   staff?: StaffConnectionDto;
 
-  //TODO: define studios?: StudioConnection;
+  @AutoMap(() => StudioConnectionDto)
+  @Field(() => StudioConnectionDto, {
+    nullable: true,
+    description: `The companies who produced the media`,
+  })
+  studios?: StudioConnectionDto;
 
   @AutoMap()
   @Field({ nullable: true })
