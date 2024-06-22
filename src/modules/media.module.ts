@@ -9,8 +9,8 @@ import {
 } from '~/contracts/repositories';
 import {
   IAnimeGenreService,
-  IAnimeServiceExternal,
-  IAnimeServiceInternal,
+  IAnimeExternalService,
+  IAnimeInternalService,
   IAnimeTagService,
   ICharacterService,
   IStaffService,
@@ -80,11 +80,11 @@ const animeRepoProvider: Provider = {
   useClass: AnimeRepository,
 };
 const animeServiceProvider: Provider = {
-  provide: IAnimeServiceInternal,
+  provide: IAnimeInternalService,
   useClass: AnimeService,
 };
 const animeServiceExternalProvider: Provider = {
-  provide: IAnimeServiceExternal,
+  provide: IAnimeExternalService,
   useClass: AnimeService,
 };
 const animeGenreRepoProvider: Provider = {

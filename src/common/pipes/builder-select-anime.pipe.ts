@@ -7,7 +7,11 @@ import {
 
 export class BuilderSelectAnimePipe implements PipeTransform {
   transform(value: any): MapResultSelect {
-    const mappedSelect = reverseBooleanValueInObj(fieldsMap(value, {}));
+    const mappedSelect = reverseBooleanValueInObj(
+      fieldsMap(value, {
+        skip: ['requestObject', 'errorMessage', '__typename'],
+      }),
+    );
 
     return mappedSelect;
   }
