@@ -7,13 +7,10 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { CreateLoggerDto } from '~/common/dtos';
-import {
-  IAnimeRepository,
-  IAniSpaceLogRepository,
-} from '~/contracts/repositories';
-import { IAnimeService } from '~/contracts/services';
+import { IAnimeRepository } from '~/contracts/repositories';
+import { IAnimeInternalService } from '~/contracts/services';
 import { Anime } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
 import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
@@ -21,6 +18,7 @@ import { getMethodName } from '~/utils/tools/functions';
 import { LOGGER_CREATED } from '../common/constants/index';
 import { AnimeByFuzzySearch } from '../contracts/dtos/fuzzy-search-anime-dto.interface';
 import { IPaginateResult } from '../contracts/dtos/paginate-result.interface';
+import { IAnimeExternalService } from '../contracts/services/anime-service.interface';
 import { MediaExternalLink } from '../models/media-external-link.model';
 import {
   AnimeConnection,
@@ -31,9 +29,13 @@ import {
   AnimeTrailer,
 } from '../models/sub-models/anime-sub-models';
 import { AnimeStreamingEpisodeSource } from '../models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
+import { QueryAnimeArg } from '~/graphql/types/args/query-anime.arg';
+import { MapResultSelect } from '../utils/tools/object';
 
 @Injectable()
-export class AnimeService implements IAnimeService {
+export class AnimeService
+  implements IAnimeInternalService, IAnimeExternalService
+{
   private readonly logger = new Logger(AnimeService.name);
 
   constructor(
@@ -72,6 +74,51 @@ export class AnimeService implements IAnimeService {
 
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  public async getAnimeByConditions(
+    mapResultSelect: MapResultSelect,
+    { id, idMal, isAdult, romajiTitle }: QueryAnimeArg,
+  ): Promise<Anime | null> {
+    try {
+      const anime = await this.animeRepo.findByCondition({
+        select: {
+          ...mapResultSelect,
+        },
+        where: {
+          id,
+          idMal,
+          title: {
+            romaji: romajiTitle,
+          },
+          isAdult,
+        },
+        relations: {
+          startDate: !!mapResultSelect['startDate'],
+          endDate: !!mapResultSelect['endDate'],
+          title: !!mapResultSelect['title'],
+          description: !!mapResultSelect['description'],
+          trailer: !!mapResultSelect['trailer'],
+          coverImage: !!mapResultSelect['coverImage'],
+          genres: !!mapResultSelect['genres'],
+          synonyms: !!mapResultSelect['synonyms'],
+          tags: !!mapResultSelect['tags'],
+          nextAiringEpisode: !!mapResultSelect['nextAiringEpisode'],
+          mediaExternalLink: !!mapResultSelect['mediaExternalLink'] ?? {
+            animeStreamingEpisodes: true,
+          },
+          rankings: !!mapResultSelect['rankings'],
+        },
+      });
+
+      return anime;
+    } catch (error) {
+      return this.handleServiceErrors(
+        error,
+        { mapResultSelect, id, idMal, isAdult, romajiTitle },
+        `${AnimeService.name}.${getMethodName()}`,
+      );
+    }
+  }
 
   public async saveAnimeStreamingEpisode(
     animeStreamingEpisode: Partial<AnimeStreamingEpisode>,

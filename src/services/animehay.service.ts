@@ -5,7 +5,7 @@ import { parse } from 'node-html-parser';
 import { cluster, sort } from 'radash';
 import { LOGGER_CREATED } from '~/common/constants';
 import { CreateLoggerDto } from '~/common/dtos';
-import { IAnimeHayService, IAnimeService } from '~/contracts/services';
+import { IAnimeHayService, IAnimeInternalService } from '~/contracts/services';
 import { ServerType } from '~/models/sub-models/anime-sub-models/anime-streaming-server-type.enum';
 import { generateDocumentFromBrowser } from '~/utils/tools/functions';
 import { AnimeHayConfig } from '../configs/index';
@@ -28,7 +28,8 @@ export class AnimeHayService implements IAnimeHayService {
   constructor(
     private readonly eventEmitter: EventEmitter2,
 
-    @Inject(IAnimeService) private readonly animeService: IAnimeService,
+    @Inject(IAnimeInternalService)
+    private readonly animeService: IAnimeInternalService,
 
     @Inject(AnimeHayConfig.KEY)
     private readonly animeHayConfig: ConfigType<typeof AnimeHayConfig>,

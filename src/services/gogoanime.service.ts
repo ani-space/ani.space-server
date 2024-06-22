@@ -6,7 +6,7 @@ import parse from 'node-html-parser';
 import { cluster, sort } from 'radash';
 import { LOGGER_CREATED } from '~/common/constants';
 import { CreateLoggerDto } from '~/common/dtos';
-import { IAnimeService, IGogoAnimeService } from '~/contracts/services';
+import { IAnimeInternalService, IGogoAnimeService } from '~/contracts/services';
 import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
 import { ServerType } from '~/models/sub-models/anime-sub-models/anime-streaming-server-type.enum';
 import { TranslationType } from '~/models/sub-models/anime-sub-models/anime-streaming-translation-type.enum';
@@ -32,8 +32,8 @@ export class GogoAnimeService implements IGogoAnimeService {
 
     private readonly eventEmitter: EventEmitter2,
 
-    @Inject(IAnimeService)
-    private readonly animeService: IAnimeService,
+    @Inject(IAnimeInternalService)
+    private readonly animeService: IAnimeInternalService,
 
     @Inject(GogoAnimeConfig.KEY)
     private readonly gogoAnimeConfig: ConfigType<typeof GogoAnimeConfig>,

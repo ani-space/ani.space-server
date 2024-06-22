@@ -4,7 +4,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { cluster, sort } from 'radash';
 import { LOGGER_CREATED } from '~/common/constants';
 import { CreateLoggerDto } from '~/common/dtos';
-import { IAnimeService } from '~/contracts/services';
+import { IAnimeInternalService } from '~/contracts/services';
 import { AnimeVsubConfig } from '../configs/index';
 import { IAnimevsubService } from '../contracts/services/animevsub-service.interface';
 import { SynchronizedAnimeEnum } from '../graphql/types/enums/synchronization-type.enum';
@@ -31,7 +31,8 @@ export class AnimevsubService implements IAnimevsubService {
   private readonly language = 'Vietnamese';
 
   constructor(
-    @Inject(IAnimeService) private readonly animeService: IAnimeService,
+    @Inject(IAnimeInternalService)
+    private readonly animeService: IAnimeInternalService,
 
     @Inject(AnimeVsubConfig.KEY)
     private readonly animeVsub: ConfigType<typeof AnimeVsubConfig>,
