@@ -4,6 +4,7 @@ import { Staff } from '~/models/staff.model';
 import { AnimeEdge } from '../../anime-edge.model';
 import { BaseEntity } from '~/models/base-models';
 import { CharacterEdge } from '~/models/character-edge.model';
+import { AutoMap } from '@automapper/classes';
 
 @Entity({ name: 'staffRoleTypes' })
 @ObjectType()
@@ -17,6 +18,7 @@ export class StaffRoleType extends BaseEntity {
   )
   characterEdge: CharacterEdge;
 
+  @AutoMap(() => Staff)
   @Field((type) => Staff, {
     nullable: true,
     description: 'The voice actors of the character',
@@ -24,10 +26,12 @@ export class StaffRoleType extends BaseEntity {
   @ManyToOne(() => Staff)
   voiceActor?: Staff;
 
+  @AutoMap()
   @Field({ description: `Notes regarding the VA's role for the character` })
   @Column({ nullable: true })
   roleNotes?: string;
 
+  @AutoMap()
   @Field({
     description: `Used for grouping roles where multiple dubs exist for the same language. Either dubbing company name or language variant.`,
   })

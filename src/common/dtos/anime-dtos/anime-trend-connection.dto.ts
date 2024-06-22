@@ -15,6 +15,7 @@ export class AnimeTrendConnectionDto extends BaseDto {
   @Field(() => [AnimeTrendDto], { nullable: true })
   nodes: AnimeTrendDto[];
 
+  @AutoMap(() => PageInfo)
   @Field((type) => PageInfo)
   pageInfo: PageInfo;
 }
