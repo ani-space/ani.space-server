@@ -9,6 +9,7 @@ import {
 import { AiringScheduleConnectionDto } from '../airing-schedules-dtos/airing-schedule-connection.dto';
 import { AiringScheduleDto } from '../airing-schedules-dtos/airing-schedule.dto';
 import { BaseAnilistDto } from '../base-dtos/base-anilist.dto';
+import { CharacterConnectionDto } from '../character-dtos/character-connection.dto';
 import { FuzzyDateIntDto } from '../common-dtos/fuzzy-date-int.dto';
 import { AnimeConnectionDto } from './anime-connection.dto';
 import { AnimeCoverImageDto } from './anime-cover-image.dto';
@@ -131,7 +132,9 @@ export class AnimeDto extends BaseAnilistDto {
   @Field((type) => AnimeConnectionDto, { nullable: true })
   relations?: AnimeConnectionDto;
 
-  //TODO: define characters?: CharacterConnectionDto;
+  @AutoMap(() => CharacterConnectionDto)
+  @Field(() => CharacterConnectionDto, { nullable: true })
+  characters?: CharacterConnectionDto;
 
   //TODO: define staff?: StaffConnectionDTO;
 
