@@ -3,6 +3,8 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { CharacterRole } from '../../../models/sub-models/character-sub-models';
 import { AnimeDto } from '../anime-dtos/anime.dto';
 import { BaseAnilistDto } from '../base-dtos/base-anilist.dto';
+import { StaffRoleTypeDto } from '../staff-dtos/staff-role-type.dto';
+import { StaffDto } from '../staff-dtos/staff.dto';
 import { CharacterDto } from './character.dto';
 
 @ObjectType()
@@ -19,9 +21,19 @@ export class CharacterEdgeDto extends BaseAnilistDto {
   @Field({ nullable: true })
   name?: string;
 
-  // TODO: define voiceActors?: Staff[];
+  @AutoMap(() => [StaffDto])
+  @Field(() => [StaffDto], {
+    nullable: true,
+    description: `The voice actors of the character`,
+  })
+  voiceActors?: StaffDto[];
 
-  // TODO: voiceActorRoles?: StaffRoleType[];
+  @AutoMap(() => [StaffRoleTypeDto])
+  @Field((type) => [StaffRoleTypeDto], {
+    nullable: true,
+    description: 'The voice actors of the character with role date',
+  })
+  voiceActorRoles?: StaffRoleTypeDto[];
 
   @AutoMap(() => [AnimeDto])
   @Field(() => [AnimeDto], { nullable: true })

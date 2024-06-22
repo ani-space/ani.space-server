@@ -1,11 +1,11 @@
 import { AutoMap } from '@automapper/classes';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { AnimeRelation } from '../../../models/sub-models/anime-sub-models';
-import { AnimeDto } from './anime.dto';
-import { Character } from '../../../models/character.model';
 import { CharacterRole } from '../../../models/sub-models/character-sub-models';
-import { Staff } from '../../../models/staff.model';
-import { StaffRoleType } from '../../../models/sub-models/staff-sub-models/staff-role-type.model';
+import { CharacterDto } from '../character-dtos/character.dto';
+import { StaffRoleTypeDto } from '../staff-dtos/staff-role-type.dto';
+import { StaffDto } from '../staff-dtos/staff.dto';
+import { AnimeDto } from './anime.dto';
 
 @ObjectType()
 export class AnimeEdgeDto {
@@ -31,7 +31,12 @@ export class AnimeEdgeDto {
   })
   isMainStudio: boolean;
 
-  //TODO: Define characters: CharacterDto[];
+  @AutoMap(() => [CharacterDto])
+  @Field((type) => [CharacterDto], {
+    nullable: true,
+    description: 'The characters in the media voiced by the parent actor',
+  })
+  characters: CharacterDto[];
 
   @AutoMap()
   @Field((type) => CharacterRole, {
@@ -65,9 +70,19 @@ export class AnimeEdgeDto {
   })
   staffRole?: string;
 
-  // TODO: define voiceActors: StaffDto[];
+  @AutoMap(() => [StaffDto])
+  @Field((type) => [StaffDto], {
+    nullable: true,
+    description: 'The voice actors of the character',
+  })
+  voiceActors: StaffDto[];
 
-  // TODO: define  voiceActorRoles?: StaffRoleTypeDto[];
+  @AutoMap(() => [StaffRoleTypeDto])
+  @Field((type) => [StaffRoleTypeDto], {
+    nullable: true,
+    description: 'The voice actors of the character with role date',
+  })
+  voiceActorRoles?: StaffRoleTypeDto[];
 
   @AutoMap()
   @Field((type) => Int, {
