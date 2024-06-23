@@ -10,6 +10,5 @@ export class AnimeSynonymsDto extends BaseDto {
   synonym?: string;
 
   @AutoMap(() => AnimeDto)
-  @Field(() => AnimeDto, { nullable: true })
   anime: AnimeDto;
 }

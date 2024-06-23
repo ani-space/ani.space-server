@@ -15,6 +15,7 @@ export class StaffConnectionDto extends BaseDto {
   @Field((type) => [StaffDto], { nullable: true })
   nodes: StaffDto[];
 
+  @AutoMap(() => PageInfo)
   @Field((type) => PageInfo)
   pageInfo: PageInfo;
 }

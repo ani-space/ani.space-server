@@ -533,6 +533,14 @@
     "@envelop/types" "5.0.0"
     tslib "^2.5.0"
 
+"@envelop/core@^5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@envelop/core/-/core-5.0.1.tgz#7993c5d577b1de01645539cbbe3eab26f213a35a"
+  integrity sha512-wxA8EyE1fPnlbP0nC/SFI7uU8wSNf4YjxZhAPu0P63QbgIvqHtHsH4L3/u+rsTruzhk3OvNRgQyLsMfaR9uzAQ==
+  dependencies:
+    "@envelop/types" "5.0.0"
+    tslib "^2.5.0"
+
 "@envelop/types@5.0.0":
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/@envelop/types/-/types-5.0.0.tgz#3ae59b50ec31d4bdcc7bd0b47e9c8cf2ac44b0ff"
@@ -3960,6 +3968,11 @@ graphemer@^1.4.0:
   resolved "https://registry.yarnpkg.com/graphemer/-/graphemer-1.4.0.tgz#fb2f1d55e0e3a1849aeffc90c4fa0dd53a0e66c6"
   integrity sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==
 
+graphql-fields-list@^2.2.4:
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/graphql-fields-list/-/graphql-fields-list-2.2.4.tgz#87a0b24345476400cc027c351550e769b4bf5699"
+  integrity sha512-dhsMajI/7FMeZ8UWJDiw7iZlwacW5eBM02IVJ6IldFNgmVSDeuS+0+wF3ZOB0zcpYl3Q1spuegPLAFKcriPOCw==
+
 graphql-request@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/graphql-request/-/graphql-request-6.1.0.tgz#f4eb2107967af3c7a5907eb3131c671eac89be4f"
@@ -6633,6 +6646,11 @@ ts-node@^10.9.1:
     make-error "^1.1.1"
     v8-compile-cache-lib "^3.0.1"
     yn "3.1.1"
+
+ts-simple-nameof@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/ts-simple-nameof/-/ts-simple-nameof-1.3.1.tgz#9575c23373f4603aab028a9bd96d772d251ba9a2"
+  integrity sha512-E0xwaLwDmKmSmo4DE4i+Rp0CuixeZ6wJcn4+2OugzSoPxWW27aNRHhfhcfAELavHHS077dt998oXIMFq+MqeBw==
 
 tsconfig-paths-webpack-plugin@4.1.0:
   version "4.1.0"

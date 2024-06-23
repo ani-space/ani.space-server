@@ -14,10 +14,12 @@ import { Staff } from './staff.model';
 import { CharacterRole } from './sub-models/character-sub-models';
 import { CharacterConnection } from './sub-models/character-sub-models/character-connection.model';
 import { StaffRoleType } from './sub-models/staff-sub-models/staff-role-type.model';
+import { AutoMap } from '@automapper/classes';
 
 @ObjectType()
 @Entity({ name: 'characterEdges' })
 export class CharacterEdge extends BaseEntity {
+  @AutoMap()
   @Column()
   @Field((type) => Int)
   idAnilist: number;
@@ -28,10 +30,12 @@ export class CharacterEdge extends BaseEntity {
   )
   characterConnection: CharacterConnection;
 
+  @AutoMap(() => Character)
   @Field((type) => Character, { nullable: true })
   @ManyToOne(() => Character)
   node?: Character;
 
+  @AutoMap()
   @Field((type) => CharacterRole, { nullable: true })
   @Column({
     type: 'enum',
@@ -40,10 +44,12 @@ export class CharacterEdge extends BaseEntity {
   })
   role?: CharacterRole;
 
+  @AutoMap()
   @Field({ nullable: true })
   @Column({ nullable: true })
   name?: string;
 
+  @AutoMap(() => [Staff])
   @Field(() => [Staff], {
     nullable: true,
     description: `The voice actors of the character`,
@@ -52,6 +58,7 @@ export class CharacterEdge extends BaseEntity {
   @JoinTable()
   voiceActors?: Staff[];
 
+  @AutoMap(() => [StaffRoleType])
   @Field((type) => [StaffRoleType], {
     nullable: true,
     description: 'The voice actors of the character with role date',
@@ -62,6 +69,7 @@ export class CharacterEdge extends BaseEntity {
   )
   voiceActorRoles?: StaffRoleType[];
 
+  @AutoMap(() => [Anime])
   @Field(() => [Anime], { nullable: true })
   @ManyToMany(() => Anime)
   @JoinTable()

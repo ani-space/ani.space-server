@@ -10,7 +10,7 @@ import { CreateLoggerDto } from '~/common/dtos';
 import {
   IAnilistService,
   IAnimeGenreService,
-  IAnimeService,
+  IAnimeInternalService,
   IAnimeTagService,
   ICharacterService,
   IStaffService,
@@ -76,8 +76,8 @@ export class AnilistService implements IAnilistService {
     @Inject(IAnimeTagService)
     private readonly animeTagService: IAnimeTagService,
 
-    @Inject(IAnimeService)
-    private readonly animeService: IAnimeService,
+    @Inject(IAnimeInternalService)
+    private readonly animeService: IAnimeInternalService,
 
     @Inject(ICharacterService)
     private readonly characterService: ICharacterService,

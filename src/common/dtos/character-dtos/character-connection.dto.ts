@@ -15,6 +15,7 @@ export class CharacterConnectionDto extends BaseDto {
   @Field((type) => [CharacterDto], { nullable: true })
   nodes: CharacterDto[];
 
+  @AutoMap(() => PageInfo)
   @Field((type) => PageInfo)
   pageInfo: PageInfo;
 }

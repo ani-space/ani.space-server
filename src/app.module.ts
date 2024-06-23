@@ -1,9 +1,13 @@
+import { classes } from '@automapper/classes';
+import { AutomapperModule } from '@automapper/nestjs';
+import { useMaskedErrors } from '@envelop/core';
 import { YogaDriver, YogaDriverConfig } from '@graphql-yoga/nestjs';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { GraphQLError } from 'graphql';
 import { join } from 'path';
 import { envSchema } from '~/configs/env.schema';
 import { DatabaseConfig } from './configs/index';
@@ -16,9 +20,6 @@ import {
   TriggerModule,
 } from './modules';
 import { GogoAnimeModule } from './modules/gogoanime.module';
-import { AutomapperModule } from '@automapper/nestjs';
-import { classes } from '@automapper/classes';
-
 @Module({
   imports: [
     LoggerModule,
@@ -50,10 +51,13 @@ import { classes } from '@automapper/classes';
           playground: true,
           autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
           maskedErrors: true,
-          catch: (error) => {
-            console.log('error: ', error);
-            // TODO: format Error here
-          },
+          plugins: [
+            useMaskedErrors({
+              maskError: (error: any) => {
+                return new GraphQLError('Sorry, something went wrong.');
+              },
+            }),
+          ],
         };
       },
     }),

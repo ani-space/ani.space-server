@@ -9,12 +9,14 @@ import {
 } from '~/contracts/repositories';
 import {
   IAnimeGenreService,
-  IAnimeService,
+  IAnimeExternalService,
+  IAnimeInternalService,
   IAnimeTagService,
   ICharacterService,
   IStaffService,
   IStudioService,
 } from '~/contracts/services';
+import { MediaResolver } from '~/graphql/resolvers/media.resolver';
 import { Anime, Character, CharacterEdge, Staff, StaffEdge } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
 import { StudioEdge } from '~/models/studio-edge.model';
@@ -24,6 +26,8 @@ import {
   AnimeGenres,
   AnimeTag,
 } from '~/models/sub-models/anime-sub-models';
+import { AnimeStreamingEpisodeSource } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
+import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
 import { CharacterConnection } from '~/models/sub-models/character-sub-models';
 import { StaffName } from '~/models/sub-models/staff-sub-models';
 import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
@@ -43,6 +47,8 @@ import {
   StaffService,
 } from '~/services';
 import { CharacterService } from '~/services/character.service';
+import { AnimeProfile } from '../common/mapper-profiles/anime-profile';
+import { CommonProfile } from '../common/mapper-profiles/common-profile';
 import { MediaExternalLink } from '../models/media-external-link.model';
 import {
   AnimeCoverImage,
@@ -65,16 +71,20 @@ import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-na
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
 import { StudioService } from '../services/studio.service';
 import { LoggerModule } from './logger.module';
-import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
-import { MediaResolver } from '~/graphql/resolvers/media.resolver';
-import { AnimeStreamingEpisodeSource } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
+import { CharacterProfile } from '../common/mapper-profiles/character-profile';
+import { StaffProfile } from '../common/mapper-profiles/staff-profile';
+import { StudioProfile } from '~/common/mapper-profiles/studio-profile';
 
 const animeRepoProvider: Provider = {
   provide: IAnimeRepository,
   useClass: AnimeRepository,
 };
 const animeServiceProvider: Provider = {
-  provide: IAnimeService,
+  provide: IAnimeInternalService,
+  useClass: AnimeService,
+};
+const animeServiceExternalProvider: Provider = {
+  provide: IAnimeExternalService,
   useClass: AnimeService,
 };
 const animeGenreRepoProvider: Provider = {
@@ -158,10 +168,17 @@ const studioServiceProvider: Provider = {
     ]),
   ],
   providers: [
+    CommonProfile,
+    AnimeProfile,
+    CharacterProfile,
+    StaffProfile,
+    StudioProfile,
+
     MediaResolver,
 
     animeRepoProvider,
     animeServiceProvider,
+    animeServiceExternalProvider,
     animeGenreRepoProvider,
     animeGenreServiceProvider,
     animeTagRepoProvider,

@@ -1,3 +1,4 @@
+import { AutoMap } from '@automapper/classes';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
 import { AiringScheduleEdge } from '~/models/airing-schedule-edge.model';
@@ -12,6 +13,7 @@ export class AiringScheduleConnection
   extends BaseEntity
   implements IBaseConnection<AiringScheduleEdge, AiringSchedule>
 {
+  @AutoMap(() => [AiringScheduleEdge])
   @OneToMany(
     () => AiringScheduleEdge,
     (edges) => edges.airingScheduleConnection,
@@ -19,11 +21,13 @@ export class AiringScheduleConnection
   @Field(() => [AiringScheduleEdge], { nullable: true })
   edges: AiringScheduleEdge[];
 
+  @AutoMap(() => [AiringSchedule])
   @ManyToMany(() => AiringSchedule)
   @JoinTable()
   @Field(() => [AiringSchedule], { nullable: true })
   nodes: AiringSchedule[];
 
+  @AutoMap(() => PageInfo)
   @Field((type) => PageInfo)
   pageInfo: PageInfo;
 }

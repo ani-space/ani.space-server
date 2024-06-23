@@ -5,18 +5,22 @@ import { MediaExternalLink } from '../../media-external-link.model';
 import { AnimeStreamingEpisodeSource } from './anime-streaming-episode-sources.model';
 import { ServerType } from './anime-streaming-server-type.enum';
 import { TranslationType } from './anime-streaming-translation-type.enum';
+import { AutoMap } from '@automapper/classes';
 
 @ObjectType()
 @Entity({ name: 'animeStreamingEpisodes' })
 export class AnimeStreamingEpisode extends BaseEntity {
+  @AutoMap()
   @Field({ nullable: true })
   @Column({ nullable: true })
   epId?: string;
 
+  @AutoMap()
   @Field({ nullable: true })
   @Column({ nullable: true })
   epHash?: string;
 
+  @AutoMap(() => MediaExternalLink)
   @Field(() => MediaExternalLink)
   @ManyToOne(
     () => MediaExternalLink,
@@ -24,6 +28,7 @@ export class AnimeStreamingEpisode extends BaseEntity {
   )
   mediaExternalLink: MediaExternalLink;
 
+  @AutoMap()
   @Field(() => TranslationType, { nullable: true })
   @Column({
     type: 'enum',
@@ -32,6 +37,7 @@ export class AnimeStreamingEpisode extends BaseEntity {
   })
   translationType?: TranslationType;
 
+  @AutoMap()
   @Field({
     nullable: true,
     description: `The language of the episode is dubbed (not the original language).`,
@@ -39,6 +45,7 @@ export class AnimeStreamingEpisode extends BaseEntity {
   @Column({ nullable: true })
   language?: string;
 
+  @AutoMap()
   @Field({
     nullable: true,
     description: `The url of the external link or base url of link source`,
@@ -46,14 +53,17 @@ export class AnimeStreamingEpisode extends BaseEntity {
   @Column({ nullable: true })
   site?: string;
 
+  @AutoMap()
   @Field({ nullable: true, description: `Title of the episode` })
   @Column({ nullable: true })
   title?: string;
 
+  @AutoMap()
   @Field({ nullable: true, description: `Url of episode image thumbnail` })
   @Column({ nullable: true })
   thumbnail?: string;
 
+  @AutoMap(() => [AnimeStreamingEpisodeSource])
   @Field(() => [AnimeStreamingEpisodeSource], {
     nullable: true,
     description: `The fallback urls of the episode`,
@@ -68,6 +78,7 @@ export class AnimeStreamingEpisode extends BaseEntity {
   )
   sources?: AnimeStreamingEpisodeSource[];
 
+  @AutoMap()
   @Field({
     nullable: true,
     description: `The format of the video source`,
@@ -75,10 +86,12 @@ export class AnimeStreamingEpisode extends BaseEntity {
   @Column({ nullable: true })
   formatType?: string;
 
+  @AutoMap()
   @Field({ nullable: true, description: `The name server of the episode` })
   @Column({ nullable: true })
   serverName?: string;
 
+  @AutoMap()
   @Field(() => ServerType, { nullable: true })
   @Column({
     type: 'enum',
@@ -87,19 +100,23 @@ export class AnimeStreamingEpisode extends BaseEntity {
   })
   serverType?: ServerType;
 
+  @AutoMap(() => AnimeStreamingEpisode)
   @Field(() => AnimeStreamingEpisode, { nullable: true })
   @ManyToOne(() => AnimeStreamingEpisode, (fallbackServer) => fallbackServer.id)
   @JoinColumn()
   fallbackServer?: AnimeStreamingEpisode;
 
+  @AutoMap()
   @Field({ nullable: true })
   @Column({ nullable: true })
   cachedProxy?: string;
 
+  @AutoMap()
   @Field({ nullable: true })
   @Column({ nullable: true })
   referer?: string;
 
+  @AutoMap()
   @Field({ nullable: true })
   @Column({ nullable: true })
   download?: string;

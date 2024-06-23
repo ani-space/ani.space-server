@@ -15,6 +15,7 @@ export class AiringScheduleConnectionDto extends BaseDto {
   @Field(() => [AiringScheduleDto], { nullable: true })
   nodes: AiringScheduleDto[];
 
+  @AutoMap(() => PageInfo)
   @Field((type) => PageInfo)
   pageInfo: PageInfo;
 }

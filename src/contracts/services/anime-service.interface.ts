@@ -1,3 +1,4 @@
+import { QueryAnimeArg } from '~/graphql/types/args/query-anime.arg';
 import { Anime, AnimeEdge } from '~/models';
 import { MediaExternalLink } from '~/models/media-external-link.model';
 import {
@@ -10,9 +11,23 @@ import {
 } from '~/models/sub-models/anime-sub-models';
 import { AnimeStreamingEpisodeSource } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
 import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
+import { MapResultSelect } from '../../utils/tools/object';
 import { AnimeByFuzzySearch, IPaginateResult } from '../dtos';
+import { Either } from '~/utils/tools/either';
+import { NotFoundAnimeError } from '~/graphql/types/dtos/anime-response/not-found-anime.error';
 
-export interface IAnimeService {
+// These services will be exposed and utilized by the GraphQL client
+export interface IAnimeExternalService {
+  getAnimeByConditions(
+    filterCondition: MapResultSelect,
+    queryAnimeArg: QueryAnimeArg,
+  ): Promise<Either<NotFoundAnimeError, Anime>>;
+}
+
+export const IAnimeExternalService = Symbol('IAnimeExternalService');
+
+// These services will be encapsulated and used internally within the system
+export interface IAnimeInternalService {
   getAnimeStreamingEpisodePageV1(
     page?: number,
     limit?: number,
@@ -102,4 +117,4 @@ export interface IAnimeService {
   ): Promise<(Partial<AnimeDescription> & AnimeDescription) | null>;
 }
 
-export const IAnimeService = Symbol('IAnimeService');
+export const IAnimeInternalService = Symbol('IAnimeInternalService');
