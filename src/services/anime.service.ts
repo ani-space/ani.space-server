@@ -81,36 +81,10 @@ export class AnimeService
     mapResultSelect: MapResultSelect,
     queryAnimeArg: QueryAnimeArg,
   ): Promise<Either<NotFoundAnimeError, Anime>> {
-    const { id, idMal, isAdult, romajiTitle } = queryAnimeArg;
-    const anime = await this.animeRepo.findByCondition({
-      select: {
-        ...mapResultSelect,
-      },
-      where: {
-        id,
-        idMal,
-        title: {
-          romaji: romajiTitle,
-        },
-        isAdult,
-      },
-      relations: {
-        startDate: !!mapResultSelect['startDate'],
-        endDate: !!mapResultSelect['endDate'],
-        title: !!mapResultSelect['title'],
-        description: !!mapResultSelect['description'],
-        trailer: !!mapResultSelect['trailer'],
-        coverImage: !!mapResultSelect['coverImage'],
-        genres: !!mapResultSelect['genres'],
-        synonyms: !!mapResultSelect['synonyms'],
-        tags: !!mapResultSelect['tags'],
-        nextAiringEpisode: !!mapResultSelect['nextAiringEpisode'],
-        mediaExternalLink: !!mapResultSelect['mediaExternalLink'] ?? {
-          animeStreamingEpisodes: true,
-        },
-        rankings: !!mapResultSelect['rankings'],
-      },
-    });
+    const anime = await this.animeRepo.getAnimeByConditions(
+      mapResultSelect,
+      queryAnimeArg,
+    );
 
     if (!anime) {
       return either.error(
