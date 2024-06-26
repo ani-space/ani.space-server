@@ -43,6 +43,7 @@
     "@nestjs/swagger": "^7.3.1",
     "@nestjs/typeorm": "^10.0.2",
     "axios": "^1.6.8",
+    "class-validator": "^0.14.1",
     "fuse.js": "^7.0.0",
     "graphql": "^16.8.1",
     "graphql-fields-list": "^2.2.4",
