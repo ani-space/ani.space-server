@@ -9,12 +9,13 @@ import {
 import { CharacterNameDto } from '../dtos/character-dtos/character-name.dto';
 import { CharacterImageDto } from '../dtos/character-dtos/character-image.dto';
 import { CharacterConnectionDto } from '../dtos/character-dtos/character-connection.dto';
-import { Character } from '~/models';
+import { Character, CharacterEdge } from '~/models';
 import { CharacterDto } from '../dtos/character-dtos/character.dto';
 import { CharacterAlternative } from '../../models/sub-models/character-sub-models/character-alternative.model';
 import { CharacterAlternativeDto } from '../dtos/character-dtos/character-alternative.dto';
 import { CharacterAlternativeSpoilers } from '../../models/sub-models/character-sub-models/character-alternativeSpoiler.model';
 import { CharacterAlternativeSpoilersDto } from '../dtos/character-dtos/character-alternative-spoiler.dto';
+import { CharacterEdgeDto } from '../dtos/character-dtos/character-edge.dto';
 
 @Injectable()
 export class CharacterProfile extends AutomapperProfile {
@@ -34,6 +35,7 @@ export class CharacterProfile extends AutomapperProfile {
       createMap(mapper, CharacterAlternative, CharacterAlternativeDto);
       createMap(mapper, CharacterImage, CharacterImageDto);
       createMap(mapper, CharacterConnection, CharacterConnectionDto);
+      createMap(mapper, CharacterEdge, CharacterEdgeDto);
     };
   }
 }

@@ -1,3 +1,4 @@
+import { QueryCharacterConnectionArg } from '~/graphql/types/args/query-character-connection.arg';
 import { Character, CharacterEdge } from '~/models';
 import {
   CharacterAlternative,
@@ -6,9 +7,20 @@ import {
   CharacterImage,
   CharacterName,
 } from '~/models/sub-models/character-sub-models';
+import { MapResultSelect } from '~/utils/tools/object';
 import { IPaginateResult } from '../dtos';
 
-export interface ICharacterService {
+export interface ICharacterExternalService {
+  getCharacterConnectionPage(
+    animeConnectionId: string,
+    queryCharacterConnectionArg: QueryCharacterConnectionArg,
+    mapResultSelect: MapResultSelect,
+  ): Promise<Partial<CharacterConnection> | null>;
+}
+
+export const ICharacterExternalService = Symbol('ICharacterExternalService');
+
+export interface ICharacterInternalService {
   getCharacterListV1(
     page?: number,
     limit?: number,
@@ -59,4 +71,4 @@ export interface ICharacterService {
   >;
 }
 
-export const ICharacterService = Symbol('ICharacterService');
+export const ICharacterInternalService = Symbol('ICharacterInternalService');

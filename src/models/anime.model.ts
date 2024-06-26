@@ -257,7 +257,7 @@ export class Anime extends BaseAnilistEntity {
   trends?: AnimeTrendConnection;
 
   @AutoMap(() => [MediaExternalLink])
-  @Field(() => MediaExternalLink, {
+  @Field(() => [MediaExternalLink], {
     nullable: true,
     description: `On-demand streaming sources (May not be official!)`,
   })

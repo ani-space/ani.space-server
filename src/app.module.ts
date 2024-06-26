@@ -54,6 +54,7 @@ import { GogoAnimeModule } from './modules/gogoanime.module';
           plugins: [
             useMaskedErrors({
               maskError: (error: any) => {
+                console.error('global error: ', error);
                 return new GraphQLError('Sorry, something went wrong.');
               },
             }),
@@ -78,6 +79,8 @@ import { GogoAnimeModule } from './modules/gogoanime.module';
           migrations: ['dist/db/migrations/*.js'],
           migrationsRun: true,
           synchronize: false,
+          logging: true,
+          logger: 'simple-console',
         };
         return dbOptions;
       },

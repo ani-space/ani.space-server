@@ -2,6 +2,16 @@ import Fuse, { IFuseOptions } from 'fuse.js';
 import { parse } from 'node-html-parser';
 import puppeteer, { HTTPRequest } from 'puppeteer';
 
+export function paginate(
+  page_size: number,
+  page_number: number,
+  array?: Array<any>,
+) {
+  if (!Array.isArray(array)) return [];
+
+  return array.slice((page_number - 1) * page_size, page_number * page_size);
+}
+
 export function getMethodName() {
   const err = new Error();
   // @ts-ignore: we want the 2nd method in the call stack

@@ -4,7 +4,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateLoggerDto } from '~/common/dtos';
 import { ICharacterRepository } from '~/contracts/repositories';
-import { ICharacterService } from '~/contracts/services';
+import {
+  ICharacterExternalService,
+  ICharacterInternalService,
+} from '~/contracts/services';
 import { Character, CharacterEdge } from '~/models';
 import { LOGGER_CREATED } from '../common/constants/index';
 import { IPaginateResult } from '../contracts/dtos/paginate-result.interface';
@@ -16,28 +19,51 @@ import {
 import { CharacterAlternative } from '../models/sub-models/character-sub-models/character-alternative.model';
 import { CharacterAlternativeSpoilers } from '../models/sub-models/character-sub-models/character-alternativeSpoiler.model';
 import { getMethodName } from '~/utils/tools/functions';
+import { QueryCharacterConnectionArg } from '../graphql/types/args/query-character-connection.arg';
+import { MapResultSelect } from '~/utils/tools/object';
 
 @Injectable()
-export class CharacterService implements ICharacterService {
+export class CharacterService
+  implements ICharacterInternalService, ICharacterExternalService
+{
   private readonly logger = new Logger(CharacterService.name);
 
   constructor(
     @Inject(ICharacterRepository)
     private readonly characterRepo: ICharacterRepository,
+
     @InjectRepository(CharacterEdge)
     private readonly characterEdgeRepo: Repository<CharacterEdge>,
+
     @InjectRepository(CharacterConnection)
     private readonly characterConnectionRepo: Repository<CharacterConnection>,
+
     @InjectRepository(CharacterAlternative)
     private readonly characterAlternativeRepo: Repository<CharacterAlternative>,
+
     @InjectRepository(CharacterAlternativeSpoilers)
     private readonly characterAlternativeSpoilersRepo: Repository<CharacterAlternativeSpoilers>,
+
     @InjectRepository(CharacterName)
     private readonly characterNameRepo: Repository<CharacterName>,
+
     @InjectRepository(CharacterImage)
     private readonly characterImageRepo: Repository<CharacterImage>,
+
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  public async getCharacterConnectionPage(
+    animeConnectionId: string,
+    queryCharacterConnectionArg: QueryCharacterConnectionArg,
+    mapResultSelect: MapResultSelect,
+  ) {
+    return await this.characterRepo.getEdgesOrNodes(
+      animeConnectionId,
+      queryCharacterConnectionArg,
+      mapResultSelect,
+    );
+  }
 
   public async findOrCreateCharacter(
     characterParam: Partial<Character>,
