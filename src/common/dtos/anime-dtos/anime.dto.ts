@@ -178,8 +178,8 @@ export class AnimeDto extends BaseAnilistDto {
   })
   trends?: AnimeTrendConnectionDto;
 
-  @AutoMap(() => MediaExternalLinkDto)
-  @Field(() => MediaExternalLinkDto, {
+  @AutoMap(() => [MediaExternalLinkDto])
+  @Field(() => [MediaExternalLinkDto], {
     nullable: true,
     description: `On-demand streaming sources (May not be official!)`,
   })

@@ -20,7 +20,12 @@ export class BuilderSelectAnimePipe implements PipeTransform {
 
     const mappedSelect = reverseBooleanValueInObj(
       fieldsMap(value, {
-        skip: [...fieldsToSkip, '__typename'],
+        skip: [
+          ...fieldsToSkip,
+          '__typename',
+          'characters.pageInfo',
+          'pageInfo',
+        ],
       }),
     );
 
