@@ -7,7 +7,10 @@ export class QueryAnimeArg {
   id?: string;
 
   @Field(() => Int)
-  idMal: number;
+  idAnilist: number;
+
+  @Field(() => Int, { nullable: true })
+  idMal?: number;
 
   @Field({ nullable: true })
   romajiTitle?: string;
