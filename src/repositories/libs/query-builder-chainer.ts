@@ -25,6 +25,18 @@ export class QueryBuilderChainer<Entity extends ObjectLiteral> {
     return this;
   }
 
+  public applyOrderByConditionally(
+    shouldOrder: boolean,
+    orderColumn: string,
+    order: 'DESC' | 'ASC',
+  ) {
+    if (!shouldOrder) return this;
+
+    this.queryBuilder.addOrderBy(orderColumn, order);
+
+    return this;
+  }
+
   public applyWhereConditionally(
     entityName: string,
     column: string,

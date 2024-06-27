@@ -81,105 +81,134 @@ export class AnimeRepository
     idAnilist: number,
     isAdult: boolean | undefined,
   ) {
-    return new QueryBuilderChainer(this.animeBuilder)
-      .addSelect(mapResultSelect, this.animeAlias, true, [
-        'genres',
-        'rankings',
-        'synonyms',
-        'tags',
-      ])
-      .applyJoinConditionally(
-        !!mapResultSelect['characters'],
-        this.animeAlias,
-        'characters',
-        true,
-      )
-      .applyJoinConditionally(
-        !!mapResultSelect['startDate'],
-        this.animeAlias,
-        'startDate',
-      )
-      .addSelect(mapResultSelect['startDate'], 'startDate')
-      .applyJoinConditionally(
-        !!mapResultSelect['endDate'],
-        this.animeAlias,
-        'endDate',
-      )
-      .addSelect(mapResultSelect['endDate'], 'endDate')
-      .applyJoinConditionally(
-        !!mapResultSelect['title'] || !!romajiTitle,
-        this.animeAlias,
-        'title',
-      )
-      .addSelect(mapResultSelect['title'], 'title')
-      .applyJoinConditionally(
-        !!mapResultSelect['description'],
-        this.animeAlias,
-        'description',
-      )
-      .addSelect(mapResultSelect['description'], 'description')
-      .applyJoinConditionally(
-        !!mapResultSelect['trailer'],
-        this.animeAlias,
-        'trailer',
-      )
-      .addSelect(mapResultSelect['trailer'], 'trailer')
-      .applyJoinConditionally(
-        !!mapResultSelect['coverImage'],
-        this.animeAlias,
-        'coverImage',
-      )
-      .addSelect(mapResultSelect['coverImage'], 'coverImage')
-      .applyJoinConditionally(
-        !!mapResultSelect['genres'],
-        this.animeAlias,
-        'genres',
-      )
-      .addSelect(mapResultSelect['genres'], 'genres')
-      .applyJoinConditionally(
-        !!mapResultSelect['synonyms'],
-        this.animeAlias,
-        'synonyms',
-      )
-      .addSelect(mapResultSelect['synonyms'], 'synonyms')
-      .applyJoinConditionally(
-        !!mapResultSelect['tags'],
-        this.animeAlias,
-        'tags',
-      )
-      .addSelect(mapResultSelect['tags'], 'tags')
-      .applyJoinConditionally(
-        !!mapResultSelect['nextAiringEpisode'],
-        this.animeAlias,
-        'nextAiringEpisode',
-      )
-      .addSelect(mapResultSelect['nextAiringEpisode'], 'nextAiringEpisode')
-      .applyJoinConditionally(
-        !!mapResultSelect['mediaExternalLink'],
-        this.animeAlias,
-        'mediaExternalLink',
-      )
-      .addSelect(mapResultSelect['mediaExternalLink'], 'mediaExternalLink')
-      .applyJoinConditionally(
-        !!mapResultSelect['rankings'],
-        this.animeAlias,
-        'rankings',
-      )
-      .addSelect(mapResultSelect['rankings'], 'rankings')
-      .applyJoinConditionally(
-        !!mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes,
-        'mediaExternalLink',
-        'animeStreamingEpisodes',
-      )
-      .addSelect(
-        mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes,
-        'animeStreamingEpisodes',
-      )
-      .applyWhereConditionally(this.animeAlias, 'id', id)
-      .applyWhereConditionally(this.animeAlias, 'idMal', idMal)
-      .applyWhereConditionally(this.animeAlias, 'idAnilist', idAnilist)
-      .applyWhereConditionally(this.animeAlias, 'isAdult', isAdult)
-      .applyWhereConditionally('title', 'romaji', romajiTitle)
-      .getQueryBuilder();
+    return (
+      new QueryBuilderChainer(this.animeBuilder)
+        .addSelect(mapResultSelect, this.animeAlias, true, [
+          'genres',
+          'rankings',
+          'synonyms',
+          'tags',
+          'mediaExternalLink',
+          'animeStreamingEpisodes',
+        ])
+        .applyJoinConditionally(
+          !!mapResultSelect['characters'],
+          this.animeAlias,
+          'characters',
+          true,
+        )
+        .applyJoinConditionally(
+          !!mapResultSelect['startDate'],
+          this.animeAlias,
+          'startDate',
+        )
+        .addSelect(mapResultSelect['startDate'], 'startDate')
+        .applyJoinConditionally(
+          !!mapResultSelect['endDate'],
+          this.animeAlias,
+          'endDate',
+        )
+        .addSelect(mapResultSelect['endDate'], 'endDate')
+        .applyJoinConditionally(
+          !!mapResultSelect['title'] || !!romajiTitle,
+          this.animeAlias,
+          'title',
+        )
+        .addSelect(mapResultSelect['title'], 'title')
+        .applyJoinConditionally(
+          !!mapResultSelect['description'],
+          this.animeAlias,
+          'description',
+        )
+        .addSelect(mapResultSelect['description'], 'description')
+        .applyJoinConditionally(
+          !!mapResultSelect['trailer'],
+          this.animeAlias,
+          'trailer',
+        )
+        .addSelect(mapResultSelect['trailer'], 'trailer')
+        .applyJoinConditionally(
+          !!mapResultSelect['coverImage'],
+          this.animeAlias,
+          'coverImage',
+        )
+        .addSelect(mapResultSelect['coverImage'], 'coverImage')
+        .applyJoinConditionally(
+          !!mapResultSelect['genres'],
+          this.animeAlias,
+          'genres',
+        )
+        .addSelect(mapResultSelect['genres'], 'genres')
+        .applyJoinConditionally(
+          !!mapResultSelect['synonyms'],
+          this.animeAlias,
+          'synonyms',
+        )
+        .addSelect(mapResultSelect['synonyms'], 'synonyms')
+        .applyJoinConditionally(
+          !!mapResultSelect['tags'],
+          this.animeAlias,
+          'tags',
+        )
+        .addSelect(mapResultSelect['tags'], 'tags')
+        .applyJoinConditionally(
+          !!mapResultSelect['nextAiringEpisode'],
+          this.animeAlias,
+          'nextAiringEpisode',
+        )
+        .addSelect(mapResultSelect['nextAiringEpisode'], 'nextAiringEpisode')
+        .applyJoinConditionally(
+          !!mapResultSelect['mediaExternalLink'],
+          this.animeAlias,
+          'mediaExternalLink',
+        )
+        .addSelect(
+          mapResultSelect['mediaExternalLink'],
+          'mediaExternalLink',
+          false,
+          ['animeStreamingEpisodes'],
+        )
+        .addSelect(mapResultSelect['rankings'], 'rankings')
+        .applyJoinConditionally(
+          !!mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes,
+          'mediaExternalLink',
+          'animeStreamingEpisodes',
+        )
+        .addSelect(
+          mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes,
+          'animeStreamingEpisodes',
+          false,
+          ['sources'],
+        )
+        .applyJoinConditionally(
+          !!mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes
+            ?.sources,
+          'animeStreamingEpisodes',
+          'sources',
+        )
+        .addSelect(
+          mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes?.sources,
+          'sources',
+        )
+        .applyJoinConditionally(
+          !!mapResultSelect['rankings'],
+          this.animeAlias,
+          'rankings',
+        )
+        .addSelect(mapResultSelect['rankings'], 'rankings')
+        .applyWhereConditionally(this.animeAlias, 'id', id)
+        .applyWhereConditionally(this.animeAlias, 'idMal', idMal)
+        .applyWhereConditionally(this.animeAlias, 'idAnilist', idAnilist)
+        .applyWhereConditionally(this.animeAlias, 'isAdult', isAdult)
+        .applyWhereConditionally('title', 'romaji', romajiTitle)
+        // Note: To reduce query complexity,
+        // paginate and filter animeStreamingEpisodes will handle in other resolver
+        .applyOrderByConditionally(
+          !!mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes,
+          'animeStreamingEpisodes.epId',
+          'DESC',
+        )
+        .getQueryBuilder()
+    );
   }
 }
