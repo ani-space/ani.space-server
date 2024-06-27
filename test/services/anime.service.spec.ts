@@ -42,7 +42,7 @@ describe('AnimeService', () => {
 
   it('should return a NotFoundAnimeError when no anime is found', async () => {
     // Create a test queryAnimeArg and mapResultSelect
-    const queryAnimeArg: QueryAnimeArg = { idMal: 10 };
+    const queryAnimeArg: QueryAnimeArg = { idAnilist: 10 };
     const mapResultSelect: MapResultSelect = { id: true };
 
     // Mock the animeRepo to return null
@@ -62,7 +62,7 @@ describe('AnimeService', () => {
 
   it('should return a valid anime when one is found', async () => {
     // Create a test queryAnimeArg and mapResultSelect
-    const queryAnimeArg: QueryAnimeArg = { idMal: 1985 };
+    const queryAnimeArg: QueryAnimeArg = { idAnilist: 1985 };
     const mapResultSelect: MapResultSelect = { id: true };
 
     // Mock the animeRepo to return animeDto

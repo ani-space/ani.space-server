@@ -12,7 +12,7 @@ import {
   IAnimeGenreService,
   IAnimeInternalService,
   IAnimeTagService,
-  ICharacterService,
+  ICharacterInternalService,
   IStaffService,
   IStudioService,
 } from '~/contracts/services';
@@ -79,8 +79,8 @@ export class AnilistService implements IAnilistService {
     @Inject(IAnimeInternalService)
     private readonly animeService: IAnimeInternalService,
 
-    @Inject(ICharacterService)
-    private readonly characterService: ICharacterService,
+    @Inject(ICharacterInternalService)
+    private readonly characterService: ICharacterInternalService,
 
     @Inject(IStaffService)
     private readonly staffService: IStaffService,
