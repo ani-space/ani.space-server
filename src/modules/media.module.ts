@@ -12,9 +12,10 @@ import {
   IAnimeExternalService,
   IAnimeInternalService,
   IAnimeTagService,
-  ICharacterService,
+  ICharacterInternalService,
   IStaffService,
   IStudioService,
+  ICharacterExternalService,
 } from '~/contracts/services';
 import { MediaResolver } from '~/graphql/resolvers/media.resolver';
 import { Anime, Character, CharacterEdge, Staff, StaffEdge } from '~/models';
@@ -107,8 +108,12 @@ const characterRepoProvider: Provider = {
   provide: ICharacterRepository,
   useClass: CharacterRepository,
 };
-const characterServiceProvider: Provider = {
-  provide: ICharacterService,
+const characterInternalServiceProvider: Provider = {
+  provide: ICharacterInternalService,
+  useClass: CharacterService,
+};
+const characterExternalServiceProvider: Provider = {
+  provide: ICharacterExternalService,
   useClass: CharacterService,
 };
 const staffServiceProvider: Provider = {
@@ -185,7 +190,8 @@ const studioServiceProvider: Provider = {
     animeTagServiceProvider,
 
     characterRepoProvider,
-    characterServiceProvider,
+    characterInternalServiceProvider,
+    characterExternalServiceProvider,
 
     staffServiceProvider,
 
@@ -201,7 +207,8 @@ const studioServiceProvider: Provider = {
     animeTagServiceProvider,
 
     characterRepoProvider,
-    characterServiceProvider,
+    characterInternalServiceProvider,
+    characterExternalServiceProvider,
 
     staffServiceProvider,
 

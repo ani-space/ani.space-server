@@ -13,10 +13,10 @@ import { nameof } from 'ts-simple-nameof';
 import { AnimeDto } from '~/common/dtos/anime-dtos/anime.dto';
 import {
   IAnimeExternalService,
-  IAnimeInternalService,
   ICharacterExternalService,
 } from '~/contracts/services';
 import { Anime } from '~/models';
+import { CharacterConnection } from '~/models/sub-models/character-sub-models';
 import { MapResultSelect } from '~/utils/tools/object';
 import { CharacterConnectionDto } from '../../common/dtos/character-dtos/character-connection.dto';
 import { BuilderSelectAnimePipe } from '../../common/pipes/builder-select-anime.pipe';
@@ -24,12 +24,11 @@ import { QueryAnimeArg } from '../types/args/query-anime.arg';
 import { QueryCharacterConnectionArg } from '../types/args/query-character-connection.arg';
 import { AnimeResultUnion } from '../types/dtos/anime-response/anime.response';
 import { AnimeActions } from '../types/enums/actions.enum';
-import { CharacterConnection } from '~/models/sub-models/character-sub-models';
 
 @Resolver(() => AnimeDto)
 export class MediaResolver {
   constructor(
-    @Inject(IAnimeInternalService)
+    @Inject(IAnimeExternalService)
     private readonly animeService: IAnimeExternalService,
 
     @Inject(ICharacterExternalService)
