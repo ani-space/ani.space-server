@@ -24,6 +24,8 @@ import { QueryAnimeArg } from '../types/args/query-anime.arg';
 import { QueryCharacterConnectionArg } from '../types/args/query-character-connection.arg';
 import { AnimeResultUnion } from '../types/dtos/anime-response/anime.response';
 import { AnimeActions } from '../types/enums/actions.enum';
+import { AnimeConnectionDto } from '~/common/dtos/anime-dtos/anime-connection.dto';
+import { AnimeConnection } from '~/models/sub-models/anime-sub-models';
 
 @Resolver(() => AnimeDto)
 export class MediaResolver {
@@ -72,5 +74,25 @@ export class MediaResolver {
     if (!result) return null;
 
     return this.mapper.map(result, CharacterConnection, CharacterConnectionDto);
+  }
+
+  @ResolveField(
+    nameof<AnimeDto>((a) => a.relations),
+    (returns) => AnimeConnectionDto,
+  )
+  public async getAnimeRelationsByAnime(
+    @Parent() animeDto: AnimeDto,
+    @Info(BuilderSelectAnimePipe) mapResultSelect: MapResultSelect,
+  ) {
+    const animeConnection = await this.animeService.getAnimeConnectionPage(
+      animeDto?.relations?.id ?? '',
+      mapResultSelect,
+    );
+
+    return this.mapper.map(
+      animeConnection,
+      AnimeConnection,
+      AnimeConnectionDto,
+    );
   }
 }

@@ -22,6 +22,11 @@ export interface IAnimeExternalService {
     filterCondition: MapResultSelect,
     queryAnimeArg: QueryAnimeArg,
   ): Promise<Either<NotFoundAnimeError, Anime>>;
+
+  getAnimeConnectionPage(
+    animeConnectionId: string,
+    mapResultSelect: MapResultSelect,
+  ): Promise<AnimeConnection | null>;
 }
 
 export const IAnimeExternalService = Symbol('IAnimeExternalService');
