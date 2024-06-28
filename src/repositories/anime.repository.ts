@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { BaseRepository } from './base.repository';
-import { Anime } from '~/models';
-import { IAnimeRepository } from '~/contracts/repositories';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { MapResultSelect } from '../utils/tools/object';
+import { DataSource, ObjectLiteral, Repository } from 'typeorm';
+import { IAnimeRepository } from '~/contracts/repositories';
 import { QueryAnimeArg } from '~/graphql/types/args/query-anime.arg';
+import { Anime } from '~/models';
+import { AnimeConnection } from '~/models/sub-models/anime-sub-models';
+import { MapResultSelect } from '../utils/tools/object';
+import { BaseRepository } from './base.repository';
 import { QueryBuilderChainer } from './libs/query-builder-chainer';
 
 @Injectable()
@@ -22,14 +23,112 @@ export class AnimeRepository
     super(animeRepository);
   }
 
+  readonly ignoreColumnsReferencesAnime = [
+    'genres',
+    'rankings',
+    'synonyms',
+    'tags',
+    'mediaExternalLink',
+    'animeStreamingEpisodes',
+  ];
+
   get animeAlias() {
     return 'Anime';
+  }
+
+  get animeConnectionAlias() {
+    return 'AnimeConnection';
   }
 
   get animeBuilder() {
     return this.dataSource
       .getRepository(Anime)
       .createQueryBuilder(this.animeAlias);
+  }
+
+  get animeConnectionBuilder() {
+    return this.dataSource
+      .getRepository(AnimeConnection)
+      .createQueryBuilder(this.animeConnectionAlias);
+  }
+
+  public async getEdgesOrNodes(
+    animeConnectionId: string,
+    mapResultSelectParam: MapResultSelect,
+  ) {
+    const mapResultSelect = mapResultSelectParam as Record<string, any>;
+
+    const queryBuilderChainer = new QueryBuilderChainer(
+      this.animeConnectionBuilder,
+    );
+    const queryBuilder = this.createBuilderSelectAndWhereAnimeConnection(
+      queryBuilderChainer,
+      mapResultSelect,
+      animeConnectionId,
+    );
+
+    const animeConnection = await queryBuilder.getOne();
+
+    return animeConnection;
+  }
+
+  private createBuilderSelectAndWhereAnimeConnection(
+    edgesNodeQueryBuilder: QueryBuilderChainer<AnimeConnection>,
+    mapResultSelect: Record<string, any>,
+    animeConnectionId: string,
+  ) {
+    const queryBuilder = edgesNodeQueryBuilder
+      .addSelect(mapResultSelect, this.animeConnectionAlias, false, [
+        'nodes',
+        'edges',
+      ])
+
+      // nodes queries
+      .applyJoinConditionally(
+        !!mapResultSelect['nodes'],
+        this.animeConnectionAlias,
+        'nodes',
+      )
+      .addSelect(
+        mapResultSelect['nodes'],
+        'nodes',
+        false,
+        this.ignoreColumnsReferencesAnime,
+      )
+
+      // edges queries
+      .applyJoinConditionally(
+        !!mapResultSelect['edges'],
+        this.animeConnectionAlias,
+        'edges',
+      )
+      .addSelect(mapResultSelect['edges'], 'edges')
+
+      // edges node queries:
+      .applyJoinConditionally(!!mapResultSelect['edges']?.node, 'edges', 'node')
+      .addSelect(
+        mapResultSelect['edges']?.node,
+        'node',
+        false,
+        this.ignoreColumnsReferencesAnime,
+      );
+
+    AnimeRepository.createBuilderSelectAnime(
+      queryBuilder,
+      'nodes',
+      mapResultSelect['nodes'],
+    );
+    AnimeRepository.createBuilderSelectAnime(
+      queryBuilder,
+      'node',
+      mapResultSelect['edges']?.node,
+    );
+
+    return queryBuilder
+      .getQueryBuilder()
+      .where(`${this.animeConnectionAlias}.id=:animeConnectionId`, {
+        animeConnectionId,
+      });
   }
 
   public async fuzzySearchAnimeByTitle(title: string) {
@@ -59,7 +158,7 @@ export class AnimeRepository
     const mapResultSelect = mapResultSelectParam as Record<string, any>;
     const { id, idMal, idAnilist, isAdult, romajiTitle } = queryAnimeArg;
 
-    const queryBuilder = this.createBuilderSelectAnime(
+    const queryBuilder = this.createBuilderSelectAndWhereAnime(
       mapResultSelect,
       romajiTitle,
       id,
@@ -73,7 +172,141 @@ export class AnimeRepository
     return anime;
   }
 
-  private createBuilderSelectAnime(
+  // public common query for sub query other entity has relation ship width Anime
+  public static createBuilderSelectAnime<Entity extends ObjectLiteral>(
+    builderChainer: QueryBuilderChainer<Entity>,
+    rootAlias: string,
+    mapResultSelect: Record<string, any>,
+  ) {
+    if (!mapResultSelect || !Object.keys(mapResultSelect).length) {
+      return builderChainer;
+    }
+
+    return builderChainer
+      .addSelect(mapResultSelect, rootAlias, false, [
+        'genres',
+        'rankings',
+        'synonyms',
+        'tags',
+        'mediaExternalLink',
+        'animeStreamingEpisodes',
+      ])
+
+      .applyJoinConditionally(
+        !!mapResultSelect['relations'],
+        rootAlias,
+        'relations',
+        true,
+      )
+
+      .applyJoinConditionally(
+        !!mapResultSelect['characters'],
+        rootAlias,
+        'characters',
+        true,
+      )
+
+      .applyJoinConditionally(
+        !!mapResultSelect['startDate'],
+        rootAlias,
+        'startDate',
+      )
+      .addSelect(mapResultSelect['startDate'], 'startDate')
+
+      .applyJoinConditionally(
+        !!mapResultSelect['endDate'],
+        rootAlias,
+        'endDate',
+      )
+      .addSelect(mapResultSelect['endDate'], 'endDate')
+
+      .applyJoinConditionally(
+        !!mapResultSelect['description'],
+        rootAlias,
+        'description',
+      )
+      .addSelect(mapResultSelect['description'], 'description')
+
+      .applyJoinConditionally(
+        !!mapResultSelect['trailer'],
+        rootAlias,
+        'trailer',
+      )
+      .addSelect(mapResultSelect['trailer'], 'trailer')
+
+      .applyJoinConditionally(!!mapResultSelect['title'], rootAlias, 'title')
+      .addSelect(mapResultSelect['title'], 'title')
+
+      .applyJoinConditionally(
+        !!mapResultSelect['coverImage'],
+        rootAlias,
+        'coverImage',
+      )
+      .addSelect(mapResultSelect['coverImage'], 'coverImage')
+
+      .applyJoinConditionally(!!mapResultSelect['genres'], rootAlias, 'genres')
+      .addSelect(mapResultSelect['genres'], 'genres')
+
+      .applyJoinConditionally(
+        !!mapResultSelect['synonyms'],
+        rootAlias,
+        'synonyms',
+      )
+      .addSelect(mapResultSelect['synonyms'], 'synonyms')
+
+      .applyJoinConditionally(!!mapResultSelect['tags'], rootAlias, 'tags')
+      .addSelect(mapResultSelect['tags'], 'tags')
+
+      .applyJoinConditionally(
+        !!mapResultSelect['nextAiringEpisode'],
+        rootAlias,
+        'nextAiringEpisode',
+      )
+      .addSelect(mapResultSelect['nextAiringEpisode'], 'nextAiringEpisode')
+
+      .applyJoinConditionally(
+        !!mapResultSelect['mediaExternalLink'],
+        rootAlias,
+        'mediaExternalLink',
+      )
+      .addSelect(
+        mapResultSelect['mediaExternalLink'],
+        'mediaExternalLink',
+        false,
+        ['animeStreamingEpisodes'],
+      )
+
+      .applyJoinConditionally(
+        !!mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes,
+        'mediaExternalLink',
+        'animeStreamingEpisodes',
+      )
+      .addSelect(
+        mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes,
+        'animeStreamingEpisodes',
+        false,
+        ['sources'],
+      )
+
+      .applyJoinConditionally(
+        !!mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes?.sources,
+        'animeStreamingEpisodes',
+        'sources',
+      )
+      .addSelect(
+        mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes?.sources,
+        'sources',
+      )
+
+      .applyJoinConditionally(
+        !!mapResultSelect['rankings'],
+        rootAlias,
+        'rankings',
+      )
+      .addSelect(mapResultSelect['rankings'], 'rankings');
+  }
+
+  private createBuilderSelectAndWhereAnime(
     mapResultSelect: Record<string, any>,
     romajiTitle: string | undefined,
     id: string | undefined,
@@ -83,14 +316,18 @@ export class AnimeRepository
   ) {
     return (
       new QueryBuilderChainer(this.animeBuilder)
-        .addSelect(mapResultSelect, this.animeAlias, true, [
-          'genres',
-          'rankings',
-          'synonyms',
-          'tags',
-          'mediaExternalLink',
-          'animeStreamingEpisodes',
-        ])
+        .addSelect(
+          mapResultSelect,
+          this.animeAlias,
+          true,
+          this.ignoreColumnsReferencesAnime,
+        )
+        .applyJoinConditionally(
+          !!mapResultSelect['relations'],
+          this.animeAlias,
+          'relations',
+          true,
+        )
         .applyJoinConditionally(
           !!mapResultSelect['characters'],
           this.animeAlias,

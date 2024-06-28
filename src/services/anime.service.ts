@@ -77,6 +77,18 @@ export class AnimeService
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
+  public async getAnimeConnectionPage(
+    animeConnectionId: string,
+    mapResultSelect: MapResultSelect,
+  ) {
+    const animeConnection = await this.animeRepo.getEdgesOrNodes(
+      animeConnectionId,
+      mapResultSelect,
+    );
+
+    return animeConnection;
+  }
+
   public async getAnimeByConditions(
     mapResultSelect: MapResultSelect,
     queryAnimeArg: QueryAnimeArg,
