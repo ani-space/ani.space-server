@@ -6,7 +6,7 @@ import { NotFoundAnimeError } from '~/graphql/types/dtos/anime-response/not-foun
 import { AnimeService } from '~/services';
 import { either } from '~/utils/tools/either';
 import { MapResultSelect } from '~/utils/tools/object';
-import { animeDto } from '../__mocks__/anime.data';
+import { animeListDto } from '../__mocks__/anime.data';
 
 describe('AnimeService', () => {
   let service: IAnimeExternalService;
@@ -66,7 +66,7 @@ describe('AnimeService', () => {
     const mapResultSelect: MapResultSelect = { id: true };
 
     // Mock the animeRepo to return animeDto
-    mockAnimeRepo.getAnimeByConditions.mockResolvedValue(animeDto);
+    mockAnimeRepo.getAnimeByConditions.mockResolvedValue(animeListDto[0]);
 
     // Call the service method
     const result = await service.getAnimeByConditions(
@@ -75,6 +75,6 @@ describe('AnimeService', () => {
     );
 
     // Expect the result to be a valid anime
-    expect(result).toEqual(either.of(animeDto));
+    expect(result).toEqual(either.of(animeListDto[0]));
   });
 });
