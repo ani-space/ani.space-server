@@ -6,7 +6,7 @@ import { IBaseRepository } from './base-repository.interface';
 
 export interface ICharacterRepository extends IBaseRepository<Character> {
   getEdgesOrNodes(
-    animeConnectionId: string,
+    characterConnectionId: string,
     queryCharacterConnectionArg: QueryCharacterConnectionArg,
     mapResultSelect: MapResultSelect,
   ): Promise<Partial<CharacterConnection> | null>;
