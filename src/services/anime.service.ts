@@ -33,6 +33,7 @@ import {
 } from '../models/sub-models/anime-sub-models';
 import { AnimeStreamingEpisodeSource } from '../models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
 import { MapResultSelect } from '../utils/tools/object';
+import { QueryAnimeConnectionArg } from '~/graphql/types/args/query-anime-connection.arg';
 
 @Injectable()
 export class AnimeService
@@ -80,10 +81,12 @@ export class AnimeService
   public async getAnimeConnectionPage(
     animeConnectionId: string,
     mapResultSelect: MapResultSelect,
+    queryAnimeConnectionArg?: QueryAnimeConnectionArg,
   ) {
     const animeConnection = await this.animeRepo.getEdgesOrNodes(
       animeConnectionId,
       mapResultSelect,
+      queryAnimeConnectionArg,
     );
 
     return animeConnection;
