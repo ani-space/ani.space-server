@@ -243,9 +243,13 @@ export class CharacterRepository
           'anime',
         )
         .addSelect(mapResultSelect['edges']?.node?.anime, 'anime')
+
+        .applyWhereConditionally(
+          this.characterConnectionAlias,
+          'id',
+          characterConnectionId,
+        )
         .getQueryBuilder()
-        .where(`${this.characterConnectionAlias}.id=:characterConnectionId`)
-        .setParameter('characterConnectionId', characterConnectionId)
     );
   }
 }
