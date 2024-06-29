@@ -72,65 +72,6 @@ export class AnimeRepository
     return animeConnection;
   }
 
-  private createBuilderSelectAndWhereAnimeConnection(
-    edgesNodeQueryBuilder: QueryBuilderChainer<AnimeConnection>,
-    mapResultSelect: Record<string, any>,
-    animeConnectionId: string,
-  ) {
-    const queryBuilder = edgesNodeQueryBuilder
-      .addSelect(mapResultSelect, this.animeConnectionAlias, false, [
-        'nodes',
-        'edges',
-      ])
-
-      // nodes queries
-      .applyJoinConditionally(
-        !!mapResultSelect['nodes'],
-        this.animeConnectionAlias,
-        'nodes',
-      )
-      .addSelect(
-        mapResultSelect['nodes'],
-        'nodes',
-        false,
-        this.ignoreColumnsReferencesAnime,
-      )
-
-      // edges queries
-      .applyJoinConditionally(
-        !!mapResultSelect['edges'],
-        this.animeConnectionAlias,
-        'edges',
-      )
-      .addSelect(mapResultSelect['edges'], 'edges')
-
-      // edges node queries:
-      .applyJoinConditionally(!!mapResultSelect['edges']?.node, 'edges', 'node')
-      .addSelect(
-        mapResultSelect['edges']?.node,
-        'node',
-        false,
-        this.ignoreColumnsReferencesAnime,
-      );
-
-    AnimeRepository.createBuilderSelectAnime(
-      queryBuilder,
-      'nodes',
-      mapResultSelect['nodes'],
-    );
-    AnimeRepository.createBuilderSelectAnime(
-      queryBuilder,
-      'node',
-      mapResultSelect['edges']?.node,
-    );
-
-    return queryBuilder
-      .getQueryBuilder()
-      .where(`${this.animeConnectionAlias}.id=:animeConnectionId`, {
-        animeConnectionId,
-      });
-  }
-
   public async fuzzySearchAnimeByTitle(title: string) {
     const rawData = await this.dataSource.manager.query(`
       SELECT 
@@ -447,5 +388,66 @@ export class AnimeRepository
         )
         .getQueryBuilder()
     );
+  }
+
+  private createBuilderSelectAndWhereAnimeConnection(
+    edgesNodeQueryBuilder: QueryBuilderChainer<AnimeConnection>,
+    mapResultSelect: Record<string, any>,
+    animeConnectionId: string,
+  ) {
+    const queryBuilder = edgesNodeQueryBuilder
+      .addSelect(mapResultSelect, this.animeConnectionAlias, false, [
+        'nodes',
+        'edges',
+      ])
+
+      // nodes queries
+      .applyJoinConditionally(
+        !!mapResultSelect['nodes'],
+        this.animeConnectionAlias,
+        'nodes',
+      )
+      .addSelect(
+        mapResultSelect['nodes'],
+        'nodes',
+        false,
+        this.ignoreColumnsReferencesAnime,
+      )
+
+      // edges queries
+      .applyJoinConditionally(
+        !!mapResultSelect['edges'],
+        this.animeConnectionAlias,
+        'edges',
+      )
+      .addSelect(mapResultSelect['edges'], 'edges')
+
+      // edges node queries:
+      .applyJoinConditionally(!!mapResultSelect['edges']?.node, 'edges', 'node')
+      .addSelect(
+        mapResultSelect['edges']?.node,
+        'node',
+        false,
+        this.ignoreColumnsReferencesAnime,
+      );
+
+    AnimeRepository.createBuilderSelectAnime(
+      queryBuilder,
+      'nodes',
+      mapResultSelect['nodes'],
+    );
+    AnimeRepository.createBuilderSelectAnime(
+      queryBuilder,
+      'node',
+      mapResultSelect['edges']?.node,
+    );
+
+    return queryBuilder
+      .applyWhereConditionally(
+        this.animeConnectionAlias,
+        'id',
+        animeConnectionId,
+      )
+      .getQueryBuilder();
   }
 }
