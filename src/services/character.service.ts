@@ -8,9 +8,15 @@ import {
   ICharacterExternalService,
   ICharacterInternalService,
 } from '~/contracts/services';
+import { QueryCharacterArg } from '~/graphql/types/args/query-character.arg';
+import { NotFoundCharacterError } from '~/graphql/types/dtos/characters/not-found-character.error';
 import { Character, CharacterEdge } from '~/models';
+import { either, Either } from '~/utils/tools/either';
+import { getMethodName } from '~/utils/tools/functions';
+import { MapResultSelect } from '~/utils/tools/object';
 import { LOGGER_CREATED } from '../common/constants/index';
 import { IPaginateResult } from '../contracts/dtos/paginate-result.interface';
+import { QueryCharacterConnectionArg } from '../graphql/types/args/query-character-connection.arg';
 import {
   CharacterConnection,
   CharacterImage,
@@ -18,9 +24,6 @@ import {
 } from '../models/sub-models/character-sub-models';
 import { CharacterAlternative } from '../models/sub-models/character-sub-models/character-alternative.model';
 import { CharacterAlternativeSpoilers } from '../models/sub-models/character-sub-models/character-alternativeSpoiler.model';
-import { getMethodName } from '~/utils/tools/functions';
-import { QueryCharacterConnectionArg } from '../graphql/types/args/query-character-connection.arg';
-import { MapResultSelect } from '~/utils/tools/object';
 
 @Injectable()
 export class CharacterService
@@ -52,6 +55,24 @@ export class CharacterService
 
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  public async getCharacterByConditions(
+    queryCharacterArg: QueryCharacterArg,
+    mapResultSelect: MapResultSelect,
+  ): Promise<Either<NotFoundCharacterError, Character>> {
+    const character = await this.characterRepo.getCharacterByConditions(
+      queryCharacterArg,
+      mapResultSelect,
+    );
+
+    if (!character) {
+      return either.error(
+        new NotFoundCharacterError({ requestObject: queryCharacterArg }),
+      );
+    }
+
+    return either.of(character);
+  }
 
   public async getCharacterConnectionPage(
     animeConnectionId: string,

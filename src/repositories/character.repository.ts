@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { alphabetical } from 'radash';
 import { DataSource, Repository } from 'typeorm';
 import { ICharacterRepository } from '~/contracts/repositories';
+import { QueryCharacterArg } from '~/graphql/types/args/query-character.arg';
 import { CharacterSortEnum } from '~/graphql/types/dtos/characters/character-sort.enum';
 import { Character } from '~/models';
 import { MapResultSelect } from '~/utils/tools/object';
@@ -9,9 +11,7 @@ import { QueryCharacterConnectionArg } from '../graphql/types/args/query-charact
 import { CharacterConnection } from '../models/sub-models/character-sub-models';
 import { paginate } from '../utils/tools/functions';
 import { BaseRepository } from './base.repository';
-import { alphabetical, sort } from 'radash';
 import { QueryBuilderChainer } from './libs/query-builder-chainer';
-import { nameof } from 'ts-simple-nameof';
 @Injectable()
 export class CharacterRepository
   extends BaseRepository<Character>
@@ -33,10 +33,116 @@ export class CharacterRepository
     return 'CharacterConnection';
   }
 
-  get characterBuilder() {
+  get characterAlias() {
+    return 'Character';
+  }
+
+  get characterConnectionBuilder() {
     return this.dataSource
       .getRepository(CharacterConnection)
       .createQueryBuilder(this.characterConnectionAlias);
+  }
+
+  get characterBuilder() {
+    return this.dataSource
+      .getRepository(Character)
+      .createQueryBuilder(this.characterAlias);
+  }
+
+  public async getCharacterByConditions(
+    queryCharacterArg: QueryCharacterArg,
+    mapResultSelectParam: MapResultSelect,
+  ) {
+    const mapResultSelect = mapResultSelectParam as Record<string, any>;
+    const { id, idAnilist, age, fullName, gender } = queryCharacterArg;
+
+    const queryBuilder = this.createSelectCharacterBuilder(
+      mapResultSelect,
+      fullName,
+      id,
+      idAnilist,
+      age,
+      gender,
+    );
+
+    const character = await queryBuilder.getOne();
+
+    return character;
+  }
+
+  private createSelectCharacterBuilder(
+    mapResultSelect: Record<string, any>,
+    fullName: string | undefined,
+    id: string | undefined,
+    idAnilist: number,
+    age: number | undefined,
+    gender: string | undefined,
+  ) {
+    const builder = new QueryBuilderChainer(this.characterBuilder)
+      // select character scalar fields
+      .addSelect(mapResultSelect, this.characterAlias, true)
+
+      // select character.dateOfBirth
+      .applyJoinConditionally(
+        !!mapResultSelect['dateOfBirth'],
+        this.characterAlias,
+        'dateOfBirth',
+      )
+      .addSelect(mapResultSelect['dateOfBirth'], 'dateOfBirth')
+
+      // select character.image
+      .applyJoinConditionally(
+        !!mapResultSelect['image'],
+        this.characterAlias,
+        'image',
+      )
+      .addSelect(mapResultSelect['image'], 'image')
+
+      // select character.name
+      .applyJoinConditionally(
+        !!mapResultSelect['name'] || !!fullName,
+        this.characterAlias,
+        'name',
+      )
+      .addSelect(mapResultSelect['name'], 'name', false, [
+        'alternative',
+        'alternativeSpoiler',
+      ])
+
+      // select character.anime
+      .applyJoinConditionally(
+        !!mapResultSelect['anime'],
+        this.characterAlias,
+        'anime',
+      )
+      .addSelect(mapResultSelect['anime'], 'anime', false, ['edges', 'nodes'])
+
+      // select character.name.alternative
+      .applyJoinConditionally(
+        !!mapResultSelect['name']?.alternative,
+        'name',
+        'alternative',
+      )
+      .addSelect(mapResultSelect['name']?.alternative, 'alternative')
+
+      // select character.name.alternativeSpoiler
+      .applyJoinConditionally(
+        !!mapResultSelect['name']?.alternativeSpoiler,
+        'name',
+        'alternativeSpoiler',
+      )
+      .addSelect(
+        mapResultSelect['name']?.alternativeSpoiler,
+        'alternativeSpoiler',
+      )
+
+      .applyWhereConditionally(this.characterAlias, 'id', id)
+      .applyWhereConditionally(this.characterAlias, 'idAnilist', idAnilist)
+      .applyWhereConditionally(this.characterAlias, 'age', age)
+      .applyWhereConditionally(this.characterAlias, 'gender', gender)
+      .applyWhereConditionally('name', 'full', gender);
+
+    return builder.getQueryBuilder();
   }
 
   public async getEdgesOrNodes(
@@ -52,32 +158,32 @@ export class CharacterRepository
       characterConnectionId,
     );
 
-    const animeConnection = await queryBuilder.getOne();
+    const characterConnection = await queryBuilder.getOne();
 
-    if (!animeConnection) {
+    if (!characterConnection) {
       return null;
     }
 
     switch (sortEnum) {
       case CharacterSortEnum.ID:
-        animeConnection.edges = alphabetical(
-          animeConnection.edges,
+        characterConnection.edges = alphabetical(
+          characterConnection.edges,
           (e) => e.id,
         );
-        animeConnection.nodes = alphabetical(
-          animeConnection.nodes,
+        characterConnection.nodes = alphabetical(
+          characterConnection.nodes,
           (e) => e.id,
         );
         break;
 
       case CharacterSortEnum.ID_DESC:
-        animeConnection.edges = alphabetical(
-          animeConnection.edges,
+        characterConnection.edges = alphabetical(
+          characterConnection.edges,
           (e) => e.id,
           'desc',
         );
-        animeConnection.nodes = alphabetical(
-          animeConnection.nodes,
+        characterConnection.nodes = alphabetical(
+          characterConnection.nodes,
           (e) => e.id,
           'desc',
         );
@@ -85,29 +191,29 @@ export class CharacterRepository
 
       case CharacterSortEnum.NAME:
         if (mapResultSelect['edges']?.name) {
-          animeConnection.edges = alphabetical(
-            animeConnection.edges,
+          characterConnection.edges = alphabetical(
+            characterConnection.edges,
             (e) => `${e?.name}`,
           );
         }
         if (mapResultSelect['nodes']?.name)
-          animeConnection.nodes = alphabetical(
-            animeConnection.nodes,
+          characterConnection.nodes = alphabetical(
+            characterConnection.nodes,
             (e) => `${e?.name?.full}`,
           );
         break;
 
       case CharacterSortEnum.NAME_DESC:
         if (mapResultSelect['edges']?.name) {
-          animeConnection.edges = alphabetical(
-            animeConnection.edges,
+          characterConnection.edges = alphabetical(
+            characterConnection.edges,
             (e) => `${e?.name}`,
             'desc',
           );
         }
         if (mapResultSelect['nodes']?.name)
-          animeConnection.nodes = alphabetical(
-            animeConnection.nodes,
+          characterConnection.nodes = alphabetical(
+            characterConnection.nodes,
             (e) => `${e?.name?.full}`,
             'desc',
           );
@@ -115,8 +221,8 @@ export class CharacterRepository
 
       case CharacterSortEnum.ROLE:
         if (mapResultSelect['edges']?.role) {
-          animeConnection.edges = alphabetical(
-            animeConnection.edges,
+          characterConnection.edges = alphabetical(
+            characterConnection.edges,
             (e) => `${e?.role}`,
           );
         }
@@ -124,8 +230,8 @@ export class CharacterRepository
 
       case CharacterSortEnum.ROLE_DESC:
         if (mapResultSelect['edges']?.role) {
-          animeConnection.edges = alphabetical(
-            animeConnection.edges,
+          characterConnection.edges = alphabetical(
+            characterConnection.edges,
             (e) => `${e?.role}`,
             'desc',
           );
@@ -134,9 +240,9 @@ export class CharacterRepository
     }
 
     const totalPages =
-      animeConnection.edges.length || animeConnection.nodes.length;
+      characterConnection.edges.length || characterConnection.nodes.length;
     const lastPage = Math.ceil(totalPages / limit);
-    animeConnection.pageInfo = {
+    characterConnection.pageInfo = {
       total: totalPages,
       perPage: limit,
       lastPage,
@@ -144,10 +250,18 @@ export class CharacterRepository
       hasNextPage: page < lastPage,
     };
 
-    animeConnection.edges = paginate(limit, page, animeConnection.edges);
-    animeConnection.nodes = paginate(limit, page, animeConnection.nodes);
+    characterConnection.edges = paginate(
+      limit,
+      page,
+      characterConnection.edges,
+    );
+    characterConnection.nodes = paginate(
+      limit,
+      page,
+      characterConnection.nodes,
+    );
 
-    return animeConnection;
+    return characterConnection;
   }
 
   private createQueryBuilder(
@@ -155,7 +269,7 @@ export class CharacterRepository
     characterConnectionId: string,
   ) {
     return (
-      new QueryBuilderChainer(this.characterBuilder)
+      new QueryBuilderChainer(this.characterConnectionBuilder)
         // nodes queries
         .applyJoinConditionally(
           !!mapResultSelect['nodes'],

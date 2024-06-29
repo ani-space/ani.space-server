@@ -15,6 +15,7 @@ import { MapResultSelect } from '../../utils/tools/object';
 import { AnimeByFuzzySearch, IPaginateResult } from '../dtos';
 import { Either } from '~/utils/tools/either';
 import { NotFoundAnimeError } from '~/graphql/types/dtos/anime-response/not-found-anime.error';
+import { QueryAnimeConnectionArg } from '~/graphql/types/args/query-anime-connection.arg';
 
 // These services will be exposed and utilized by the GraphQL client
 export interface IAnimeExternalService {
@@ -26,6 +27,7 @@ export interface IAnimeExternalService {
   getAnimeConnectionPage(
     animeConnectionId: string,
     mapResultSelect: MapResultSelect,
+    queryAnimeConnectionArg?: QueryAnimeConnectionArg,
   ): Promise<AnimeConnection | null>;
 }
 

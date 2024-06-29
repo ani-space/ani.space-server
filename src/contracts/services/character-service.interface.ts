@@ -9,6 +9,9 @@ import {
 } from '~/models/sub-models/character-sub-models';
 import { MapResultSelect } from '~/utils/tools/object';
 import { IPaginateResult } from '../dtos';
+import { QueryCharacterArg } from '~/graphql/types/args/query-character.arg';
+import { NotFoundCharacterError } from '~/graphql/types/dtos/characters/not-found-character.error';
+import { Either } from '~/utils/tools/either';
 
 export interface ICharacterExternalService {
   getCharacterConnectionPage(
@@ -16,6 +19,11 @@ export interface ICharacterExternalService {
     queryCharacterConnectionArg: QueryCharacterConnectionArg,
     mapResultSelect: MapResultSelect,
   ): Promise<Partial<CharacterConnection> | null>;
+
+  getCharacterByConditions(
+    queryCharacterArg: QueryCharacterArg,
+    mapResultSelect: MapResultSelect,
+  ): Promise<Either<NotFoundCharacterError, Character>>;
 }
 
 export const ICharacterExternalService = Symbol('ICharacterExternalService');

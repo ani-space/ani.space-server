@@ -14,4 +14,8 @@ export class AnimeConnectionDto extends BaseDto {
   @AutoMap(() => [AnimeDto])
   @Field((type) => [AnimeDto], { nullable: true })
   nodes: AnimeDto[];
+
+  @AutoMap(() => PageInfo)
+  @Field((type) => PageInfo, { nullable: true })
+  pageInfo?: PageInfo;
 }

@@ -8,6 +8,10 @@ import { AnimeConnection } from '~/models/sub-models/anime-sub-models';
 import { MapResultSelect } from '../utils/tools/object';
 import { BaseRepository } from './base.repository';
 import { QueryBuilderChainer } from './libs/query-builder-chainer';
+import { QueryAnimeConnectionArg } from '~/graphql/types/args/query-anime-connection.arg';
+import { AnimeSortEnum } from '~/graphql/types/dtos/anime-response/anime-sort.enum';
+import { alphabetical, sort } from 'radash';
+import { paginate } from '~/utils/tools/functions';
 
 @Injectable()
 export class AnimeRepository
@@ -23,7 +27,7 @@ export class AnimeRepository
     super(animeRepository);
   }
 
-  readonly ignoreColumnsReferencesAnime = [
+  static readonly ignoreColumnsReferencesAnime = [
     'genres',
     'rankings',
     'synonyms',
@@ -55,6 +59,7 @@ export class AnimeRepository
   public async getEdgesOrNodes(
     animeConnectionId: string,
     mapResultSelectParam: MapResultSelect,
+    queryAnimeConnectionArg?: QueryAnimeConnectionArg,
   ) {
     const mapResultSelect = mapResultSelectParam as Record<string, any>;
 
@@ -68,6 +73,10 @@ export class AnimeRepository
     );
 
     const animeConnection = await queryBuilder.getOne();
+
+    // pagination (to reduce testing effort & query complexity,
+    // we will handle pagination in application layer)
+    this.paginationAnimeConnection(animeConnection, queryAnimeConnectionArg);
 
     return animeConnection;
   }
@@ -247,6 +256,368 @@ export class AnimeRepository
       .addSelect(mapResultSelect['rankings'], 'rankings');
   }
 
+  private paginationAnimeConnection(
+    animeConnection?: AnimeConnection | null,
+    queryAnimeConnectionArg?: QueryAnimeConnectionArg,
+  ) {
+    if (!animeConnection || !queryAnimeConnectionArg) return;
+
+    const { limit, page, sort: sortQuery } = queryAnimeConnectionArg;
+
+    switch (sortQuery) {
+      case AnimeSortEnum.ID:
+        animeConnection.edges = sort(animeConnection.edges, (e) =>
+          Number(e?.node?.idAnilist),
+        );
+        animeConnection.nodes = sort(animeConnection.nodes, (n) =>
+          Number(n.idAnilist),
+        );
+        break;
+
+      case AnimeSortEnum.ID_DESC:
+        animeConnection.edges = sort(
+          animeConnection.edges,
+          (e) => Number(e?.node?.idAnilist),
+          true,
+        );
+        animeConnection.nodes = sort(
+          animeConnection.nodes,
+          (n) => Number(n.idAnilist),
+          true,
+        );
+        break;
+
+      case AnimeSortEnum.TITLE_ROMAJI:
+        animeConnection.edges = alphabetical(
+          animeConnection.edges,
+          (e) => `${e?.node?.title?.romaji}`,
+        );
+        animeConnection.nodes = alphabetical(
+          animeConnection.nodes,
+          (n) => `${n?.title?.romaji}`,
+        );
+        break;
+
+      case AnimeSortEnum.TITLE_ROMAJI_DESC:
+        animeConnection.edges = alphabetical(
+          animeConnection.edges,
+          (e) => `${e?.node?.title?.romaji}`,
+          'desc',
+        );
+        animeConnection.nodes = alphabetical(
+          animeConnection.nodes,
+          (n) => `${n?.title?.romaji}`,
+          'desc',
+        );
+        break;
+
+      case AnimeSortEnum.TITLE_ENGLISH:
+        animeConnection.edges = alphabetical(
+          animeConnection.edges,
+          (e) => `${e?.node?.title?.english}`,
+        );
+        animeConnection.nodes = alphabetical(
+          animeConnection.nodes,
+          (n) => `${n?.title?.english}`,
+        );
+        break;
+
+      case AnimeSortEnum.TITLE_ENGLISH_DESC:
+        animeConnection.edges = alphabetical(
+          animeConnection.edges,
+          (e) => `${e?.node?.title?.english}`,
+          'desc',
+        );
+        animeConnection.nodes = alphabetical(
+          animeConnection.nodes,
+          (n) => `${n?.title?.english}`,
+          'desc',
+        );
+        break;
+
+      case AnimeSortEnum.TITLE_NATIVE:
+        animeConnection.edges = alphabetical(
+          animeConnection.edges,
+          (e) => `${e?.node?.title?.native}`,
+        );
+        animeConnection.nodes = alphabetical(
+          animeConnection.nodes,
+          (n) => `${n?.title?.native}`,
+        );
+        break;
+
+      case AnimeSortEnum.TITLE_NATIVE_DESC:
+        animeConnection.edges = alphabetical(
+          animeConnection.edges,
+          (e) => `${e?.node?.title?.native}`,
+          'desc',
+        );
+        animeConnection.nodes = alphabetical(
+          animeConnection.nodes,
+          (n) => `${n?.title?.native}`,
+          'desc',
+        );
+        break;
+
+      case AnimeSortEnum.FORMAT:
+        animeConnection.edges = alphabetical(
+          animeConnection.edges,
+          (e) => `${e?.node?.format}`,
+        );
+        animeConnection.nodes = alphabetical(
+          animeConnection.nodes,
+          (n) => `${n?.format}`,
+        );
+        break;
+
+      case AnimeSortEnum.FORMAT_DESC:
+        animeConnection.edges = alphabetical(
+          animeConnection.edges,
+          (e) => `${e?.node?.format}`,
+          'desc',
+        );
+        animeConnection.nodes = alphabetical(
+          animeConnection.nodes,
+          (n) => `${n?.format}`,
+          'desc',
+        );
+        break;
+
+      case AnimeSortEnum.START_DATE:
+        animeConnection.edges = sort(animeConnection.edges, (e) =>
+          new Date(
+            e?.node?.startDate?.year ?? 0,
+            e?.node?.startDate?.month ?? 1,
+            e?.node?.startDate?.day ?? 1,
+          ).getTime(),
+        );
+        animeConnection.nodes = sort(animeConnection.nodes, (n) =>
+          new Date(
+            n?.startDate?.year ?? 0,
+            n?.startDate?.month ?? 1,
+            n?.startDate?.day ?? 1,
+          ).getTime(),
+        );
+        break;
+
+      case AnimeSortEnum.START_DATE_DESC:
+        animeConnection.edges = sort(
+          animeConnection.edges,
+          (e) =>
+            new Date(
+              e?.node?.startDate?.year ?? 0,
+              e?.node?.startDate?.month ?? 1,
+              e?.node?.startDate?.day ?? 1,
+            ).getTime(),
+          true,
+        );
+        animeConnection.nodes = sort(
+          animeConnection.nodes,
+          (n) =>
+            new Date(
+              n?.startDate?.year ?? 0,
+              n?.startDate?.month ?? 1,
+              n?.startDate?.day ?? 1,
+            ).getTime(),
+          true,
+        );
+        break;
+
+      case AnimeSortEnum.END_DATE:
+        animeConnection.edges = sort(animeConnection.edges, (e) =>
+          new Date(
+            e?.node?.endDate?.year ?? 0,
+            e?.node?.endDate?.month ?? 1,
+            e?.node?.endDate?.day ?? 1,
+          ).getTime(),
+        );
+        animeConnection.nodes = sort(animeConnection.nodes, (n) =>
+          new Date(
+            n?.endDate?.year ?? 0,
+            n?.endDate?.month ?? 1,
+            n?.endDate?.day ?? 1,
+          ).getTime(),
+        );
+        break;
+
+      case AnimeSortEnum.END_DATE_DESC:
+        animeConnection.edges = sort(
+          animeConnection.edges,
+          (e) =>
+            new Date(
+              e?.node?.endDate?.year ?? 0,
+              e?.node?.endDate?.month ?? 1,
+              e?.node?.endDate?.day ?? 1,
+            ).getTime(),
+          true,
+        );
+        animeConnection.nodes = sort(
+          animeConnection.nodes,
+          (n) =>
+            new Date(
+              n?.endDate?.year ?? 0,
+              n?.endDate?.month ?? 1,
+              n?.endDate?.day ?? 1,
+            ).getTime(),
+          true,
+        );
+        break;
+
+      case AnimeSortEnum.SCORE:
+        animeConnection.edges = sort(animeConnection.edges, (e) =>
+          Number(e?.node?.averageScore),
+        );
+        animeConnection.nodes = sort(animeConnection.nodes, (n) =>
+          Number(n.averageScore),
+        );
+        break;
+
+      case AnimeSortEnum.SCORE_DESC:
+        animeConnection.edges = sort(
+          animeConnection.edges,
+          (e) => Number(e?.node?.averageScore),
+          true,
+        );
+        animeConnection.nodes = sort(
+          animeConnection.nodes,
+          (n) => Number(n.averageScore),
+          true,
+        );
+        break;
+
+      case AnimeSortEnum.POPULARITY:
+        animeConnection.edges = sort(animeConnection.edges, (e) =>
+          Number(e?.node?.popularity),
+        );
+        animeConnection.nodes = sort(animeConnection.nodes, (n) =>
+          Number(n.popularity),
+        );
+        break;
+
+      case AnimeSortEnum.POPULARITY_DESC:
+        animeConnection.edges = sort(
+          animeConnection.edges,
+          (e) => Number(e?.node?.popularity),
+          true,
+        );
+        animeConnection.nodes = sort(
+          animeConnection.nodes,
+          (n) => Number(n.popularity),
+          true,
+        );
+        break;
+
+      case AnimeSortEnum.EPISODES:
+        animeConnection.edges = sort(animeConnection.edges, (e) =>
+          Number(e?.node?.episodes),
+        );
+        animeConnection.nodes = sort(animeConnection.nodes, (n) =>
+          Number(n.episodes),
+        );
+        break;
+
+      case AnimeSortEnum.EPISODES_DESC:
+        animeConnection.edges = sort(
+          animeConnection.edges,
+          (e) => Number(e?.node?.episodes),
+          true,
+        );
+        animeConnection.nodes = sort(
+          animeConnection.nodes,
+          (n) => Number(n.episodes),
+          true,
+        );
+        break;
+
+      case AnimeSortEnum.DURATION:
+        animeConnection.edges = sort(animeConnection.edges, (e) =>
+          Number(e?.node?.duration),
+        );
+        animeConnection.nodes = sort(animeConnection.nodes, (n) =>
+          Number(n.duration),
+        );
+        break;
+
+      case AnimeSortEnum.DURATION_DESC:
+        animeConnection.edges = sort(
+          animeConnection.edges,
+          (e) => Number(e?.node?.duration),
+          true,
+        );
+        animeConnection.nodes = sort(
+          animeConnection.nodes,
+          (n) => Number(n.duration),
+          true,
+        );
+        break;
+
+      case AnimeSortEnum.STATUS:
+        animeConnection.edges = alphabetical(
+          animeConnection.edges,
+          (e) => `${e?.node?.status}`,
+        );
+        animeConnection.nodes = alphabetical(
+          animeConnection.nodes,
+          (n) => `${n.status}`,
+        );
+        break;
+
+      case AnimeSortEnum.STATUS_DESC:
+        animeConnection.edges = alphabetical(
+          animeConnection.edges,
+          (e) => `${e?.node?.status}`,
+          'desc',
+        );
+        animeConnection.nodes = alphabetical(
+          animeConnection.nodes,
+          (n) => `${n.status}`,
+          'desc',
+        );
+        break;
+
+      case AnimeSortEnum.SEASON:
+        animeConnection.edges = alphabetical(
+          animeConnection.edges,
+          (e) => `${e?.node?.season}`,
+        );
+        animeConnection.nodes = alphabetical(
+          animeConnection.nodes,
+          (n) => `${n.season}`,
+        );
+        break;
+
+      case AnimeSortEnum.SEASON_DESC:
+        animeConnection.edges = alphabetical(
+          animeConnection.edges,
+          (e) => `${e?.node?.season}`,
+          'desc',
+        );
+        animeConnection.nodes = alphabetical(
+          animeConnection.nodes,
+          (n) => `${n.season}`,
+          'desc',
+        );
+        break;
+    }
+
+    const totalPages =
+      animeConnection.edges.length || animeConnection.nodes.length;
+    const lastPage = Math.ceil(totalPages / limit);
+
+    animeConnection.pageInfo = {
+      total: totalPages,
+      perPage: limit,
+      lastPage,
+      currentPage: page,
+      hasNextPage: page < lastPage,
+    };
+
+    animeConnection.edges = paginate(limit, page, animeConnection.edges);
+    animeConnection.nodes = paginate(limit, page, animeConnection.nodes);
+
+    return animeConnection;
+  }
+
   private createBuilderSelectAndWhereAnime(
     mapResultSelect: Record<string, any>,
     romajiTitle: string | undefined,
@@ -261,7 +632,7 @@ export class AnimeRepository
           mapResultSelect,
           this.animeAlias,
           true,
-          this.ignoreColumnsReferencesAnime,
+          AnimeRepository.ignoreColumnsReferencesAnime,
         )
         .applyJoinConditionally(
           !!mapResultSelect['relations'],
@@ -411,7 +782,7 @@ export class AnimeRepository
         mapResultSelect['nodes'],
         'nodes',
         false,
-        this.ignoreColumnsReferencesAnime,
+        AnimeRepository.ignoreColumnsReferencesAnime,
       )
 
       // edges queries
@@ -428,7 +799,7 @@ export class AnimeRepository
         mapResultSelect['edges']?.node,
         'node',
         false,
-        this.ignoreColumnsReferencesAnime,
+        AnimeRepository.ignoreColumnsReferencesAnime,
       );
 
     AnimeRepository.createBuilderSelectAnime(
