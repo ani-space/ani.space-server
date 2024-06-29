@@ -75,6 +75,7 @@ import { LoggerModule } from './logger.module';
 import { CharacterProfile } from '../common/mapper-profiles/character-profile';
 import { StaffProfile } from '../common/mapper-profiles/staff-profile';
 import { StudioProfile } from '~/common/mapper-profiles/studio-profile';
+import { CharacterResolver } from '~/graphql/resolvers/character.resolver';
 
 const animeRepoProvider: Provider = {
   provide: IAnimeRepository,
@@ -180,6 +181,7 @@ const studioServiceProvider: Provider = {
     StudioProfile,
 
     MediaResolver,
+    CharacterResolver,
 
     animeRepoProvider,
     animeServiceProvider,
