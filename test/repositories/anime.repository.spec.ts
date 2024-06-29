@@ -6,22 +6,10 @@ import { Anime } from '~/models';
 import { AnimeRepository } from '~/repositories';
 import { MapResultSelect } from '~/utils/tools/object';
 import { animeConnectionListDto, animeListDto } from '../__mocks__/anime.data';
+import { mockDataSource } from '../__mocks__/data-source';
 
 describe('AnimeRepository', () => {
   let animeRepository: IAnimeRepository;
-
-  const mockDataSource = {
-    getOne: jest.fn(),
-    getRepository: jest.fn(),
-    createQueryBuilder: jest.fn(),
-    leftJoinAndSelect: jest.fn(),
-    leftJoin: jest.fn(),
-    addOrderBy: jest.fn(),
-    andWhere: jest.fn(),
-    select: jest.fn(),
-    addSelect: jest.fn(),
-    where: jest.fn(),
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
