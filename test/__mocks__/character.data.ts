@@ -280,3 +280,83 @@ export const characterConnectionListDto = [
     ],
   },
 ];
+
+export const characterListDto = [
+  {
+    id: '00e4aa80-57f9-4115-8d42-9958dc903d23',
+    bloodType: null,
+    createdAt: '2024-05-04T17:29:50.397Z',
+    description: null,
+    gender: null,
+    dateOfBirth: {
+      day: null,
+      month: null,
+      year: null,
+    },
+    idAnilist: 142593,
+    image: {
+      large:
+        'https://s4.anilist.co/file/anilistcdn/character/large/b142593-fBVpqReJ7fNL.jpg',
+      medium:
+        'https://s4.anilist.co/file/anilistcdn/character/medium/b142593-fBVpqReJ7fNL.jpg',
+    },
+    name: {
+      first: 'Richard',
+      full: 'Richard Burner',
+      last: 'Burner',
+      middle: null,
+      native: 'リチャード・バーナー',
+      alternative: [],
+      alternativeSpoiler: [],
+    },
+    anime: {
+      edges: [
+        {
+          characterRole: 'SUPPORTING',
+          characterName: null,
+          dubGroup: null,
+          favouriteOrder: null,
+          idAnilist: 180546,
+          isMainStudio: false,
+          relationType: null,
+          roleNotes: null,
+          staffRole: '1',
+          node: {
+            id: '72fb61ca-14a9-4966-b9cb-1f34883dfa00',
+            idAnilist: 105096,
+            idMal: 38628,
+            genres: [
+              {
+                genre: 'Action',
+                id: 'e595e930-4929-47b5-a23e-e89797b0f60a',
+              },
+              {
+                genre: 'Mystery',
+                id: '660d4801-b47d-4c9e-bff1-b701c0bdcb8a',
+              },
+              {
+                genre: 'Sci-Fi',
+                id: 'b36a3ba5-4cc7-443a-a88d-1786968efc8c',
+              },
+              {
+                genre: 'Thriller',
+                id: '6539a87d-df34-4827-a33c-7bf0e5d20a2f',
+              },
+            ],
+            bannerImage: null,
+            coverImage: {
+              color: '#86280d',
+              extraLarge:
+                'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/nx105096-cnoCYIEWrDKT.jpg',
+              large:
+                'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/nx105096-cnoCYIEWrDKT.jpg',
+              medium:
+                'https://s4.anilist.co/file/anilistcdn/media/anime/cover/small/nx105096-cnoCYIEWrDKT.jpg',
+              id: 'd4ddb113-07b1-409b-8cec-510418583476',
+            },
+          },
+        },
+      ],
+    },
+  },
+];

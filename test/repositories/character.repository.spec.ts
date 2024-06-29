@@ -6,7 +6,11 @@ import { CharacterRepository } from '~/repositories';
 import { QueryCharacterConnectionArg } from '~/graphql/types/args/query-character-connection.arg';
 import { CharacterSortEnum } from '~/graphql/types/dtos/characters/character-sort.enum';
 import { MapResultSelect } from '~/utils/tools/object';
-import { characterConnectionListDto } from '../__mocks__/character.data';
+import {
+  characterConnectionListDto,
+  characterListDto,
+} from '../__mocks__/character.data';
+import { QueryCharacterArg } from '~/graphql/types/args/query-character.arg';
 
 describe('CharacterRepository', () => {
   let characterRepository: ICharacterRepository;
@@ -33,6 +37,43 @@ describe('CharacterRepository', () => {
       module.get<ICharacterRepository>(ICharacterRepository);
     mockDataSource.getRepository.mockReturnValue(mockDataSource);
     mockDataSource.createQueryBuilder.mockReturnValue(mockDataSource);
+  });
+
+  it('getCharacterByConditions should return character', async () => {
+    // arrange
+    const queryCharacterArg: QueryCharacterArg = {
+      idAnilist: 142593,
+    };
+    const mapResultSelectParam: MapResultSelect = {};
+    const characterDto = characterListDto[0];
+    mockDataSource.getOne.mockResolvedValue(characterDto);
+
+    // act
+    const result = await characterRepository.getCharacterByConditions(
+      queryCharacterArg,
+      mapResultSelectParam,
+    );
+
+    // assert
+    expect(result).toMatchObject(characterDto);
+  });
+
+  it('getCharacterByConditions should return null', async () => {
+    // arrange
+    const queryCharacterArg: QueryCharacterArg = {
+      idAnilist: 142593,
+    };
+    const mapResultSelectParam: MapResultSelect = {};
+    mockDataSource.getOne.mockResolvedValue(null);
+
+    // act
+    const result = await characterRepository.getCharacterByConditions(
+      queryCharacterArg,
+      mapResultSelectParam,
+    );
+
+    // assert
+    expect(result).toEqual(null);
   });
 
   it('getEdgesOrNodes should return null', async () => {
