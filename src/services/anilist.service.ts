@@ -13,7 +13,7 @@ import {
   IAnimeInternalService,
   IAnimeTagService,
   ICharacterInternalService,
-  IStaffService,
+  IStaffInternalService,
   IStudioService,
 } from '~/contracts/services';
 import { Anime, Character } from '~/models';
@@ -82,8 +82,8 @@ export class AnilistService implements IAnilistService {
     @Inject(ICharacterInternalService)
     private readonly characterService: ICharacterInternalService,
 
-    @Inject(IStaffService)
-    private readonly staffService: IStaffService,
+    @Inject(IStaffInternalService)
+    private readonly staffService: IStaffInternalService,
 
     @InjectRepository(FuzzyDateInt)
     private readonly fuzzDateRepo: Repository<FuzzyDateInt>,

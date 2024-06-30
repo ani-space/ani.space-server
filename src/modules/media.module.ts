@@ -5,6 +5,7 @@ import {
   IAnimeRepository,
   IAnimeTagRepository,
   ICharacterRepository,
+  IStaffRepository,
   IStudioRepository,
 } from '~/contracts/repositories';
 import {
@@ -13,9 +14,10 @@ import {
   IAnimeInternalService,
   IAnimeTagService,
   ICharacterInternalService,
-  IStaffService,
+  IStaffInternalService,
   IStudioService,
   ICharacterExternalService,
+  IStaffExternalService,
 } from '~/contracts/services';
 import { MediaResolver } from '~/graphql/resolvers/media.resolver';
 import { Anime, Character, CharacterEdge, Staff, StaffEdge } from '~/models';
@@ -76,6 +78,8 @@ import { CharacterProfile } from '../common/mapper-profiles/character-profile';
 import { StaffProfile } from '../common/mapper-profiles/staff-profile';
 import { StudioProfile } from '~/common/mapper-profiles/studio-profile';
 import { CharacterResolver } from '~/graphql/resolvers/character.resolver';
+import { StaffResolver } from '~/graphql/resolvers/staff.resolver';
+import { StaffRepository } from '~/repositories/staff.repository';
 
 const animeRepoProvider: Provider = {
   provide: IAnimeRepository,
@@ -109,6 +113,10 @@ const characterRepoProvider: Provider = {
   provide: ICharacterRepository,
   useClass: CharacterRepository,
 };
+const staffRepoProvider: Provider = {
+  provide: IStaffRepository,
+  useClass: StaffRepository,
+};
 const characterInternalServiceProvider: Provider = {
   provide: ICharacterInternalService,
   useClass: CharacterService,
@@ -117,8 +125,12 @@ const characterExternalServiceProvider: Provider = {
   provide: ICharacterExternalService,
   useClass: CharacterService,
 };
-const staffServiceProvider: Provider = {
-  provide: IStaffService,
+const staffInternalServiceProvider: Provider = {
+  provide: IStaffInternalService,
+  useClass: StaffService,
+};
+const staffExternalServiceProvider: Provider = {
+  provide: IStaffExternalService,
   useClass: StaffService,
 };
 const studioRepositoryProvider: Provider = {
@@ -182,6 +194,7 @@ const studioServiceProvider: Provider = {
 
     MediaResolver,
     CharacterResolver,
+    StaffResolver,
 
     animeRepoProvider,
     animeServiceProvider,
@@ -195,7 +208,9 @@ const studioServiceProvider: Provider = {
     characterInternalServiceProvider,
     characterExternalServiceProvider,
 
-    staffServiceProvider,
+    staffRepoProvider,
+    staffInternalServiceProvider,
+    staffExternalServiceProvider,
 
     studioServiceProvider,
     studioRepositoryProvider,
@@ -212,7 +227,9 @@ const studioServiceProvider: Provider = {
     characterInternalServiceProvider,
     characterExternalServiceProvider,
 
-    staffServiceProvider,
+    staffRepoProvider,
+    staffInternalServiceProvider,
+    staffExternalServiceProvider,
 
     studioServiceProvider,
     studioRepositoryProvider,

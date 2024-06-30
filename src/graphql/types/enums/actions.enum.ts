@@ -5,3 +5,7 @@ export enum AnimeActions {
 export enum CharacterActions {
   Character = 'Character',
 }
+
+export enum StaffActions {
+  Staff = 'Staff',
+}

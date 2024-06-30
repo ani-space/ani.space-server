@@ -1,9 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateLoggerDto } from '~/common/dtos';
-import { IStaffService } from '~/contracts/services';
+import {
+  IStaffExternalService,
+  IStaffInternalService,
+} from '~/contracts/services';
 import { Staff, StaffEdge } from '~/models';
 import { StaffName } from '~/models/sub-models/staff-sub-models';
 import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
@@ -17,31 +20,69 @@ import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-na
 import { StaffRoleType } from '../models/sub-models/staff-sub-models/staff-role-type.model';
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
 import { getMethodName } from '~/utils/tools/functions';
+import { MapResultSelect } from '~/utils/tools/object';
+import { QueryStaffArg } from '~/graphql/types/args/query-staff.arg';
+import { IStaffRepository } from '~/contracts/repositories';
+import { either } from '~/utils/tools/either';
+import { NotFoundStaffError } from '~/graphql/types/dtos/staff/not-found-staff.error';
 
 @Injectable()
-export class StaffService implements IStaffService {
+export class StaffService
+  implements IStaffInternalService, IStaffExternalService
+{
   private readonly logger = new Logger(StaffService.name);
 
   constructor(
-    @InjectRepository(Staff) private readonly staffRepo: Repository<Staff>,
+    @Inject(IStaffRepository)
+    private readonly staffRepository: IStaffRepository,
+
+    @InjectRepository(Staff) //TODO: remove and refactor use only staffRepository
+    private readonly staffRepo: Repository<Staff>,
+
     @InjectRepository(StaffConnection)
     private readonly staffConnectionRepo: Repository<StaffConnection>,
+
     @InjectRepository(StaffEdge)
     private readonly staffEdgeRepo: Repository<StaffEdge>,
+
     @InjectRepository(StaffName)
     private readonly staffNameRepo: Repository<StaffName>,
+
     @InjectRepository(StaffRoleType)
     private readonly staffRoleTypeRepo: Repository<StaffRoleType>,
+
     @InjectRepository(StaffPrimaryOccupation)
     private readonly staffPrimaryOccupationRepo: Repository<StaffPrimaryOccupation>,
+
     @InjectRepository(StaffAlternative)
     private readonly staffAlternativeRepo: Repository<StaffAlternative>,
+
     @InjectRepository(StaffImage)
     private readonly staffImageRepo: Repository<StaffImage>,
+
     @InjectRepository(StaffYearActive)
     private readonly staffYearActiveRepo: Repository<StaffYearActive>,
+
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  public async getStaffByConditions(
+    mapResultSelect: MapResultSelect,
+    queryStaffArg: QueryStaffArg,
+  ) {
+    const staff = await this.staffRepository.getStaffByConditions(
+      mapResultSelect,
+      queryStaffArg,
+    );
+
+    if (!staff) {
+      return either.error(
+        new NotFoundStaffError({ requestObject: queryStaffArg }),
+      );
+    }
+
+    return either.of(staff);
+  }
 
   public async getStaffListV1(page: number = 1, limit: number = 10) {
     const [result, count] = await this.staffRepo.findAndCount({

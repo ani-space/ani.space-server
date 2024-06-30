@@ -37,6 +37,20 @@ export class QueryBuilderChainer<Entity extends ObjectLiteral> {
     return this;
   }
 
+  public applyOrWhereConditionally(
+    entityName: string,
+    column: string,
+    value?: string | number | boolean,
+  ) {
+    if (!value) return this;
+
+    this.queryBuilder.orWhere(`${entityName}.${column} = :${column}`, {
+      [column]: value,
+    });
+
+    return this;
+  }
+
   public applyWhereConditionally(
     entityName: string,
     column: string,

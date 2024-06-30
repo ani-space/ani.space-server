@@ -9,8 +9,21 @@ import {
 import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
 import { StaffRoleType } from '~/models/sub-models/staff-sub-models/staff-role-type.model';
 import { IPaginateResult } from '../dtos';
+import { MapResultSelect } from '~/utils/tools/object';
+import { QueryStaffArg } from '~/graphql/types/args/query-staff.arg';
+import { Either } from '~/utils/tools/either';
+import { NotFoundStaffError } from '~/graphql/types/dtos/staff/not-found-staff.error';
 
-export interface IStaffService {
+export interface IStaffExternalService {
+  getStaffByConditions(
+    mapResultSelect: MapResultSelect,
+    queryStaffArg: QueryStaffArg,
+  ): Promise<Either<NotFoundStaffError, never> | Either<never, Staff>>;
+}
+
+export const IStaffExternalService = Symbol('IStaffExternalService');
+
+export interface IStaffInternalService {
   saveStaff(staff: Partial<Staff>): Promise<(Partial<Staff> & Staff) | null>;
 
   getStaffListV1(
@@ -66,4 +79,4 @@ export interface IStaffService {
   ): Promise<(Partial<StaffEdge> & StaffEdge) | null>;
 }
 
-export const IStaffService = Symbol('IStaffService');
+export const IStaffInternalService = Symbol('IStaffInternalService');
