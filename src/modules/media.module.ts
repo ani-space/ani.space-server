@@ -15,9 +15,10 @@ import {
   IAnimeTagService,
   ICharacterInternalService,
   IStaffInternalService,
-  IStudioService,
+  IStudioInternalService,
   ICharacterExternalService,
   IStaffExternalService,
+  IStudioExternalService,
 } from '~/contracts/services';
 import { MediaResolver } from '~/graphql/resolvers/media.resolver';
 import { Anime, Character, CharacterEdge, Staff, StaffEdge } from '~/models';
@@ -80,6 +81,7 @@ import { StudioProfile } from '~/common/mapper-profiles/studio-profile';
 import { CharacterResolver } from '~/graphql/resolvers/character.resolver';
 import { StaffResolver } from '~/graphql/resolvers/staff.resolver';
 import { StaffRepository } from '~/repositories/staff.repository';
+import { StudioResolver } from '~/graphql/resolvers/studio.resolver';
 
 const animeRepoProvider: Provider = {
   provide: IAnimeRepository,
@@ -137,8 +139,12 @@ const studioRepositoryProvider: Provider = {
   provide: IStudioRepository,
   useClass: StudioRepository,
 };
-const studioServiceProvider: Provider = {
-  provide: IStudioService,
+const studioInternalServiceProvider: Provider = {
+  provide: IStudioInternalService,
+  useClass: StudioService,
+};
+const studioExternalServiceProvider: Provider = {
+  provide: IStudioExternalService,
   useClass: StudioService,
 };
 
@@ -195,6 +201,7 @@ const studioServiceProvider: Provider = {
     MediaResolver,
     CharacterResolver,
     StaffResolver,
+    StudioResolver,
 
     animeRepoProvider,
     animeServiceProvider,
@@ -212,7 +219,8 @@ const studioServiceProvider: Provider = {
     staffInternalServiceProvider,
     staffExternalServiceProvider,
 
-    studioServiceProvider,
+    studioInternalServiceProvider,
+    studioExternalServiceProvider,
     studioRepositoryProvider,
   ],
   exports: [
@@ -231,7 +239,8 @@ const studioServiceProvider: Provider = {
     staffInternalServiceProvider,
     staffExternalServiceProvider,
 
-    studioServiceProvider,
+    studioInternalServiceProvider,
+    studioExternalServiceProvider,
     studioRepositoryProvider,
   ],
 })

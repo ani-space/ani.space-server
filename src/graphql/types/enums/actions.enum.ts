@@ -9,3 +9,7 @@ export enum CharacterActions {
 export enum StaffActions {
   Staff = 'Staff',
 }
+
+export enum StudioActions {
+  Studio = 'Studio',
+}
