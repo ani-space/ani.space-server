@@ -5,15 +5,24 @@ import { Repository } from 'typeorm';
 import { LOGGER_CREATED } from '~/common/constants';
 import { CreateLoggerDto } from '~/common/dtos';
 import { IStudioRepository } from '~/contracts/repositories';
-import { IStudioService } from '~/contracts/services';
+import {
+  IStudioExternalService,
+  IStudioInternalService,
+} from '~/contracts/services';
 import { StudioEdge } from '~/models/studio-edge.model';
 import { Studio } from '~/models/studio.model';
 import { StudioConnection } from '~/models/sub-models/studio-sub-models/studio-connection.model';
 import { IPaginateResult } from '../contracts/dtos/paginate-result.interface';
 import { getMethodName } from '~/utils/tools/functions';
+import { MapResultSelect } from '~/utils/tools/object';
+import { QueryStudioArg } from '~/graphql/types/args/query-studio.arg';
+import { either } from '~/utils/tools/either';
+import { NotFoundStudioError } from '~/graphql/types/dtos/studio/not-found-studio.error';
 
 @Injectable()
-export class StudioService implements IStudioService {
+export class StudioService
+  implements IStudioInternalService, IStudioExternalService
+{
   private readonly logger = new Logger(StudioService.name);
 
   constructor(
@@ -25,6 +34,24 @@ export class StudioService implements IStudioService {
     private readonly studioConnectionRepo: Repository<StudioConnection>,
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  public async getStudioByConditions(
+    mapResultSelect: MapResultSelect,
+    queryAnimeArg: QueryStudioArg,
+  ) {
+    const studio = await this.studioRepository.getStudioByConditions(
+      mapResultSelect,
+      queryAnimeArg,
+    );
+
+    if (!studio) {
+      return either.error(
+        new NotFoundStudioError({ requestObject: queryAnimeArg }),
+      );
+    }
+
+    return either.of(studio);
+  }
 
   public async saveStudioConnection(
     studioConnection: Partial<StudioConnection>,

@@ -14,7 +14,7 @@ import {
   IAnimeTagService,
   ICharacterInternalService,
   IStaffInternalService,
-  IStudioService,
+  IStudioInternalService,
 } from '~/contracts/services';
 import { Anime, Character } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
@@ -70,8 +70,8 @@ export class AnilistService implements IAnilistService {
     @Inject(IAnimeGenreService)
     private readonly animeGenreService: IAnimeGenreService,
 
-    @Inject(IStudioService)
-    private readonly studioService: IStudioService,
+    @Inject(IStudioInternalService)
+    private readonly studioService: IStudioInternalService,
 
     @Inject(IAnimeTagService)
     private readonly animeTagService: IAnimeTagService,
