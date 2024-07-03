@@ -6,6 +6,7 @@ export const mockDataSource = {
   leftJoin: jest.fn(),
   addOrderBy: jest.fn(),
   andWhere: jest.fn(),
+  orWhere: jest.fn(),
   select: jest.fn(),
   addSelect: jest.fn(),
   where: jest.fn(),

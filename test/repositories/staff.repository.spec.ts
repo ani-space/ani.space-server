@@ -5,7 +5,8 @@ import { IStaffRepository } from '~/contracts/repositories';
 import { StaffRepository } from '~/repositories/staff.repository';
 import { MapResultSelect } from '~/utils/tools/object';
 import { QueryStaffArg } from '~/graphql/types/args/query-staff.arg';
-import { staffListDto } from '../__mocks__/staff.data';
+import { staffConnectionListDto, staffListDto } from '../__mocks__/staff.data';
+import { QueryStaffConnectionArg } from '~/graphql/types/args/query-staff-connection.arg';
 
 describe('StaffRepository', () => {
   let staffRepository: IStaffRepository;
@@ -35,6 +36,48 @@ describe('StaffRepository', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('getEdgesOrNodes should return null', async () => {
+    // arrange
+    const staffConnectionId: string = 'f11b8ea8-ab99-452d-ae8b-3144b4bf1152';
+    const queryStaffConnectionArg: QueryStaffConnectionArg = {
+      limit: 10,
+      page: 1,
+    };
+    const mapResultSelectParam: MapResultSelect = {};
+    mockDataSource.getOne.mockResolvedValue(null);
+
+    // act
+    const result = await staffRepository.getEdgesOrNodes(
+      staffConnectionId,
+      queryStaffConnectionArg,
+      mapResultSelectParam,
+    );
+
+    // assert
+    expect(result).toEqual(null);
+  });
+
+  it('getEdgesOrNodes should return staff connection', async () => {
+    // arrange
+    const staffConnectionId: string = 'f11b8ea8-ab99-452d-ae8b-3144b4bf1152';
+    const queryStaffConnectionArg: QueryStaffConnectionArg = {
+      limit: 10,
+      page: 1,
+    };
+    const mapResultSelectParam: MapResultSelect = {};
+    mockDataSource.getOne.mockResolvedValue(staffConnectionListDto[0]);
+
+    // act
+    const result = await staffRepository.getEdgesOrNodes(
+      staffConnectionId,
+      queryStaffConnectionArg,
+      mapResultSelectParam,
+    );
+
+    // assert
+    expect(result).toMatchObject(staffConnectionListDto[0]);
   });
 
   it('getStaffByConditions should return null', async () => {
