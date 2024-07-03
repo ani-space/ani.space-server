@@ -13,12 +13,19 @@ import { MapResultSelect } from '~/utils/tools/object';
 import { QueryStaffArg } from '~/graphql/types/args/query-staff.arg';
 import { Either } from '~/utils/tools/either';
 import { NotFoundStaffError } from '~/graphql/types/dtos/staff/not-found-staff.error';
+import { QueryStaffConnectionArg } from '~/graphql/types/args/query-staff-connection.arg';
 
 export interface IStaffExternalService {
   getStaffByConditions(
     mapResultSelect: MapResultSelect,
     queryStaffArg: QueryStaffArg,
   ): Promise<Either<NotFoundStaffError, never> | Either<never, Staff>>;
+
+  getStaffConnectionPage(
+    staffConnectionId: string,
+    queryStaffConnectionArg: QueryStaffConnectionArg,
+    mapResultSelect: MapResultSelect,
+  ): Promise<StaffConnection | null>;
 }
 
 export const IStaffExternalService = Symbol('IStaffExternalService');

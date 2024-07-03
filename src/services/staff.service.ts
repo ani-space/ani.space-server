@@ -25,6 +25,7 @@ import { QueryStaffArg } from '~/graphql/types/args/query-staff.arg';
 import { IStaffRepository } from '~/contracts/repositories';
 import { either } from '~/utils/tools/either';
 import { NotFoundStaffError } from '~/graphql/types/dtos/staff/not-found-staff.error';
+import { QueryStaffConnectionArg } from '~/graphql/types/args/query-staff-connection.arg';
 
 @Injectable()
 export class StaffService
@@ -65,6 +66,20 @@ export class StaffService
 
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  public async getStaffConnectionPage(
+    staffConnectionId: string,
+    queryStaffConnectionArg: QueryStaffConnectionArg,
+    mapResultSelect: MapResultSelect,
+  ) {
+    const staffConnection = await this.staffRepository.getEdgesOrNodes(
+      staffConnectionId,
+      queryStaffConnectionArg,
+      mapResultSelect,
+    );
+
+    return staffConnection;
+  }
 
   public async getStaffByConditions(
     mapResultSelect: MapResultSelect,
