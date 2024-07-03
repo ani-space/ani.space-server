@@ -149,6 +149,9 @@ export class AnimeRepository
         true,
       )
 
+      .applyJoinConditionally(!!mapResultSelect['staff'], rootAlias, 'staff')
+      .addSelect(mapResultSelect['staff'], 'staff', false, ['edges', 'nodes'])
+
       .applyJoinConditionally(
         !!mapResultSelect['characters'],
         rootAlias,
@@ -634,78 +637,112 @@ export class AnimeRepository
           true,
           AnimeRepository.ignoreColumnsReferencesAnime,
         )
+
+        // query anime.relations
         .applyJoinConditionally(
           !!mapResultSelect['relations'],
           this.animeAlias,
           'relations',
           true,
         )
+
+        // query anime.characters
         .applyJoinConditionally(
           !!mapResultSelect['characters'],
           this.animeAlias,
           'characters',
           true,
         )
+
+        // query anime.startDate
         .applyJoinConditionally(
           !!mapResultSelect['startDate'],
           this.animeAlias,
           'startDate',
         )
         .addSelect(mapResultSelect['startDate'], 'startDate')
+
+        // query anime.staff
+        .applyJoinConditionally(
+          !!mapResultSelect['staff'],
+          this.animeAlias,
+          'staff',
+        )
+        .addSelect(mapResultSelect['staff'], 'staff', false, ['edges', 'nodes'])
+
+        // query anime.endDate
         .applyJoinConditionally(
           !!mapResultSelect['endDate'],
           this.animeAlias,
           'endDate',
         )
         .addSelect(mapResultSelect['endDate'], 'endDate')
+
+        // query anime.title
         .applyJoinConditionally(
           !!mapResultSelect['title'] || !!romajiTitle,
           this.animeAlias,
           'title',
         )
         .addSelect(mapResultSelect['title'], 'title')
+
+        // query anime.description
         .applyJoinConditionally(
           !!mapResultSelect['description'],
           this.animeAlias,
           'description',
         )
         .addSelect(mapResultSelect['description'], 'description')
+
+        // query anime.trailer
         .applyJoinConditionally(
           !!mapResultSelect['trailer'],
           this.animeAlias,
           'trailer',
         )
         .addSelect(mapResultSelect['trailer'], 'trailer')
+
+        // query anime.coverImage
         .applyJoinConditionally(
           !!mapResultSelect['coverImage'],
           this.animeAlias,
           'coverImage',
         )
         .addSelect(mapResultSelect['coverImage'], 'coverImage')
+
+        // query anime.genres
         .applyJoinConditionally(
           !!mapResultSelect['genres'],
           this.animeAlias,
           'genres',
         )
         .addSelect(mapResultSelect['genres'], 'genres')
+
+        // query anime.synonyms
         .applyJoinConditionally(
           !!mapResultSelect['synonyms'],
           this.animeAlias,
           'synonyms',
         )
         .addSelect(mapResultSelect['synonyms'], 'synonyms')
+
+        // query anime.tags
         .applyJoinConditionally(
           !!mapResultSelect['tags'],
           this.animeAlias,
           'tags',
         )
         .addSelect(mapResultSelect['tags'], 'tags')
+
+        // query anime.nextAiringEpisode
         .applyJoinConditionally(
           !!mapResultSelect['nextAiringEpisode'],
           this.animeAlias,
           'nextAiringEpisode',
         )
         .addSelect(mapResultSelect['nextAiringEpisode'], 'nextAiringEpisode')
+
+        // query anime.mediaExternalLink
         .applyJoinConditionally(
           !!mapResultSelect['mediaExternalLink'],
           this.animeAlias,
@@ -717,7 +754,8 @@ export class AnimeRepository
           false,
           ['animeStreamingEpisodes'],
         )
-        .addSelect(mapResultSelect['rankings'], 'rankings')
+
+        // query anime.mediaExternalLink.animeStreamingEpisodes
         .applyJoinConditionally(
           !!mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes,
           'mediaExternalLink',
@@ -729,6 +767,8 @@ export class AnimeRepository
           false,
           ['sources'],
         )
+
+        // query anime.mediaExternalLink.animeStreamingEpisodes.sources
         .applyJoinConditionally(
           !!mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes
             ?.sources,
@@ -739,12 +779,16 @@ export class AnimeRepository
           mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes?.sources,
           'sources',
         )
+
+        // query anime.rankings
         .applyJoinConditionally(
           !!mapResultSelect['rankings'],
           this.animeAlias,
           'rankings',
         )
         .addSelect(mapResultSelect['rankings'], 'rankings')
+
+        // apply filters
         .applyWhereConditionally(this.animeAlias, 'id', id)
         .applyWhereConditionally(this.animeAlias, 'idMal', idMal)
         .applyWhereConditionally(this.animeAlias, 'idAnilist', idAnilist)
