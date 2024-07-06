@@ -65,6 +65,45 @@ export class QueryBuilderChainer<Entity extends ObjectLiteral> {
     return this;
   }
 
+  public applyWhere(
+    leftTable: string,
+    leftTableColumn: string,
+    rightTable: string,
+    rightTableColumn: string,
+  ) {
+    this.queryBuilder.where(
+      `${leftTable}.${leftTableColumn} = ${rightTable}.${rightTableColumn}`,
+    );
+
+    return this;
+  }
+
+  public applyLeftJoinAndMapMany(
+    leftTable: string,
+    rightTable: string,
+    selectQueryBuilder: SelectQueryBuilder<Entity>,
+  ) {
+    this.queryBuilder.leftJoinAndMapMany(
+      `${leftTable}.${rightTable}`,
+      () => selectQueryBuilder,
+      rightTable,
+    );
+
+    return this;
+  }
+
+  public applyTake(limit: number = 10) {
+    this.queryBuilder.take(limit);
+
+    return this;
+  }
+
+  public applySkip(skip: number) {
+    this.queryBuilder.skip(skip);
+
+    return this;
+  }
+
   public addSelect(
     o: any,
     tableName: string,

@@ -10,4 +10,8 @@ export const mockDataSource = {
   select: jest.fn(),
   addSelect: jest.fn(),
   where: jest.fn(),
+  applyWhere: jest.fn(),
+  applyLeftJoinAndMapMany: jest.fn(),
+  applyTake: jest.fn(),
+  applySkip: jest.fn(),
 };
