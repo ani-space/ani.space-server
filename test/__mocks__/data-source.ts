@@ -1,5 +1,6 @@
 export const mockDataSource = {
   getOne: jest.fn(),
+  getMany: jest.fn(),
   getRepository: jest.fn(),
   createQueryBuilder: jest.fn(),
   leftJoinAndSelect: jest.fn(),

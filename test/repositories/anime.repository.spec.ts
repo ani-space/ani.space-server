@@ -7,6 +7,8 @@ import { AnimeRepository } from '~/repositories';
 import { MapResultSelect } from '~/utils/tools/object';
 import { animeConnectionListDto, animeListDto } from '../__mocks__/anime.data';
 import { mockDataSource } from '../__mocks__/data-source';
+import { QueryStreamingEpisodeSourceArg } from '~/graphql/types/args/query-anime-streaming-episode.arg';
+import { animeStreamingEpsSources } from '../__mocks__/anime-source.data';
 
 describe('AnimeRepository', () => {
   let animeRepository: IAnimeRepository;
@@ -32,6 +34,42 @@ describe('AnimeRepository', () => {
     animeRepository = module.get<IAnimeRepository>(IAnimeRepository);
     mockDataSource.getRepository.mockReturnValue(mockDataSource);
     mockDataSource.createQueryBuilder.mockReturnValue(mockDataSource);
+  });
+
+  it('getAnimeStreamingEpisodeSources should return anime source list', async () => {
+    // arrange
+    const queryStreamingEpisodeSourceArg: QueryStreamingEpisodeSourceArg = {
+      animeStreamingEpisodeId: '1f1a43cd-0a8a-4d09-81a4-3c70b3b75b8c',
+    };
+    const mapResultSelectParam: MapResultSelect = {};
+    mockDataSource.getMany.mockResolvedValue(animeStreamingEpsSources);
+
+    // act
+    const result = await animeRepository.getAnimeStreamingEpisodeSources(
+      queryStreamingEpisodeSourceArg,
+      mapResultSelectParam,
+    );
+
+    // assert
+    expect(result).toMatchObject(animeStreamingEpsSources);
+  });
+
+  it('getAnimeStreamingEpisodeSources should return empty list', async () => {
+    // arrange
+    const queryStreamingEpisodeSourceArg: QueryStreamingEpisodeSourceArg = {
+      animeStreamingEpisodeId: '1f1a43cd-0a8a-4d09-81a4-3c70b3b75b8c',
+    };
+    const mapResultSelectParam: MapResultSelect = {};
+    mockDataSource.getMany.mockResolvedValue([]);
+
+    // act
+    const result = await animeRepository.getAnimeStreamingEpisodeSources(
+      queryStreamingEpisodeSourceArg,
+      mapResultSelectParam,
+    );
+
+    // assert
+    expect(result).toEqual([]);
   });
 
   it('getEdgesOrNodes should return AnimeConnection', async () => {
