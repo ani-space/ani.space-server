@@ -1,5 +1,6 @@
 import { Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { StudioProfile } from '~/common/mapper-profiles/studio-profile';
 import {
   IAnimeGenreRepository,
   IAnimeRepository,
@@ -9,18 +10,22 @@ import {
   IStudioRepository,
 } from '~/contracts/repositories';
 import {
-  IAnimeGenreService,
   IAnimeExternalService,
+  IAnimeGenreService,
   IAnimeInternalService,
   IAnimeTagService,
-  ICharacterInternalService,
-  IStaffInternalService,
-  IStudioInternalService,
   ICharacterExternalService,
+  ICharacterInternalService,
   IStaffExternalService,
+  IStaffInternalService,
   IStudioExternalService,
+  IStudioInternalService,
 } from '~/contracts/services';
+import { AnimeStreamingEpisodeSourceResolver } from '~/graphql/resolvers/anime-streaming-episode-source.resolver';
+import { CharacterResolver } from '~/graphql/resolvers/character.resolver';
 import { MediaResolver } from '~/graphql/resolvers/media.resolver';
+import { StaffResolver } from '~/graphql/resolvers/staff.resolver';
+import { StudioResolver } from '~/graphql/resolvers/studio.resolver';
 import { Anime, Character, CharacterEdge, Staff, StaffEdge } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
 import { StudioEdge } from '~/models/studio-edge.model';
@@ -44,6 +49,7 @@ import {
   CharacterRepository,
   StudioRepository,
 } from '~/repositories';
+import { StaffRepository } from '~/repositories/staff.repository';
 import {
   AnimeGenreService,
   AnimeService,
@@ -52,7 +58,9 @@ import {
 } from '~/services';
 import { CharacterService } from '~/services/character.service';
 import { AnimeProfile } from '../common/mapper-profiles/anime-profile';
+import { CharacterProfile } from '../common/mapper-profiles/character-profile';
 import { CommonProfile } from '../common/mapper-profiles/common-profile';
+import { StaffProfile } from '../common/mapper-profiles/staff-profile';
 import { MediaExternalLink } from '../models/media-external-link.model';
 import {
   AnimeCoverImage,
@@ -75,13 +83,6 @@ import { StaffAlternative } from '../models/sub-models/staff-sub-models/staff-na
 import { StaffYearActive } from '../models/sub-models/staff-sub-models/staff-year-active.model';
 import { StudioService } from '../services/studio.service';
 import { LoggerModule } from './logger.module';
-import { CharacterProfile } from '../common/mapper-profiles/character-profile';
-import { StaffProfile } from '../common/mapper-profiles/staff-profile';
-import { StudioProfile } from '~/common/mapper-profiles/studio-profile';
-import { CharacterResolver } from '~/graphql/resolvers/character.resolver';
-import { StaffResolver } from '~/graphql/resolvers/staff.resolver';
-import { StaffRepository } from '~/repositories/staff.repository';
-import { StudioResolver } from '~/graphql/resolvers/studio.resolver';
 
 const animeRepoProvider: Provider = {
   provide: IAnimeRepository,
@@ -199,6 +200,7 @@ const studioExternalServiceProvider: Provider = {
     StudioProfile,
 
     MediaResolver,
+    AnimeStreamingEpisodeSourceResolver,
     CharacterResolver,
     StaffResolver,
     StudioResolver,

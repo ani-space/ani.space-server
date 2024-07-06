@@ -7,12 +7,15 @@ import { AnimeService } from '~/services';
 import { either } from '~/utils/tools/either';
 import { MapResultSelect } from '~/utils/tools/object';
 import { animeListDto } from '../__mocks__/anime.data';
+import { QueryStreamingEpisodeSourceArg } from '~/graphql/types/args/query-anime-streaming-episode.arg';
+import { animeStreamingEpsSources } from '../__mocks__/anime-source.data';
 
 describe('AnimeService', () => {
   let service: IAnimeExternalService;
 
   const mockAnimeRepo = {
     getAnimeByConditions: jest.fn(),
+    getAnimeStreamingEpisodeSources: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -38,6 +41,44 @@ describe('AnimeService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('getAnimeStreamingEpisodeSources should return sources list', async () => {
+    // arrange
+    const queryStreamingEpisodeSourceArg: QueryStreamingEpisodeSourceArg = {
+      animeStreamingEpisodeId: '1f1a43cd-0a8a-4d09-81a4-3c70b3b75b8c',
+    };
+    const mapResultSelect: MapResultSelect = {};
+    mockAnimeRepo.getAnimeStreamingEpisodeSources.mockResolvedValue(
+      animeStreamingEpsSources,
+    );
+
+    // act
+    const result = await service.getAnimeStreamingEpisodeSources(
+      queryStreamingEpisodeSourceArg,
+      mapResultSelect,
+    );
+
+    // assert
+    expect(result).toMatchObject(animeStreamingEpsSources);
+  });
+
+  it('getAnimeStreamingEpisodeSources should return empty list', async () => {
+    // arrange
+    const queryStreamingEpisodeSourceArg: QueryStreamingEpisodeSourceArg = {
+      animeStreamingEpisodeId: '1f1a43cd-0a8a-4d09-81a4-3c70b3b75b8c',
+    };
+    const mapResultSelect: MapResultSelect = {};
+    mockAnimeRepo.getAnimeStreamingEpisodeSources.mockResolvedValue([]);
+
+    // act
+    const result = await service.getAnimeStreamingEpisodeSources(
+      queryStreamingEpisodeSourceArg,
+      mapResultSelect,
+    );
+
+    // assert
+    expect(result).toEqual([]);
   });
 
   it('should return a NotFoundAnimeError when no anime is found', async () => {

@@ -21,16 +21,16 @@ import {
 import { Anime } from '~/models';
 import { AnimeConnection } from '~/models/sub-models/anime-sub-models';
 import { CharacterConnection } from '~/models/sub-models/character-sub-models';
+import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
 import { MapResultSelect } from '~/utils/tools/object';
 import { CharacterConnectionDto } from '../../common/dtos/character-dtos/character-connection.dto';
 import { BuilderSelectAnimePipe } from '../../common/pipes/builder-select-anime.pipe';
 import { QueryAnimeConnectionArg } from '../types/args/query-anime-connection.arg';
 import { QueryAnimeArg } from '../types/args/query-anime.arg';
 import { QueryCharacterConnectionArg } from '../types/args/query-character-connection.arg';
+import { QueryStaffConnectionArg } from '../types/args/query-staff-connection.arg';
 import { AnimeResultUnion } from '../types/dtos/anime-response/anime.response';
 import { AnimeActions } from '../types/enums/actions.enum';
-import { QueryStaffConnectionArg } from '../types/args/query-staff-connection.arg';
-import { StaffConnection } from '~/models/sub-models/staff-sub-models/staff-connection.model';
 
 @Resolver(() => AnimeDto)
 export class MediaResolver {
