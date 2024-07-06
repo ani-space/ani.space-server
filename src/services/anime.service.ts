@@ -11,6 +11,8 @@ import { Repository } from 'typeorm';
 import { CreateLoggerDto } from '~/common/dtos';
 import { IAnimeRepository } from '~/contracts/repositories';
 import { IAnimeInternalService } from '~/contracts/services';
+import { QueryAnimeConnectionArg } from '~/graphql/types/args/query-anime-connection.arg';
+import { QueryStreamingEpisodeSourceArg } from '~/graphql/types/args/query-anime-streaming-episode.arg';
 import { QueryAnimeArg } from '~/graphql/types/args/query-anime.arg';
 import { Anime } from '~/models';
 import { AnimeEdge } from '~/models/anime-edge.model';
@@ -33,7 +35,6 @@ import {
 } from '../models/sub-models/anime-sub-models';
 import { AnimeStreamingEpisodeSource } from '../models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
 import { MapResultSelect } from '../utils/tools/object';
-import { QueryAnimeConnectionArg } from '~/graphql/types/args/query-anime-connection.arg';
 
 @Injectable()
 export class AnimeService
@@ -77,6 +78,19 @@ export class AnimeService
 
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  public async getAnimeStreamingEpisodeSources(
+    queryStreamingEpisodeSourceArg: QueryStreamingEpisodeSourceArg,
+    mapResultSelect: MapResultSelect,
+  ) {
+    const animeStreamingEpisodeSources =
+      await this.animeRepo.getAnimeStreamingEpisodeSources(
+        queryStreamingEpisodeSourceArg,
+        mapResultSelect,
+      );
+
+    return animeStreamingEpisodeSources;
+  }
 
   public async getAnimeConnectionPage(
     animeConnectionId: string,

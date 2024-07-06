@@ -1,17 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { alphabetical, sort } from 'radash';
 import { DataSource, ObjectLiteral, Repository } from 'typeorm';
 import { IAnimeRepository } from '~/contracts/repositories';
+import { QueryAnimeConnectionArg } from '~/graphql/types/args/query-anime-connection.arg';
+import { QueryStreamingEpisodeSourceArg } from '~/graphql/types/args/query-anime-streaming-episode.arg';
 import { QueryAnimeArg } from '~/graphql/types/args/query-anime.arg';
+import { AnimeSortEnum } from '~/graphql/types/dtos/anime-response/anime-sort.enum';
 import { Anime } from '~/models';
+import { MediaExternalLink } from '~/models/media-external-link.model';
 import { AnimeConnection } from '~/models/sub-models/anime-sub-models';
+import { AnimeStreamingEpisodeSource } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
+import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
+import { paginate } from '~/utils/tools/functions';
 import { MapResultSelect } from '../utils/tools/object';
 import { BaseRepository } from './base.repository';
 import { QueryBuilderChainer } from './libs/query-builder-chainer';
-import { QueryAnimeConnectionArg } from '~/graphql/types/args/query-anime-connection.arg';
-import { AnimeSortEnum } from '~/graphql/types/dtos/anime-response/anime-sort.enum';
-import { alphabetical, sort } from 'radash';
-import { paginate } from '~/utils/tools/functions';
 
 @Injectable()
 export class AnimeRepository
@@ -36,6 +40,18 @@ export class AnimeRepository
     'animeStreamingEpisodes',
   ];
 
+  get mediaExternalLinkAlias() {
+    return 'MediaExternalLink';
+  }
+
+  get mediaAnimeStreamingEpisodeAlias() {
+    return 'AnimeStreamingEpisode';
+  }
+
+  get animeStreamingEpisodeSourceAlias() {
+    return 'AnimeStreamingEpisodeSource';
+  }
+
   get animeAlias() {
     return 'Anime';
   }
@@ -50,10 +66,44 @@ export class AnimeRepository
       .createQueryBuilder(this.animeAlias);
   }
 
+  get animeStreamingEpisodeSourceBuilder() {
+    return this.dataSource
+      .getRepository(AnimeStreamingEpisodeSource)
+      .createQueryBuilder(this.animeStreamingEpisodeSourceAlias);
+  }
+
+  get animeStreamingEpisodeBuilder() {
+    return this.dataSource
+      .getRepository(AnimeStreamingEpisode)
+      .createQueryBuilder(this.mediaAnimeStreamingEpisodeAlias);
+  }
+
   get animeConnectionBuilder() {
     return this.dataSource
       .getRepository(AnimeConnection)
       .createQueryBuilder(this.animeConnectionAlias);
+  }
+
+  get mediaExternalLinkBuilder() {
+    return this.dataSource
+      .getRepository(MediaExternalLink)
+      .createQueryBuilder(this.mediaExternalLinkAlias);
+  }
+
+  public async getAnimeStreamingEpisodeSources(
+    queryStreamingEpisodeSourceArg: QueryStreamingEpisodeSourceArg,
+    mapResultSelectParam: MapResultSelect,
+  ) {
+    const mapResultSelect = mapResultSelectParam as Record<string, any>;
+
+    const queryBuilder = this.createQueryAnimeStreamingEpisodeSourceBuilder(
+      mapResultSelect,
+      queryStreamingEpisodeSourceArg,
+    );
+
+    const animeStreamingEpisodeSources = await queryBuilder.getMany();
+
+    return animeStreamingEpisodeSources;
   }
 
   public async getEdgesOrNodes(
@@ -862,6 +912,23 @@ export class AnimeRepository
         this.animeConnectionAlias,
         'id',
         animeConnectionId,
+      )
+      .getQueryBuilder();
+  }
+
+  private createQueryAnimeStreamingEpisodeSourceBuilder(
+    mapResultSelect: MapResultSelect,
+    queryStreamingEpisodeSourceArg: QueryStreamingEpisodeSourceArg,
+  ) {
+    const { id, animeStreamingEpisodeId } = queryStreamingEpisodeSourceArg;
+
+    return new QueryBuilderChainer(this.animeStreamingEpisodeSourceBuilder)
+      .addSelect(mapResultSelect, this.animeStreamingEpisodeSourceAlias, true)
+      .applyWhereConditionally(this.animeStreamingEpisodeSourceAlias, 'id', id)
+      .applyWhereConditionally(
+        this.animeStreamingEpisodeSourceAlias,
+        'animeStreamingEpisodeId',
+        animeStreamingEpisodeId,
       )
       .getQueryBuilder();
   }
