@@ -18,11 +18,11 @@
     "test:cov": "jest --coverage --rootDir=test",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "typeorm": "ts-node --require tsconfig-paths/register ./node_modules/typeorm/cli",
-    "migration:run": "yarn run typeorm migration:run -- -d ./db/typeorm.config.ts",
-    "migration:generate": "yarn run typeorm -- -d ./db/typeorm.config.ts migration:generate",
-    "migration:create": "yarn run typeorm -- migration:create",
-    "migration:revert": "yarn run typeorm -- -d ./db/typeorm.config.ts migration:revert",
-    "migration:show": "yarn run typeorm -- migration:show -d ./db/typeorm.config.ts"
+    "migration:run": "yarn run typeorm migration:run -d ./db/typeorm.config.ts",
+    "migration:generate": "yarn run typeorm -d ./db/typeorm.config.ts migration:generate",
+    "migration:create": "yarn run typeorm migration:create",
+    "migration:revert": "yarn run typeorm -d ./db/typeorm.config.ts migration:revert",
+    "migration:show": "yarn run typeorm migration:show -d ./db/typeorm.config.ts"
   },
   "dependencies": {
     "@apollo/server": "^4.10.4",
