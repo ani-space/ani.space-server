@@ -18,6 +18,15 @@ jobs:
         with:
           node-version: '20.14.0'
 
+      - name: Cache Node.js modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
