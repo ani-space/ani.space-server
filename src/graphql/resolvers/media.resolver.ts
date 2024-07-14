@@ -10,6 +10,7 @@ import {
   Resolver,
 } from '@nestjs/graphql';
 import { nameof } from 'ts-simple-nameof';
+import { AnimeListPageDto } from '~/common/dtos';
 import { AnimeConnectionDto } from '~/common/dtos/anime-dtos/anime-connection.dto';
 import { AnimeDto } from '~/common/dtos/anime-dtos/anime.dto';
 import { StaffConnectionDto } from '~/common/dtos/staff-dtos/staff-connection.dto';
@@ -31,6 +32,7 @@ import { QueryCharacterConnectionArg } from '../types/args/query-character-conne
 import { QueryStaffConnectionArg } from '../types/args/query-staff-connection.arg';
 import { AnimeResultUnion } from '../types/dtos/anime-response/anime.response';
 import { AnimeActions } from '../types/enums/actions.enum';
+import { QueryAnimePageArg } from '../types/args/query-anime-page.arg';
 
 @Resolver(() => AnimeDto)
 export class MediaResolver {
@@ -46,6 +48,24 @@ export class MediaResolver {
 
     @InjectMapper() private readonly mapper: Mapper,
   ) {}
+
+  @Query(() => AnimeListPageDto, { name: AnimeActions.AnimePage })
+  public async getAnimeList(
+    @Args() queryAnimePageArg: QueryAnimePageArg,
+    @Info(BuilderSelectAnimePipe) mapResultSelect: MapResultSelect,
+  ) {
+    const mapSelectsInDocs = mapResultSelect['docs'];
+
+    const { animeList, pageInfo } = await this.animeService.getAnimeList(
+      queryAnimePageArg,
+      mapSelectsInDocs as MapResultSelect,
+    );
+
+    return new AnimeListPageDto(
+      this.mapper.mapArray(animeList, Anime, AnimeDto),
+      pageInfo,
+    );
+  }
 
   @Query(() => [AnimeResultUnion], { name: AnimeActions.Anime })
   public async getAnimeInfo(

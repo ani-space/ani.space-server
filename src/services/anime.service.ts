@@ -35,6 +35,8 @@ import {
 } from '../models/sub-models/anime-sub-models';
 import { AnimeStreamingEpisodeSource } from '../models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
 import { MapResultSelect } from '../utils/tools/object';
+import { QueryAnimePageArg } from '~/graphql/types/args/query-anime-page.arg';
+import { IPageInfo } from '~/models/contracts';
 
 @Injectable()
 export class AnimeService
@@ -78,6 +80,29 @@ export class AnimeService
 
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  public async getAnimeList(
+    queryAnimePageArg: QueryAnimePageArg,
+    mapResultSelect: MapResultSelect,
+  ) {
+    const { animeList, count } = await this.animeRepo.getAnimeList(
+      queryAnimePageArg,
+      mapResultSelect,
+    );
+
+    // calculate page info
+    const { page, limit } = queryAnimePageArg;
+    const lastPage = Math.ceil(count / limit);
+    const pageInfo: IPageInfo = {
+      total: count,
+      currentPage: page,
+      hasNextPage: page < lastPage,
+      lastPage,
+      perPage: limit,
+    };
+
+    return { animeList, pageInfo };
+  }
 
   public async getAnimeStreamingEpisodeSources(
     queryStreamingEpisodeSourceArg: QueryStreamingEpisodeSourceArg,

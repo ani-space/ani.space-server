@@ -282,4 +282,87 @@ export class Anime extends BaseAnilistEntity {
   // reviews: TODO after implement auth
 
   // recommendations: TODO after implement auth
+
+  public static mapRawQueriesToObjects(
+    rawQueries: any[],
+  ): Array<Partial<Anime>> {
+    const mappedAnime = new Map<string, Partial<Anime>>();
+
+    rawQueries.forEach((raw) => {
+      const anime: Partial<Anime> = mappedAnime.get(raw['Anime_id']) ?? {};
+
+      // map key-value to anime object:
+      Object.keys(raw).forEach((key) => {
+        const objectAndKey = key.split('_');
+        if (objectAndKey.length <= 1) return;
+
+        const value = raw[key];
+        // map anime:
+        switch (objectAndKey[0].toLowerCase()) {
+          case 'anime':
+            //@ts-ignore
+            anime[objectAndKey[1]] = value;
+            break;
+          case 'synonyms':
+            const existingSynonym = anime?.synonyms?.find(
+              (e) => e.id === raw['synonyms_id'],
+            );
+            const synonym: Partial<AnimeSynonyms> = existingSynonym
+              ? existingSynonym
+              : {};
+            //@ts-ignore
+            synonym[objectAndKey[1]] = value;
+            if (!existingSynonym) {
+              //@ts-ignore
+              anime.synonyms = !anime?.synonyms
+                ? [synonym]
+                : //@ts-ignore
+                  anime.synonyms?.concat(synonym);
+            }
+            break;
+          case 'genres':
+            const existingGenre = anime?.genres?.find(
+              (e) => e.id === raw['genres_id'],
+            );
+            const genre: Partial<AnimeGenres> = existingGenre
+              ? existingGenre
+              : {};
+            //@ts-ignore
+            genre[objectAndKey[1]] = value;
+            if (!existingGenre) {
+              //@ts-ignore
+              anime.genres = !anime?.genres
+                ? [genre]
+                : //@ts-ignore
+                  anime.genres?.concat(genre);
+            }
+            break;
+          case 'title':
+            const title: Partial<AnimeTitle> = anime.title
+              ? { ...anime.title }
+              : {};
+            //@ts-ignore
+            title[objectAndKey[1]] = value;
+            //@ts-ignore
+            anime.title = title;
+            break;
+          case 'coverimage':
+            const coverImage: Partial<AnimeCoverImage> = anime.coverImage
+              ? { ...anime.coverImage }
+              : {};
+            //@ts-ignore
+            coverImage[objectAndKey[1]] = value;
+            //@ts-ignore
+            anime.coverImage = coverImage;
+            break;
+        }
+      });
+
+      if (!mappedAnime.has(`${anime.id}`)) {
+        mappedAnime.set(`${anime.id}`, anime);
+      }
+    });
+
+    return Array.from(mappedAnime.values());
+  }
 }

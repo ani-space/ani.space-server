@@ -4,6 +4,7 @@ import { alphabetical, sort } from 'radash';
 import { DataSource, ObjectLiteral, Repository } from 'typeorm';
 import { IAnimeRepository } from '~/contracts/repositories';
 import { QueryAnimeConnectionArg } from '~/graphql/types/args/query-anime-connection.arg';
+import { QueryAnimePageArg } from '~/graphql/types/args/query-anime-page.arg';
 import { QueryStreamingEpisodeSourceArg } from '~/graphql/types/args/query-anime-streaming-episode.arg';
 import { QueryAnimeArg } from '~/graphql/types/args/query-anime.arg';
 import { AnimeSortEnum } from '~/graphql/types/dtos/anime-response/anime-sort.enum';
@@ -12,7 +13,11 @@ import { MediaExternalLink } from '~/models/media-external-link.model';
 import { AnimeConnection } from '~/models/sub-models/anime-sub-models';
 import { AnimeStreamingEpisodeSource } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
 import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
-import { paginate } from '~/utils/tools/functions';
+import {
+  getOrderHelper,
+  paginate,
+  splitDateStringHelper,
+} from '~/utils/tools/functions';
 import { MapResultSelect } from '../utils/tools/object';
 import { BaseRepository } from './base.repository';
 import { QueryBuilderChainer } from './libs/query-builder-chainer';
@@ -88,6 +93,43 @@ export class AnimeRepository
     return this.dataSource
       .getRepository(MediaExternalLink)
       .createQueryBuilder(this.mediaExternalLinkAlias);
+  }
+
+  public async getAnimeList(
+    queryAnimePageArg: QueryAnimePageArg,
+    mapResultSelectParam: MapResultSelect,
+  ) {
+    const mapResultSelect = mapResultSelectParam as Record<string, any>;
+
+    const queryBuilder = this.createBuilderSelectAnimeList(
+      queryAnimePageArg,
+      mapResultSelect,
+    );
+    const { limit, page } = queryAnimePageArg;
+
+    // because error in getMany and getManyAndCount under the hood typeORM with function GREATEST not work well together
+    // use getRawMany instead of getMany or getManyAndCount
+    // the raw query map to class model so complexity with GraphQL
+    // for the titleTerm will limit in some specific meta info like:
+    // title, synonym, coverImage, genres, and scalar fields
+    if (queryAnimePageArg?.titleTerm) {
+      const rawResults = await queryBuilder.getRawMany();
+
+      const animeList = Anime.mapRawQueriesToObjects(rawResults) as Anime[];
+      const count = animeList.length;
+
+      return {
+        animeList: paginate(limit, page, animeList),
+        count,
+      };
+    }
+
+    const [animeList, count] = await queryBuilder
+      .take(limit)
+      .skip(limit * (page - 1))
+      .getManyAndCount();
+
+    return { animeList, count };
   }
 
   public async getAnimeStreamingEpisodeSources(
@@ -307,6 +349,528 @@ export class AnimeRepository
         'rankings',
       )
       .addSelect(mapResultSelect['rankings'], 'rankings');
+  }
+
+  private createBuilderSelectAnimeList(
+    queryAnimePageArg: QueryAnimePageArg,
+    mapResultSelect: Record<string, any>,
+  ) {
+    const {
+      sort,
+      countryOfOrigin,
+      duration,
+      durationGreater,
+      durationLesser,
+      endDate,
+      endDateGreater,
+      endDateLesser,
+      episodes,
+      episodesGreater,
+      episodesLesser,
+      format,
+      formatIn,
+      formatNotIn,
+      genresIn,
+      genresNotIn,
+      isAdult,
+      season,
+      seasonIn,
+      seasonNotIn,
+      seasonYear,
+      seasonYearGreater,
+      seasonYearLesser,
+      source,
+      sourceIn,
+      sourceNotIn,
+      startDate,
+      startDateGreater,
+      startDateLesser,
+      status,
+      statusIn,
+      statusNotIn,
+      titleTerm,
+    } = queryAnimePageArg;
+
+    const parsedSort = this.parseSortEnumToColumnHelper(sort);
+    const sortOrder = getOrderHelper(sort);
+
+    return (
+      new QueryBuilderChainer(this.animeBuilder)
+        .addSelect(
+          mapResultSelect,
+          this.animeAlias,
+          true,
+          AnimeRepository.ignoreColumnsReferencesAnime,
+        )
+        // query "anime name", sort & filter
+        .applyJoinConditionally(
+          !!mapResultSelect['title'] || !!titleTerm,
+          this.animeAlias,
+          'title',
+        )
+        .addSelect(mapResultSelect['title'], 'title')
+        .applyJoinConditionally(
+          !!mapResultSelect['synonyms'] || !!titleTerm,
+          this.animeAlias,
+          'synonyms',
+        )
+        .addSelect(mapResultSelect['synonyms'], 'synonyms')
+        .applyFuzzySearchAnime(titleTerm, 0.3)
+
+        // query status, filters & sort
+        .applyWhereConditionally(this.animeAlias, 'status', status)
+        .applyWhereConditionally(this.animeAlias, 'status', statusIn, 'IN')
+        .applyWhereConditionally(
+          this.animeAlias,
+          'status',
+          statusNotIn,
+          'NOT IN',
+        )
+        .applyOrderByConditionally(
+          parsedSort === 'status',
+          `${this.animeAlias}.status`,
+          sortOrder,
+        )
+
+        // query source, filters & sort
+        .applyWhereConditionally(this.animeAlias, 'source', source)
+        .applyWhereConditionally(this.animeAlias, 'source', sourceIn, 'IN')
+        .applyWhereConditionally(
+          this.animeAlias,
+          'source',
+          sourceNotIn,
+          'NOT IN',
+        )
+
+        // query seasonYear, filters & sort
+        .applyWhereConditionally(this.animeAlias, 'seasonYear', seasonYear)
+        .applyWhereConditionally(
+          this.animeAlias,
+          'seasonYear',
+          seasonYearGreater,
+          '>',
+        )
+        .applyWhereConditionally(
+          this.animeAlias,
+          'seasonYear',
+          seasonYearLesser,
+          '<',
+        )
+        .applyOrderByConditionally(
+          parsedSort === 'seasonYear',
+          `${this.animeAlias}.seasonYear`,
+          sortOrder,
+        )
+
+        // query season & filters, sort
+        .applyWhereConditionally(this.animeAlias, 'season', season)
+        .applyWhereConditionally(this.animeAlias, 'season', seasonIn, 'IN')
+        .applyWhereConditionally(
+          this.animeAlias,
+          'season',
+          seasonNotIn,
+          'NOT IN',
+        )
+        .applyOrderByConditionally(
+          parsedSort === 'season',
+          `${this.animeAlias}.season`,
+          sortOrder,
+        )
+
+        // query genres & filters
+        .applyJoinConditionally(
+          !!mapResultSelect['genres'] || !!genresIn || !!genresNotIn,
+          this.animeAlias,
+          'genres',
+        )
+        .addSelect(mapResultSelect['genres'], 'genres')
+        .applyWhereConditionally('genres', 'genre', genresIn, 'IN')
+        .applyWhereConditionally('genres', 'genre', genresNotIn, 'NOT IN')
+
+        // query & filter anime.startDate
+        .applyJoinConditionally(
+          !!mapResultSelect['startDate'] ||
+            !!startDate ||
+            !!startDateGreater ||
+            !!startDateLesser,
+          this.animeAlias,
+          'startDate',
+        )
+        .applyOrderByConditionally(
+          parsedSort === 'startDate',
+          'startDate.year',
+          sortOrder,
+        )
+        .applyOrderByConditionally(
+          parsedSort === 'startDate',
+          'startDate.month',
+          sortOrder,
+        )
+        .applyOrderByConditionally(
+          parsedSort === 'startDate',
+          'startDate.day',
+          sortOrder,
+        )
+        .applyWhereConditionally(
+          'startDate',
+          'year',
+          splitDateStringHelper(startDate).year,
+        )
+        .applyWhereConditionally(
+          'startDate',
+          'month',
+          splitDateStringHelper(startDate).month,
+        )
+        .applyWhereConditionally(
+          'startDate',
+          'day',
+          splitDateStringHelper(startDate).day,
+        )
+        .applyWhereConditionally(
+          'startDate',
+          'year',
+          splitDateStringHelper(startDateGreater).year,
+          '>',
+        )
+        .applyWhereConditionally(
+          'startDate',
+          'month',
+          splitDateStringHelper(startDateGreater).month,
+          '>',
+        )
+        .applyWhereConditionally(
+          'startDate',
+          'day',
+          splitDateStringHelper(startDateGreater).day,
+          '>',
+        )
+        .applyWhereConditionally(
+          'startDate',
+          'year',
+          splitDateStringHelper(startDateLesser).year,
+          '<',
+        )
+        .applyWhereConditionally(
+          'startDate',
+          'month',
+          splitDateStringHelper(startDateLesser).month,
+          '<',
+        )
+        .applyWhereConditionally(
+          'startDate',
+          'day',
+          splitDateStringHelper(startDateLesser).day,
+          '<',
+        )
+        .addSelect(mapResultSelect['startDate'], 'startDate')
+
+        // query & filter anime.endDate
+        .applyJoinConditionally(
+          !!mapResultSelect['endDate'] ||
+            !!endDate ||
+            !!endDateGreater ||
+            !!endDateLesser,
+          this.animeAlias,
+          'endDate',
+        )
+        .applyOrderByConditionally(
+          parsedSort === 'endDate',
+          'endDate.year',
+          sortOrder,
+        )
+        .applyOrderByConditionally(
+          parsedSort === 'endDate',
+          'endDate.month',
+          sortOrder,
+        )
+        .applyOrderByConditionally(
+          parsedSort === 'endDate',
+          'endDate.day',
+          sortOrder,
+        )
+        .applyWhereConditionally(
+          'endDate',
+          'year',
+          splitDateStringHelper(endDate).year,
+        )
+        .applyWhereConditionally(
+          'endDate',
+          'month',
+          splitDateStringHelper(endDate).month,
+        )
+        .applyWhereConditionally(
+          'endDate',
+          'day',
+          splitDateStringHelper(endDate).day,
+        )
+        .applyWhereConditionally(
+          'endDate',
+          'year',
+          splitDateStringHelper(endDateGreater).year,
+          '>',
+        )
+        .applyWhereConditionally(
+          'endDate',
+          'month',
+          splitDateStringHelper(endDateGreater).month,
+          '>',
+        )
+        .applyWhereConditionally(
+          'endDate',
+          'day',
+          splitDateStringHelper(endDateGreater).day,
+          '>',
+        )
+        .applyWhereConditionally(
+          'endDate',
+          'year',
+          splitDateStringHelper(endDateLesser).year,
+          '<',
+        )
+        .applyWhereConditionally(
+          'endDate',
+          'month',
+          splitDateStringHelper(endDateLesser).month,
+          '<',
+        )
+        .applyWhereConditionally(
+          'endDate',
+          'day',
+          splitDateStringHelper(endDateLesser).day,
+          '<',
+        )
+        .addSelect(mapResultSelect['endDate'], 'endDate')
+
+        // countryOfOrigin filter
+        .applyWhereConditionally(
+          this.animeAlias,
+          'countryOfOrigin',
+          countryOfOrigin,
+        )
+
+        // duration filters & sort
+        .applyWhereConditionally(this.animeAlias, 'duration', duration)
+        .applyWhereConditionally(
+          this.animeAlias,
+          'duration',
+          durationGreater,
+          '>',
+        )
+        .applyWhereConditionally(
+          this.animeAlias,
+          'duration',
+          durationLesser,
+          '<',
+        )
+        .applyOrderByConditionally(
+          parsedSort === 'duration',
+          `${this.animeAlias}.duration`,
+          sortOrder,
+        )
+
+        // episodes filters & sort
+        .applyWhereConditionally(this.animeAlias, 'episodes', episodes)
+        .applyWhereConditionally(
+          this.animeAlias,
+          'episodes',
+          episodesGreater,
+          '>',
+        )
+        .applyWhereConditionally(
+          this.animeAlias,
+          'episodes',
+          episodesLesser,
+          '<',
+        )
+        .applyOrderByConditionally(
+          parsedSort === 'episodes',
+          `${this.animeAlias}.episodes`,
+          sortOrder,
+        )
+
+        // format filters & sort
+        .applyWhereConditionally(this.animeAlias, 'format', format)
+        .applyWhereConditionally(this.animeAlias, 'format', formatIn, 'IN')
+        .applyWhereConditionally(
+          this.animeAlias,
+          'format',
+          formatNotIn,
+          'NOT IN',
+        )
+        .applyOrderByConditionally(
+          parsedSort === 'format',
+          `${this.animeAlias}.format`,
+          sortOrder,
+        )
+
+        // filter isAdult
+        .applyWhereConditionally(this.animeAlias, 'isAdult', isAdult)
+
+        // query anime.relations
+        .applyJoinConditionally(
+          !!mapResultSelect['relations'],
+          this.animeAlias,
+          'relations',
+          true,
+        )
+
+        // query anime.characters
+        .applyJoinConditionally(
+          !!mapResultSelect['characters'],
+          this.animeAlias,
+          'characters',
+          true,
+        )
+
+        // query anime.staff
+        .applyJoinConditionally(
+          !!mapResultSelect['staff'],
+          this.animeAlias,
+          'staff',
+        )
+        .addSelect(mapResultSelect['staff'], 'staff', false, ['edges', 'nodes'])
+
+        // query anime.description
+        .applyJoinConditionally(
+          !!mapResultSelect['description'],
+          this.animeAlias,
+          'description',
+        )
+        .addSelect(mapResultSelect['description'], 'description')
+
+        // query anime.trailer
+        .applyJoinConditionally(
+          !!mapResultSelect['trailer'],
+          this.animeAlias,
+          'trailer',
+        )
+        .addSelect(mapResultSelect['trailer'], 'trailer')
+
+        // query anime.coverImage
+        .applyJoinConditionally(
+          !!mapResultSelect['coverImage'],
+          this.animeAlias,
+          'coverImage',
+        )
+        .addSelect(mapResultSelect['coverImage'], 'coverImage')
+
+        // query anime.tags
+        .applyJoinConditionally(
+          !!mapResultSelect['tags'],
+          this.animeAlias,
+          'tags',
+        )
+        .addSelect(mapResultSelect['tags'], 'tags')
+
+        // query anime.nextAiringEpisode
+        .applyJoinConditionally(
+          !!mapResultSelect['nextAiringEpisode'],
+          this.animeAlias,
+          'nextAiringEpisode',
+        )
+        .addSelect(mapResultSelect['nextAiringEpisode'], 'nextAiringEpisode')
+
+        // query anime.mediaExternalLink
+        .applyJoinConditionally(
+          !!mapResultSelect['mediaExternalLink'],
+          this.animeAlias,
+          'mediaExternalLink',
+        )
+        .addSelect(
+          mapResultSelect['mediaExternalLink'],
+          'mediaExternalLink',
+          false,
+          ['animeStreamingEpisodes'],
+        )
+
+        // query anime.mediaExternalLink.animeStreamingEpisodes
+        .applyJoinConditionally(
+          !!mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes,
+          'mediaExternalLink',
+          'animeStreamingEpisodes',
+        )
+        .addSelect(
+          mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes,
+          'animeStreamingEpisodes',
+          false,
+          ['sources'],
+        )
+        .applyOrderByConditionally(
+          !!mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes,
+          'animeStreamingEpisodes.epId',
+          'DESC',
+        )
+
+        // query anime.mediaExternalLink.animeStreamingEpisodes.sources
+        .applyJoinConditionally(
+          !!mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes
+            ?.sources,
+          'animeStreamingEpisodes',
+          'sources',
+        )
+        .addSelect(
+          mapResultSelect['mediaExternalLink']?.animeStreamingEpisodes?.sources,
+          'sources',
+        )
+
+        // query anime.rankings
+        .applyJoinConditionally(
+          !!mapResultSelect['rankings'],
+          this.animeAlias,
+          'rankings',
+        )
+        .addSelect(mapResultSelect['rankings'], 'rankings')
+        .getQueryBuilder()
+    );
+  }
+
+  private parseSortEnumToColumnHelper(sortQuery?: AnimeSortEnum) {
+    switch (sortQuery) {
+      case AnimeSortEnum.ID:
+      case AnimeSortEnum.ID_DESC:
+        return 'idAnilist';
+      case AnimeSortEnum.TITLE_ROMAJI:
+      case AnimeSortEnum.TITLE_ROMAJI_DESC:
+        return 'title.romaji';
+      case AnimeSortEnum.TITLE_ENGLISH:
+      case AnimeSortEnum.TITLE_ENGLISH_DESC:
+        return 'title.english';
+      case AnimeSortEnum.TITLE_NATIVE:
+      case AnimeSortEnum.TITLE_NATIVE_DESC:
+        return 'title.native';
+      case AnimeSortEnum.FORMAT:
+      case AnimeSortEnum.FORMAT_DESC:
+        return 'format';
+      case AnimeSortEnum.START_DATE:
+      case AnimeSortEnum.START_DATE_DESC:
+        return 'startDate';
+      case AnimeSortEnum.END_DATE:
+      case AnimeSortEnum.END_DATE_DESC:
+        return 'endDate';
+      case AnimeSortEnum.SCORE:
+      case AnimeSortEnum.SCORE_DESC:
+        return 'averageScore';
+      case AnimeSortEnum.POPULARITY:
+      case AnimeSortEnum.POPULARITY_DESC:
+        return 'popularity';
+      case AnimeSortEnum.EPISODES:
+      case AnimeSortEnum.EPISODES_DESC:
+        return 'episodes';
+      case AnimeSortEnum.DURATION:
+      case AnimeSortEnum.DURATION_DESC:
+        return 'duration';
+      case AnimeSortEnum.STATUS:
+      case AnimeSortEnum.STATUS_DESC:
+        return 'status';
+      case AnimeSortEnum.SEASON:
+      case AnimeSortEnum.SEASON_DESC:
+        return 'season';
+      case AnimeSortEnum.SEASON_YEAR:
+      case AnimeSortEnum.SEASON_YEAR_DESC:
+        return 'seasonYear';
+      default:
+        return '';
+    }
   }
 
   private paginationAnimeConnection(

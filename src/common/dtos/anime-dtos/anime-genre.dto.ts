@@ -5,8 +5,8 @@ import { BaseDto } from '../base-dtos/base.dto';
 @ObjectType()
 export class AnimeGenresDto extends BaseDto {
   @AutoMap()
-  @Field()
-  genre: string;
+  @Field({ nullable: true })
+  genre?: string;
 
   @AutoMap()
   @Field({ nullable: true })

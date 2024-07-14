@@ -1,5 +1,5 @@
 import { AutoMap } from '@automapper/classes';
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { BaseDto } from '../base-dtos/base.dto';
 
 @ObjectType()

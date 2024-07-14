@@ -2,6 +2,33 @@ import Fuse, { IFuseOptions } from 'fuse.js';
 import { parse } from 'node-html-parser';
 import puppeteer, { HTTPRequest } from 'puppeteer';
 
+export function splitDateStringHelper(params?: string | number) {
+  const dateString = `${params}`;
+  let year: string = '';
+  let month: string = '';
+  let day: string = '';
+
+  if (!params) return { year, month, day };
+
+  if (dateString.length >= 1) {
+    year = dateString.substring(0, 4);
+  }
+  if (dateString.length >= 5) {
+    month = dateString.substring(4, 6);
+  }
+  if (dateString.length >= 7) {
+    day = dateString.substring(6, 8);
+  }
+
+  return { year, month, day };
+}
+
+export function getOrderHelper(value: any): 'DESC' | 'ASC' {
+  if (`${value}`.includes('DESC')) return 'DESC';
+
+  return 'ASC';
+}
+
 export function paginate(
   page_size: number,
   page_number: number,

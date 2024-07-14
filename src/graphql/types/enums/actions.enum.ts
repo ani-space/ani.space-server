@@ -1,5 +1,6 @@
 export enum AnimeActions {
   Anime = 'Anime',
+  AnimePage = 'AnimePage',
 }
 
 export enum MediaExternalLinkActions {
