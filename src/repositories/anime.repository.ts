@@ -124,10 +124,7 @@ export class AnimeRepository
       };
     }
 
-    const [animeList, count] = await queryBuilder
-      .take(limit)
-      .skip(limit * (page - 1))
-      .getManyAndCount();
+    const [animeList, count] = await queryBuilder.getManyAndCount();
 
     return { animeList, count };
   }
@@ -356,6 +353,8 @@ export class AnimeRepository
     mapResultSelect: Record<string, any>,
   ) {
     const {
+      limit,
+      page,
       sort,
       countryOfOrigin,
       duration,
@@ -820,6 +819,10 @@ export class AnimeRepository
           'rankings',
         )
         .addSelect(mapResultSelect['rankings'], 'rankings')
+
+        .applyTake(limit)
+        .applySkip(limit * (page - 1))
+        .applyCache(30_000)
         .getQueryBuilder()
     );
   }
