@@ -85,10 +85,12 @@ export class AnimeService
     queryAnimePageArg: QueryAnimePageArg,
     mapResultSelect: MapResultSelect,
   ) {
+    console.time('getAnimeList execute time');
     const { animeList, count } = await this.animeRepo.getAnimeList(
       queryAnimePageArg,
       mapResultSelect,
     );
+    console.timeEnd('getAnimeList execute time');
 
     // calculate page info
     const { page, limit } = queryAnimePageArg;
