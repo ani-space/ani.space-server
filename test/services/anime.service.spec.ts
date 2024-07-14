@@ -9,6 +9,7 @@ import { MapResultSelect } from '~/utils/tools/object';
 import { animeListDto } from '../__mocks__/anime.data';
 import { QueryStreamingEpisodeSourceArg } from '~/graphql/types/args/query-anime-streaming-episode.arg';
 import { animeStreamingEpsSources } from '../__mocks__/anime-source.data';
+import { QueryAnimePageArg } from '~/graphql/types/args/query-anime-page.arg';
 
 describe('AnimeService', () => {
   let service: IAnimeExternalService;
@@ -16,6 +17,7 @@ describe('AnimeService', () => {
   const mockAnimeRepo = {
     getAnimeByConditions: jest.fn(),
     getAnimeStreamingEpisodeSources: jest.fn(),
+    getAnimeList: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -41,6 +43,64 @@ describe('AnimeService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('getAnimeList should return Anime list', async () => {
+    // arrange
+    const queryAnimePageArg: QueryAnimePageArg = {
+      limit: 10,
+      page: 1,
+    };
+    const mapResultSelect: MapResultSelect = {};
+    mockAnimeRepo.getAnimeList.mockResolvedValue({
+      animeList: animeListDto,
+      count: 19944,
+    });
+
+    // act
+    const { animeList, pageInfo } = await service.getAnimeList(
+      queryAnimePageArg,
+      mapResultSelect,
+    );
+
+    // assert
+    expect(animeList).toEqual(animeListDto);
+    expect(pageInfo).toMatchObject({
+      currentPage: 1,
+      hasNextPage: true,
+      lastPage: 1995,
+      perPage: 10,
+      total: 19944,
+    });
+  });
+
+  it('getAnimeList should return empty Anime list', async () => {
+    // arrange
+    const queryAnimePageArg: QueryAnimePageArg = {
+      limit: 15,
+      page: 1,
+    };
+    const mapResultSelect: MapResultSelect = {};
+    mockAnimeRepo.getAnimeList.mockResolvedValue({
+      animeList: [],
+      count: 0,
+    });
+
+    // act
+    const { animeList, pageInfo } = await service.getAnimeList(
+      queryAnimePageArg,
+      mapResultSelect,
+    );
+
+    // assert
+    expect(animeList).toEqual([]);
+    expect(pageInfo).toMatchObject({
+      total: 0,
+      currentPage: 1,
+      hasNextPage: false,
+      lastPage: 0,
+      perPage: 15,
+    });
   });
 
   it('getAnimeStreamingEpisodeSources should return sources list', async () => {
