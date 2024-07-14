@@ -27,6 +27,9 @@ export enum AnimeSortEnum {
   STATUS_DESC = 'STATUS_DESC',
   SEASON = 'SEASON',
   SEASON_DESC = 'SEASON_DESC',
+  SEASON_YEAR = 'SEASON_YEAR',
+  SEASON_YEAR_DESC = 'SEASON_YEAR_DESC',
+  SEARCH_MATCH = 'SEARCH_MATCH',
 }
 
 registerEnumType(AnimeSortEnum, {

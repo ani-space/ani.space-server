@@ -6,6 +6,7 @@ import { AnimeConnection } from '~/models/sub-models/anime-sub-models';
 import { AnimeStreamingEpisodeSource } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
 import { MapResultSelect } from '~/utils/tools/object';
 import { IBaseRepository } from './base-repository.interface';
+import { QueryAnimePageArg } from '~/graphql/types/args/query-anime-page.arg';
 
 export interface IAnimeRepository extends IBaseRepository<Anime> {
   fuzzySearchAnimeByTitle(title: string): Promise<Array<any>>;
@@ -25,6 +26,14 @@ export interface IAnimeRepository extends IBaseRepository<Anime> {
     queryStreamingEpisodeSourceArg: QueryStreamingEpisodeSourceArg,
     mapResultSelectParam: MapResultSelect,
   ): Promise<AnimeStreamingEpisodeSource[]>;
+
+  getAnimeList(
+    queryAnimePageArg: QueryAnimePageArg,
+    mapResultSelectParam: MapResultSelect,
+  ): Promise<{
+    animeList: Anime[];
+    count: number;
+  }>;
 }
 
 export const IAnimeRepository = Symbol('IAnimeRepository');

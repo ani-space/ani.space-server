@@ -15,4 +15,8 @@ export const mockDataSource = {
   applyLeftJoinAndMapMany: jest.fn(),
   applyTake: jest.fn(),
   applySkip: jest.fn(),
+  cache: jest.fn(),
+  take: jest.fn(),
+  skip: jest.fn(),
+  getManyAndCount: jest.fn(),
 };

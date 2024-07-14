@@ -1,5 +1,10 @@
+import { QueryAnimeConnectionArg } from '~/graphql/types/args/query-anime-connection.arg';
+import { QueryAnimePageArg } from '~/graphql/types/args/query-anime-page.arg';
+import { QueryStreamingEpisodeSourceArg } from '~/graphql/types/args/query-anime-streaming-episode.arg';
 import { QueryAnimeArg } from '~/graphql/types/args/query-anime.arg';
+import { NotFoundAnimeError } from '~/graphql/types/dtos/anime-response/not-found-anime.error';
 import { Anime, AnimeEdge } from '~/models';
+import { IPageInfo } from '~/models/contracts';
 import { MediaExternalLink } from '~/models/media-external-link.model';
 import {
   AnimeConnection,
@@ -11,15 +16,20 @@ import {
 } from '~/models/sub-models/anime-sub-models';
 import { AnimeStreamingEpisodeSource } from '~/models/sub-models/anime-sub-models/anime-streaming-episode-sources.model';
 import { AnimeStreamingEpisode } from '~/models/sub-models/anime-sub-models/anime-streaming-episode.model';
+import { Either } from '~/utils/tools/either';
 import { MapResultSelect } from '../../utils/tools/object';
 import { AnimeByFuzzySearch, IPaginateResult } from '../dtos';
-import { Either } from '~/utils/tools/either';
-import { NotFoundAnimeError } from '~/graphql/types/dtos/anime-response/not-found-anime.error';
-import { QueryAnimeConnectionArg } from '~/graphql/types/args/query-anime-connection.arg';
-import { QueryStreamingEpisodeSourceArg } from '~/graphql/types/args/query-anime-streaming-episode.arg';
 
 // These services will be exposed and utilized by the GraphQL client
 export interface IAnimeExternalService {
+  getAnimeList(
+    queryAnimePageArg: QueryAnimePageArg,
+    mapResultSelect: MapResultSelect,
+  ): Promise<{
+    animeList: Anime[];
+    pageInfo: IPageInfo;
+  }>;
+
   getAnimeByConditions(
     filterCondition: MapResultSelect,
     queryAnimeArg: QueryAnimeArg,

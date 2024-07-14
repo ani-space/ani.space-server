@@ -9,6 +9,7 @@ import { animeConnectionListDto, animeListDto } from '../__mocks__/anime.data';
 import { mockDataSource } from '../__mocks__/data-source';
 import { QueryStreamingEpisodeSourceArg } from '~/graphql/types/args/query-anime-streaming-episode.arg';
 import { animeStreamingEpsSources } from '../__mocks__/anime-source.data';
+import { QueryAnimePageArg } from '~/graphql/types/args/query-anime-page.arg';
 
 describe('AnimeRepository', () => {
   let animeRepository: IAnimeRepository;
@@ -34,6 +35,50 @@ describe('AnimeRepository', () => {
     animeRepository = module.get<IAnimeRepository>(IAnimeRepository);
     mockDataSource.getRepository.mockReturnValue(mockDataSource);
     mockDataSource.createQueryBuilder.mockReturnValue(mockDataSource);
+  });
+
+  it('getAnimeList should return Anime List', async () => {
+    // arrange
+    const queryAnimePageArg: QueryAnimePageArg = {
+      limit: 15,
+      page: 1,
+    };
+    const totalRecords = 999;
+    const mapResultSelectParam: MapResultSelect = {};
+    mockDataSource.getManyAndCount.mockResolvedValue([
+      animeListDto,
+      totalRecords,
+    ]);
+
+    // act
+    const { animeList, count } = await animeRepository.getAnimeList(
+      queryAnimePageArg,
+      mapResultSelectParam,
+    );
+
+    // assert
+    expect(animeList).toMatchObject(animeListDto);
+    expect(count).toEqual(totalRecords);
+  });
+
+  it('getAnimeList should return empty Anime List', async () => {
+    // arrange
+    const queryAnimePageArg: QueryAnimePageArg = {
+      limit: 15,
+      page: 1,
+    };
+    const mapResultSelectParam: MapResultSelect = {};
+    mockDataSource.getManyAndCount.mockResolvedValue([[], 0]);
+
+    // act
+    const { animeList, count } = await animeRepository.getAnimeList(
+      queryAnimePageArg,
+      mapResultSelectParam,
+    );
+
+    // assert
+    expect(animeList).toEqual([]);
+    expect(count).toEqual(0);
   });
 
   it('getAnimeStreamingEpisodeSources should return anime source list', async () => {
