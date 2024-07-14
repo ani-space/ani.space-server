@@ -9,6 +9,12 @@ export class QueryBuilderChainer<Entity extends ObjectLiteral> {
     this.queryBuilder = builder;
   }
 
+  public applyCache(shouldCacheOrTTL: boolean | number = false) {
+    this.queryBuilder.cache(shouldCacheOrTTL);
+
+    return this;
+  }
+
   public applyJoinConditionally(
     shouldJoin: boolean,
     alias: string,
@@ -123,33 +129,32 @@ export class QueryBuilderChainer<Entity extends ObjectLiteral> {
     return this;
   }
 
-  /**
-   * This method can only be used within the project, with the anime.title table. Extended idea from applyFuzzySearch function
-   */
-  public applyFuzzySearchAnime(
-    title?: string | number | null,
-    similarityWeight: number = 0.3,
-    order: 'DESC' | 'ASC' = 'DESC',
+  public applyHeadlessSelect(
+    selectClause: string,
+    selectionAliasName?: string,
   ) {
-    if (!title) return this;
+    this.queryBuilder.addSelect(selectClause, selectionAliasName);
 
-    this.queryBuilder
-      .addSelect(
-        'GREATEST(word_similarity(title.english, :title), word_similarity(title.romaji, :title), word_similarity(title.native, :title), word_similarity(title.userPreferred, :title), word_similarity(title.vietnamese, :title))',
-        'maxMatchingScore',
-      )
-      .andWhere(
-        `word_similarity(title.english, :title) > :similarityWeight
-        OR word_similarity(title.romaji, :title) > :similarityWeight
-        OR word_similarity(title.native, :title) > :similarityWeight
-        OR word_similarity(title.userPreferred, :title) > :similarityWeight
-        OR word_similarity(title.vietnamese, :title) > :similarityWeight
-        OR word_similarity(synonyms.synonym, :title) > :similarityWeight`,
-        { title },
-      )
-      .setParameter('title', title)
-      .setParameter('similarityWeight', similarityWeight)
-      .orderBy('"maxMatchingScore"', order);
+    return this;
+  }
+
+  public applyHeadlessAndWhere(
+    whereClause: string,
+    parameters?: ObjectLiteral,
+  ) {
+    this.queryBuilder.andWhere(whereClause, parameters);
+
+    return this;
+  }
+
+  public applyHeadlessOrderBy(orderByClause: string, order: 'ASC' | 'DESC') {
+    this.queryBuilder.orderBy(orderByClause, order);
+
+    return this;
+  }
+
+  public applySetParameter(key: string, value: string | number | boolean) {
+    this.queryBuilder.setParameter(key, value);
 
     return this;
   }
