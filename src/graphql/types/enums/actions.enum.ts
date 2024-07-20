@@ -23,3 +23,7 @@ export enum StaffActions {
 export enum StudioActions {
   Studio = 'Studio',
 }
+
+export enum AuthActions {
+  SignUpInternal = 'SignUpInternal',
+}
