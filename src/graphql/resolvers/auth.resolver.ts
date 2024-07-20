@@ -19,6 +19,7 @@ import { GqlUser } from '~/common/decorators/gql-user.decorator';
 import { MutateAuthResponse } from '../types/dtos/authentication/mutate-auth-response.dto';
 import { ResponseStatus } from '~/common/types/void-response.enum';
 import { UnauthorizedExceptionFilter } from '~/common/filters/unauthorized-exception.filter';
+import { SignOutUserInput } from '../types/dtos/authentication/signout-user-input.dto';
 
 @Resolver()
 @UseFilters(UnauthorizedExceptionFilter)
@@ -96,6 +97,21 @@ export class AuthResolver {
     );
 
     if (updatedUser) {
+      return [new MutateAuthResponse({ status: ResponseStatus.Success })];
+    }
+
+    return [new MutateAuthResponse({ status: ResponseStatus.Error })];
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => [MutateAuthResultUnion], { name: AuthActions.SignOut })
+  public async signOut(
+    @Args('signOutUserInput') signOutUserInput: SignOutUserInput,
+  ) {
+    const { refresh_token } = signOutUserInput;
+    const result = await this.authService.signOutUser({ refresh_token });
+
+    if (result?.affected && result?.affected > 0) {
       return [new MutateAuthResponse({ status: ResponseStatus.Success })];
     }
 

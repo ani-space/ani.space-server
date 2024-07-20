@@ -10,6 +10,7 @@ import { AuthUserResponse } from '~/graphql/types/dtos/authentication/auth-user-
 import { CredentialsTakenError } from '~/graphql/types/dtos/authentication/credentials-taken-error.dto';
 import { InvalidCredentialsError } from '~/graphql/types/dtos/authentication/invalid-credentials-error.dto';
 import { RegisterUserInput } from '~/graphql/types/dtos/authentication/register-user.input';
+import { SignOutUserInput } from '~/graphql/types/dtos/authentication/signout-user-input.dto';
 import { User } from '~/models/user.model';
 import { either, Either } from '~/utils/tools/either';
 
@@ -81,5 +82,11 @@ export class AuthService implements IAuthService {
 
   public async changeUserPassword(user: User, newPassword: string) {
     return this.userService.updateUserPassword(user.id, newPassword);
+  }
+
+  public async signOutUser(signOutUserInput: SignOutUserInput) {
+    const { refresh_token } = signOutUserInput;
+
+    return await this.tokenRepository.delete({ token: refresh_token });
   }
 }
