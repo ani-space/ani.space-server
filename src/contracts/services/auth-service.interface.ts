@@ -16,6 +16,8 @@ export interface IAuthService {
     email: string,
     password: string,
   ): Promise<Either<InvalidCredentialsError, User>>;
+
+  changeUserPassword(user: User, newPassword: string): Promise<User | null>;
 }
 
 export const IAuthService = Symbol('IAuthService');

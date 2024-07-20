@@ -78,4 +78,8 @@ export class AuthService implements IAuthService {
 
     return either.of(user);
   }
+
+  public async changeUserPassword(user: User, newPassword: string) {
+    return this.userService.updateUserPassword(user.id, newPassword);
+  }
 }

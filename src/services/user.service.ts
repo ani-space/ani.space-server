@@ -40,4 +40,15 @@ export class UserService implements IUserService {
 
     return newUserWithoutPassword as Omit<User, 'password'>;
   }
+
+  public async updateUserPassword(userId: string, newPassword: string) {
+    const user = await this.usersRepository.findOneById(userId);
+
+    if (!user) {
+      return null;
+    }
+
+    user.password = newPassword;
+    return await this.usersRepository.save(user);
+  }
 }

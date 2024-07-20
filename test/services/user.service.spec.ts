@@ -19,6 +19,7 @@ describe('UserService', () => {
     findByCondition: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
+    findOneById: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -107,5 +108,28 @@ describe('UserService', () => {
     });
     // @ts-ignore
     expect(result?.password).toBeUndefined();
+  });
+
+  it('updateUserPassword should return null', async () => {
+    // arrange
+    mockUserRepository.findOneById.mockResolvedValue(null);
+
+    // act
+    const result = await service.updateUserPassword('userId', 'newPassword');
+
+    // assert
+    expect(result).toEqual(null);
+  });
+
+  it('updateUserPassword should return user', async () => {
+    // arrange
+    mockUserRepository.findOneById.mockResolvedValue(user);
+    mockUserRepository.save.mockResolvedValue(user);
+
+    // act
+    const result = await service.updateUserPassword('userId', 'newPassword');
+
+    // assert
+    expect(result).toEqual(user);
   });
 });
