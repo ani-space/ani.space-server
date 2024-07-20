@@ -14,6 +14,7 @@ import { IAuthService } from '~/contracts/services/auth-service.interface';
 import { AuthService } from '~/services/auth.service';
 import { ISocialProviderRepository } from '~/contracts/repositories/social-provider-repository.interface';
 import { SocialProviderRepository } from '~/repositories/social-provider.repository';
+import { AuthResolver } from '~/graphql/resolvers/auth.resolver';
 
 const tokenRepositoryProvider: Provider = {
   provide: ITokenRepository,
@@ -48,11 +49,12 @@ const socialProviderRepository: Provider = {
       inject: [ConfigService],
     }),
 
-    // UserModule,
     TypeOrmModule.forFeature([Token, SocialProvider]),
   ],
 
   providers: [
+    AuthResolver,
+
     GoogleStrategy,
     JwtStrategy,
     RefreshJwtStrategy,

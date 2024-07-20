@@ -1,5 +1,6 @@
 import { Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserProfile } from '~/common/mapper-profiles/user-profile';
 import { IUserRepository } from '~/contracts/repositories/user-repository.interface';
 import { IUserService } from '~/contracts/services/user-service.interface';
 import { SocialProvider } from '~/models/social-provider.model';
@@ -18,7 +19,7 @@ const userRepositoryProvider: Provider = {
 @Module({
   imports: [TypeOrmModule.forFeature([User, SocialProvider])],
 
-  providers: [userServiceProvider, userRepositoryProvider],
+  providers: [userServiceProvider, userRepositoryProvider, UserProfile],
 
   exports: [userServiceProvider, userRepositoryProvider],
 })
