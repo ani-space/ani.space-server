@@ -25,7 +25,9 @@ export enum StudioActions {
 }
 
 export enum AuthActions {
+  SignOut = 'SignOut',
   SignUpInternal = 'SignUpInternal',
   SignInInternal = 'SignInInternal',
   ChangePassword = 'ChangePassword',
+  RefreshToken = 'RefreshToken',
 }
