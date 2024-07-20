@@ -27,4 +27,5 @@ export enum StudioActions {
 export enum AuthActions {
   SignUpInternal = 'SignUpInternal',
   SignInInternal = 'SignInInternal',
+  ChangePassword = 'ChangePassword',
 }
