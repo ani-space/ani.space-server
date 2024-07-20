@@ -5,3 +5,5 @@ export * from './anilist.module';
 export * from './animehay.module';
 export * from './animevsub.module';
 export * from './gogoanime.module';
+export * from './auth.module';
+export * from './user.module';
