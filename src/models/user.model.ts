@@ -27,7 +27,6 @@ export class User extends BaseEntity {
   @Column()
   email: string;
 
-  @AutoMap()
   @Column({ nullable: true })
   @MinLength(6)
   password?: string;
