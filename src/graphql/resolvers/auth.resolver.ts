@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, UseFilters, UseGuards } from '@nestjs/common';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { ValidateInput } from '~/common/decorators/validate-input.decorator';
 import { IAuthService } from '~/contracts/services/auth-service.interface';
@@ -12,8 +12,16 @@ import { User } from '~/models/user.model';
 import { LoginUserResultUnion } from '../types/dtos/authentication/login-user-response.dto';
 import { LoginUserInput } from '../types/dtos/authentication/login-user.input';
 import { InvalidCredentialsError } from '../types/dtos/authentication/invalid-credentials-error.dto';
+import { JwtAuthGuard } from '~/guards/jwtAuth.guard';
+import { MutateAuthResultUnion } from '../types/dtos/authentication/mutate-auth-response-union.dto';
+import { ChangePasswordInput } from '../types/dtos/authentication/change-password-input.dto';
+import { GqlUser } from '~/common/decorators/gql-user.decorator';
+import { MutateAuthResponse } from '../types/dtos/authentication/mutate-auth-response.dto';
+import { ResponseStatus } from '~/common/types/void-response.enum';
+import { UnauthorizedExceptionFilter } from '~/common/filters/unauthorized-exception.filter';
 
 @Resolver()
+@UseFilters(UnauthorizedExceptionFilter)
 export class AuthResolver {
   constructor(
     @Inject(IAuthService)
@@ -61,5 +69,36 @@ export class AuthResolver {
     const authUser = await this.authService.signTokens(result.value);
     authUser.user = this.mapper.map(authUser.user, User, UserDto);
     return [authUser];
+  }
+
+  @ValidateInput()
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => [MutateAuthResultUnion], {
+    name: AuthActions.ChangePassword,
+  })
+  public async changePassword(
+    @Args('changePasswordInput') changePasswordInput: ChangePasswordInput,
+    @GqlUser() currentUser: User,
+  ) {
+    const { currentPassword, newPassword } = changePasswordInput;
+    const result = await this.authService.validateCredentials(
+      currentUser.email,
+      currentPassword,
+    );
+
+    if (result.isError()) {
+      return [result.value as unknown as InvalidCredentialsError];
+    }
+
+    const updatedUser = await this.authService.changeUserPassword(
+      result.value,
+      newPassword,
+    );
+
+    if (updatedUser) {
+      return [new MutateAuthResponse({ status: ResponseStatus.Success })];
+    }
+
+    return [new MutateAuthResponse({ status: ResponseStatus.Error })];
   }
 }
