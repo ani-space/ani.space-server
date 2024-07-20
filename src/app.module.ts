@@ -15,13 +15,17 @@ import {
   AnilistModule,
   AnimeHayModule,
   AnimevsubModule,
+  AuthModule,
   LoggerModule,
   MediaModule,
   TriggerModule,
+  UserModule,
 } from './modules';
 import { GogoAnimeModule } from './modules/gogoanime.module';
 @Module({
   imports: [
+    UserModule,
+    AuthModule,
     LoggerModule,
     MediaModule,
     TriggerModule,
