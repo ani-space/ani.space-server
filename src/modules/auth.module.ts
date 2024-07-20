@@ -3,7 +3,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Token } from 'graphql';
 import { GoogleConfig, JwtConfig } from '~/configs';
 import { SocialProvider } from '~/models/social-provider.model';
 import { UserModule } from './user.module';
@@ -15,6 +14,7 @@ import { AuthService } from '~/services/auth.service';
 import { ISocialProviderRepository } from '~/contracts/repositories/social-provider-repository.interface';
 import { SocialProviderRepository } from '~/repositories/social-provider.repository';
 import { AuthResolver } from '~/graphql/resolvers/auth.resolver';
+import { Token } from '~/models/token.model';
 
 const tokenRepositoryProvider: Provider = {
   provide: ITokenRepository,
