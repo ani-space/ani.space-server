@@ -9,6 +9,9 @@ import { InjectMapper } from '@automapper/nestjs';
 import { Mapper } from '@automapper/core';
 import { UserDto } from '~/common/dtos/user-dtos/user.dto';
 import { User } from '~/models/user.model';
+import { LoginUserResultUnion } from '../types/dtos/authentication/login-user-response.dto';
+import { LoginUserInput } from '../types/dtos/authentication/login-user.input';
+import { InvalidCredentialsError } from '../types/dtos/authentication/invalid-credentials-error.dto';
 
 @Resolver()
 export class AuthResolver {
@@ -35,6 +38,27 @@ export class AuthResolver {
 
     const authUser = await this.authService.signTokens(result.value);
 
+    authUser.user = this.mapper.map(authUser.user, User, UserDto);
+    return [authUser];
+  }
+
+  @ValidateInput()
+  @Mutation(() => [LoginUserResultUnion], {
+    name: AuthActions.SignInInternal,
+  })
+  public async signInInternal(
+    @Args('loginUserInput') loginUserInput: LoginUserInput,
+  ): Promise<Array<typeof LoginUserResultUnion>> {
+    const result = await this.authService.validateCredentials(
+      loginUserInput.email,
+      loginUserInput.password,
+    );
+
+    if (result.isError()) {
+      return [result.value as unknown as InvalidCredentialsError];
+    }
+
+    const authUser = await this.authService.signTokens(result.value);
     authUser.user = this.mapper.map(authUser.user, User, UserDto);
     return [authUser];
   }

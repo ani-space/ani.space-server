@@ -8,6 +8,7 @@ import { IAuthService } from '~/contracts/services/auth-service.interface';
 import { IUserService } from '~/contracts/services/user-service.interface';
 import { AuthUserResponse } from '~/graphql/types/dtos/authentication/auth-user-response.dto';
 import { CredentialsTakenError } from '~/graphql/types/dtos/authentication/credentials-taken-error.dto';
+import { InvalidCredentialsError } from '~/graphql/types/dtos/authentication/invalid-credentials-error.dto';
 import { RegisterUserInput } from '~/graphql/types/dtos/authentication/register-user.input';
 import { User } from '~/models/user.model';
 import { either, Either } from '~/utils/tools/either';
@@ -59,5 +60,22 @@ export class AuthService implements IAuthService {
       access_token: this.jwtService.sign(payload),
       refresh_token: refreshToken,
     });
+  }
+
+  public async validateCredentials(
+    email: string,
+    password: string,
+  ): Promise<Either<InvalidCredentialsError, User>> {
+    const user = await this.userService.getUserByConditions({ email });
+
+    if (!user || !(await user?.comparePassword(password))) {
+      return either.error(
+        new InvalidCredentialsError({
+          providedEmail: email,
+        }),
+      );
+    }
+
+    return either.of(user);
   }
 }
