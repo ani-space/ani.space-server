@@ -1,3 +1,4 @@
+import { SocialProvider } from '~/models/social-provider.model';
 import { User } from '~/models/user.model';
 
 export interface IUserService {
@@ -8,6 +9,11 @@ export interface IUserService {
   createUser(user: Partial<User>): Promise<Omit<User, 'password'>>;
 
   updateUserPassword(userId: string, newPassword: string): Promise<User | null>;
+
+  saveProviderAndUser(
+    user: Partial<User>,
+    provider: Partial<SocialProvider>,
+  ): Promise<User>;
 }
 
 export const IUserService = Symbol('IUserService');
