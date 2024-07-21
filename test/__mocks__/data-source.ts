@@ -19,4 +19,7 @@ export const mockDataSource = {
   take: jest.fn(),
   skip: jest.fn(),
   getManyAndCount: jest.fn(),
+  manager: {
+    transaction: jest.fn(),
+  }
 };

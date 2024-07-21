@@ -1,6 +1,8 @@
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Profile } from 'passport';
 import { UserDto } from '~/common/dtos/user-dtos/user.dto';
+import { ISocialProviderRepository } from '~/contracts/repositories/social-provider-repository.interface';
 import { ITokenRepository } from '~/contracts/repositories/token-repository.interface';
 import { IAuthService } from '~/contracts/services/auth-service.interface';
 import { IUserService } from '~/contracts/services/user-service.interface';
@@ -8,6 +10,8 @@ import { AuthUserResponse } from '~/graphql/types/dtos/authentication/auth-user-
 import { CredentialsTakenError } from '~/graphql/types/dtos/authentication/credentials-taken-error.dto';
 import { InvalidCredentialsError } from '~/graphql/types/dtos/authentication/invalid-credentials-error.dto';
 import { RegisterUserInput } from '~/graphql/types/dtos/authentication/register-user.input';
+import { SocialAlreadyAssignedError } from '~/graphql/types/dtos/authentication/social-already-assigned-error.dto';
+import { SocialProvider, SocialProviderTypes } from '~/models/social-provider.model';
 import { Token } from '~/models/token.model';
 import { User } from '~/models/user.model';
 import { AuthService } from '~/services/auth.service';
@@ -31,12 +35,18 @@ describe('AuthService', () => {
     existsByCredentials: jest.fn(),
     createUser: jest.fn(),
     getUserByConditions: jest.fn(),
+    saveProviderAndUser: jest.fn(),
   };
 
   const mockJwtService = {
     signAsync: jest.fn(),
     sign: jest.fn(),
   };
+
+  const mockSocialProviderRepository = {
+    findByCondition: jest.fn(),
+
+  }
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -56,6 +66,10 @@ describe('AuthService', () => {
         {
           provide: ITokenRepository,
           useValue: mockTokenRepo,
+        },
+        {
+          provide: ISocialProviderRepository,
+          useValue: mockSocialProviderRepository,
         },
       ],
     })
@@ -169,6 +183,81 @@ describe('AuthService', () => {
 
     // act
     const result = await service.validateCredentials('email', 'password');
+
+    // assert
+    expect(result).toEqual(either.of(user));
+  });
+
+  it('registerExternalUser should return ErrorResponse v1', async () => {
+    // arrange
+    const profile: Profile = {
+      displayName: 'displayName',
+      provider: 'google',
+      id: 'id',
+      emails: [{ value: 'test@gmail.com' }]
+    };
+    const username: string = 'username';
+    const provider: SocialProviderTypes = SocialProviderTypes.GOOGLE;
+    mockSocialProviderRepository.findByCondition.mockResolvedValue({
+      id: 'id',
+      provider: SocialProviderTypes.GOOGLE,
+      socialId: 'socialId'
+    } as SocialProvider)
+
+    // act
+    const result = await service.registerExternalUser(profile, username, provider);
+
+    // assert
+    expect(result).toEqual(either.error(
+      new SocialAlreadyAssignedError({
+        provider,
+      }),
+    ));
+
+  });
+
+  it('registerExternalUser should return ErrorResponse v2', async () => {
+    // arrange
+    const profile: Profile = {
+      displayName: 'displayName',
+      provider: 'google',
+      id: 'id',
+      emails: [{ value: 'test@gmail.com' }]
+    };
+    const username: string = 'username';
+    const provider: SocialProviderTypes = SocialProviderTypes.GOOGLE;
+    mockSocialProviderRepository.findByCondition.mockResolvedValue(null)
+    mockUserService.existsByCredentials.mockResolvedValue(true);
+
+    // act
+    const result = await service.registerExternalUser(profile, username, provider);
+
+    // assert
+    expect(result).toEqual(either.error(
+      new CredentialsTakenError({
+        providedEmail: profile?.emails ? profile?.emails[0].value : '',
+        providedUsername: username,
+      }),
+    ));
+
+  });
+
+  it('registerExternalUser should return User', async () => {
+    // arrange
+    const profile: Profile = {
+      displayName: 'displayName',
+      provider: 'google',
+      id: 'id',
+      emails: [{ value: 'test@gmail.com' }]
+    };
+    const username: string = 'username';
+    const provider: SocialProviderTypes = SocialProviderTypes.GOOGLE;
+    mockSocialProviderRepository.findByCondition.mockResolvedValue(null)
+    mockUserService.existsByCredentials.mockResolvedValue(false);
+    mockUserService.saveProviderAndUser.mockResolvedValue(user);
+
+    // act
+    const result = await service.registerExternalUser(profile, username, provider);
 
     // assert
     expect(result).toEqual(either.of(user));
