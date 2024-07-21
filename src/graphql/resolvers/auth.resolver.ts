@@ -2,12 +2,15 @@ import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 import { Inject, UseFilters, UseGuards } from '@nestjs/common';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Profile } from 'passport';
 import { GqlUser } from '~/common/decorators/gql-user.decorator';
+import { SocialProfile } from '~/common/decorators/social-profile.decorator';
 import { ValidateInput } from '~/common/decorators/validate-input.decorator';
 import { UserDto } from '~/common/dtos/user-dtos/user.dto';
 import { UnauthorizedExceptionFilter } from '~/common/filters/unauthorized-exception.filter';
 import { ResponseStatus } from '~/common/types/void-response.enum';
 import { IAuthService } from '~/contracts/services/auth-service.interface';
+import { SocialAuthGuard } from '~/guards';
 import { JwtAuthGuard, RefreshJwtAuthGuard } from '~/guards/jwtAuth.guard';
 import { User } from '~/models/user.model';
 import { ChangePasswordInput } from '../types/dtos/authentication/change-password-input.dto';
@@ -16,8 +19,10 @@ import { LoginUserResultUnion } from '../types/dtos/authentication/login-user-re
 import { LoginUserInput } from '../types/dtos/authentication/login-user.input';
 import { MutateAuthResultUnion } from '../types/dtos/authentication/mutate-auth-response-union.dto';
 import { MutateAuthResponse } from '../types/dtos/authentication/mutate-auth-response.dto';
+import { RegisterSocialResultUnion } from '../types/dtos/authentication/register-social-response.dto';
 import { RegisterUserResultUnion } from '../types/dtos/authentication/register-user-response.dto';
 import { RegisterUserInput } from '../types/dtos/authentication/register-user.input';
+import { RegisterSocialInput } from '../types/dtos/authentication/registersocial-input.dto';
 import { SignNewTokenResultUnion } from '../types/dtos/authentication/sign-new-token-response.dto';
 import { SignOutUserInput } from '../types/dtos/authentication/signout-user-input.dto';
 import { AuthActions } from '../types/enums/actions.enum';
@@ -125,6 +130,30 @@ export class AuthResolver {
   })
   public async signNewTokens(@GqlUser() currentUser: User) {
     const authUser = await this.authService.signTokens(currentUser);
+    authUser.user = this.mapper.map(authUser.user, User, UserDto);
+    return [authUser];
+  }
+
+  @UseGuards(SocialAuthGuard)
+  @ValidateInput()
+  @Mutation((_returns) => [RegisterSocialResultUnion], {
+    name: AuthActions.SignUpExternal,
+  })
+  public async registerExternal(
+    @SocialProfile() profile: Profile,
+    @Args('input') input: RegisterSocialInput,
+  ) {
+    const social = await this.authService.registerExternalUser(
+      profile,
+      input.username || '',
+      input.provider,
+    );
+
+    if (social.isError()) {
+      return [social.value];
+    }
+
+    const authUser = await this.authService.signTokens(social.value);
     authUser.user = this.mapper.map(authUser.user, User, UserDto);
     return [authUser];
   }

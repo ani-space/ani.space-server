@@ -30,4 +30,5 @@ export enum AuthActions {
   SignInInternal = 'SignInInternal',
   ChangePassword = 'ChangePassword',
   RefreshToken = 'RefreshToken',
+  SignUpExternal = 'SignUpExternal',
 }

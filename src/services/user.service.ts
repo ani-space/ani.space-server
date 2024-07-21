@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DataSource, FindOptionsWhere } from 'typeorm';
 import { IUserRepository } from '~/contracts/repositories/user-repository.interface';
 import { IUserService } from '~/contracts/services/user-service.interface';
+import { SocialProvider } from '~/models/social-provider.model';
 import { User } from '~/models/user.model';
 
 @Injectable()
@@ -9,8 +10,6 @@ export class UserService implements IUserService {
   constructor(
     @Inject(IUserRepository)
     private readonly usersRepository: IUserRepository,
-
-    private dataSource: DataSource,
   ) {}
 
   public async getUserByConditions(user: Partial<User>) {
@@ -50,5 +49,12 @@ export class UserService implements IUserService {
 
     user.password = newPassword;
     return await this.usersRepository.save(user);
+  }
+
+  public async saveProviderAndUser(
+    user: Partial<User>,
+    provider: Partial<SocialProvider>,
+  ) {
+    return this.usersRepository.saveProviderAndUser(user, provider);
   }
 }
