@@ -17,4 +17,8 @@ export class UserDto extends BaseDto {
   @AutoMap()
   @Field({ nullable: true })
   displayName?: string;
+
+  @AutoMap(() => [String])
+  @Field(() => [String])
+  roles: string[];
 }
