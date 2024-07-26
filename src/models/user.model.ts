@@ -13,6 +13,7 @@ import { BaseEntity } from './base-models';
 import { Token } from './token.model';
 import { SocialProvider } from './social-provider.model';
 import { decodePassword, encodePassword } from '~/utils/security/bcrypt';
+import { UserRole } from './sub-models/user-sub-models/role.enum';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -42,6 +43,10 @@ export class User extends BaseEntity {
 
   @OneToMany((_type) => SocialProvider, (socialProvider) => socialProvider.user)
   socialProviders: SocialProvider;
+
+  @AutoMap(() => [String])
+  @Column('text', { array: true, default: [UserRole.USER.toString()] })
+  roles: string[];
 
   @BeforeInsert()
   @BeforeUpdate()
