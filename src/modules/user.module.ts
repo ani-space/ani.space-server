@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserProfile } from '~/common/mapper-profiles/user-profile';
 import { IUserRepository } from '~/contracts/repositories/user-repository.interface';
 import { IUserService } from '~/contracts/services/user-service.interface';
+import { UserResolver } from '~/graphql/resolvers/user.resolver';
 import { SocialProvider } from '~/models/social-provider.model';
 import { User } from '~/models/user.model';
 import { UserRepository } from '~/repositories/user.repository';
@@ -19,7 +20,12 @@ const userRepositoryProvider: Provider = {
 @Module({
   imports: [TypeOrmModule.forFeature([User, SocialProvider])],
 
-  providers: [userServiceProvider, userRepositoryProvider, UserProfile],
+  providers: [
+    UserResolver,
+    userServiceProvider,
+    userRepositoryProvider,
+    UserProfile,
+  ],
 
   exports: [userServiceProvider, userRepositoryProvider],
 })

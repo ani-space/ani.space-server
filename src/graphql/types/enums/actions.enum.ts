@@ -32,3 +32,7 @@ export enum AuthActions {
   RefreshToken = 'RefreshToken',
   SignUpExternal = 'SignUpExternal',
 }
+
+export enum UserActions {
+  CurrentUser = 'CurrentUser',
+}
