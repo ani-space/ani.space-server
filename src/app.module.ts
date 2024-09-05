@@ -1,28 +1,94 @@
-import { join } from 'path';
-import { UserResolver } from '~/graphql/resolvers/user.resolver';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { classes } from '@automapper/classes';
+import { AutomapperModule } from '@automapper/nestjs';
+import { useMaskedErrors } from '@envelop/core';
+import { YogaDriver, YogaDriverConfig } from '@graphql-yoga/nestjs';
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { GraphQLModule } from '@nestjs/graphql';
-
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { GraphQLError } from 'graphql';
+import { join } from 'path';
+import { envSchema } from '~/configs/env.schema';
+import { DatabaseConfig } from './configs/index';
+import {
+  AnilistModule,
+  AnimeHayModule,
+  AnimevsubModule,
+  AuthModule,
+  LoggerModule,
+  MediaModule,
+  TriggerModule,
+  UserModule,
+} from './modules';
+import { GogoAnimeModule } from './modules/gogoanime.module';
 @Module({
   imports: [
-    GraphQLModule.forRootAsync<ApolloDriverConfig>({
-      driver: ApolloDriver,
+    UserModule,
+    AuthModule,
+    LoggerModule,
+    MediaModule,
+    TriggerModule,
+    AnilistModule,
+    AnimevsubModule,
+    AnimeHayModule,
+    GogoAnimeModule,
+
+    AutomapperModule.forRoot({
+      strategyInitializer: classes(),
+    }),
+
+    EventEmitterModule.forRoot({
+      ignoreErrors: true,
+    }),
+
+    ConfigModule.forRoot({
+      cache: true,
+      validationSchema: envSchema,
+      load: [DatabaseConfig],
+    }),
+
+    GraphQLModule.forRootAsync<YogaDriverConfig>({
+      driver: YogaDriver,
       useFactory: () => {
         return {
           playground: true,
           autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-          formatError: (error) => {
-            return {
-              message: error.message,
-              code: error.extensions?.code,
-            };
-          },
+          maskedErrors: true,
+          plugins: [
+            useMaskedErrors({
+              maskError: (error: any) => {
+                console.error('global error: ', error);
+                return new GraphQLError('Sorry, something went wrong.');
+              },
+            }),
+          ],
         };
       },
     }),
+
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => {
+        const dbOptions: TypeOrmModuleOptions = {
+          type: 'postgres',
+          host: config.get<string>('PG_HOST'),
+          port: Number(config.get<string>('PG_PORT')),
+          username: config.get<string>('PG_USERNAME'),
+          password: config.get<string>('PG_PASSWORD'),
+          database: config.get<string>('PG_DB'),
+          entities: ['dist/**/*.+(model|enum).js'],
+          autoLoadEntities: true,
+          migrations: ['dist/db/migrations/*.js'],
+          migrationsRun: true,
+          synchronize: false,
+          logging: true,
+          logger: 'simple-console',
+        };
+        return dbOptions;
+      },
+    }),
   ],
-  controllers: [],
-  providers: [UserResolver],
 })
 export class AppModule {}

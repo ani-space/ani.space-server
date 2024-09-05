@@ -1,0 +1,25 @@
+export const mockDataSource = {
+  getOne: jest.fn(),
+  getMany: jest.fn(),
+  getRepository: jest.fn(),
+  createQueryBuilder: jest.fn(),
+  leftJoinAndSelect: jest.fn(),
+  leftJoin: jest.fn(),
+  addOrderBy: jest.fn(),
+  andWhere: jest.fn(),
+  orWhere: jest.fn(),
+  select: jest.fn(),
+  addSelect: jest.fn(),
+  where: jest.fn(),
+  applyWhere: jest.fn(),
+  applyLeftJoinAndMapMany: jest.fn(),
+  applyTake: jest.fn(),
+  applySkip: jest.fn(),
+  cache: jest.fn(),
+  take: jest.fn(),
+  skip: jest.fn(),
+  getManyAndCount: jest.fn(),
+  manager: {
+    transaction: jest.fn(),
+  }
+};
