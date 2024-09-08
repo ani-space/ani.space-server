@@ -1,0 +1,43 @@
+services:
+  postgresql_db:
+    image: postgres:16.4-alpine
+    restart: always
+    ports:
+      - '5432:5432'
+    volumes:
+      - 'postgresql_data:/bitnami/postgresql'
+    environment:
+      - POSTGRES_DB=ani-space-local
+      - POSTGRES_PASSWORD=postgres
+
+  ani_space_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3000
+      - NODE_ENV=development
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      - postgresql_db
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    container_name: nest-pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin4
+    ports:
+      - '5050:80'
+    depends_on:
+      - postgresql_db
+
+volumes:
+  postgresql_data:
+    driver: local

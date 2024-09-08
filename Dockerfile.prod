@@ -1,0 +1,19 @@
+FROM node:21
+
+WORKDIR /app
+
+# Copy all needed files
+COPY . .
+
+# Install dependencies
+RUN yarn install --frozen-lockfile
+
+# Build project
+RUN yarn build
+
+# Clean up
+RUN rm -rf ./src
+
+EXPOSE 3001
+
+CMD ["yarn", "prod"]
