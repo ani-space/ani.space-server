@@ -1,0 +1,31 @@
+services:
+  postgresql_db:
+    image: postgres:16.4-alpine
+    restart: always
+    ports:
+      - '5432:5432'
+    volumes:
+      - 'postgresql_data:/bitnami/postgresql'
+    environment:
+      - POSTGRES_DB=${PG_DB}
+      - POSTGRES_PASSWORD=${PG_PASSWORD}
+
+  ani_space_server_prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - '3001:3001'
+    env_file:
+      - ./.env
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      - postgresql_db
+
+volumes:
+  postgresql_data:
+    driver: local
